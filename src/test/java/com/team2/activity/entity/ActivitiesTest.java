@@ -1,7 +1,7 @@
 package com.team2.activity.entity; // 테스트 대상 클래스와 같은 패키지 → package-private 접근 가능
 
 import com.team2.activity.entity.enums.Priority;    // 우선순위 열거형 (MEDIUM, HIGH)
-import com.team2.activity.entity.enums.RecordType;  // 기록 유형 열거형 (MEETING, ISSUE, MEMO, SCHEDULE)
+import com.team2.activity.entity.enums.ActivityType; // 활동 유형 열거형 (MEETING, ISSUE, MEMO, SCHEDULE)
 import org.junit.jupiter.api.DisplayName;            // 테스트 이름을 한글로 표시하는 어노테이션
 import org.junit.jupiter.api.Test;                   // 개별 테스트 메서드 표시 어노테이션
 
@@ -18,7 +18,7 @@ class ActivitiesTest {
     private Activity buildBasicRecord() {
         return Activity.builder()          // 빌더 패턴으로 객체 생성 시작
                 .clientId(1L)            // 거래처 ID (필수, 마스터 서비스의 client PK)
-                .type(RecordType.MEETING) // 기록 유형 = 미팅/협의
+                .type(ActivityType.MEETING) // 기록 유형 = 미팅/협의
                 .title("거래처 미팅")     // 기록 제목 (필수)
                 .content("미팅 내용 상세") // 상세 내용 (선택)
                 .date(LocalDate.of(2025, 4, 10)) // 활동 날짜 (필수)
@@ -34,7 +34,7 @@ class ActivitiesTest {
 
         // 각 필드가 빌더에 전달한 값과 일치하는지 검증
         assertThat(record.getClientId()).isEqualTo(1L);                          // 거래처 ID 확인
-        assertThat(record.getType()).isEqualTo(RecordType.MEETING);              // 유형 확인
+        assertThat(record.getType()).isEqualTo(ActivityType.MEETING);              // 유형 확인
         assertThat(record.getTitle()).isEqualTo("거래처 미팅");                   // 제목 확인
         assertThat(record.getContent()).isEqualTo("미팅 내용 상세");              // 내용 확인
         assertThat(record.getDate()).isEqualTo(LocalDate.of(2025, 4, 10));       // 날짜 확인
@@ -51,14 +51,14 @@ class ActivitiesTest {
     void createRecord_issue_withPriority() {
         Activity record = Activity.builder()
                 .clientId(1L)
-                .type(RecordType.ISSUE)       // 유형 = 이슈
+                .type(ActivityType.ISSUE)       // 유형 = 이슈
                 .title("긴급 이슈 발생")
                 .date(LocalDate.now())         // 오늘 날짜
                 .authorId(10L)                 // 작성자 사용자 ID
                 .priority(Priority.HIGH)       // 우선순위 = 높음 (이슈 타입에서만 의미 있음)
                 .build();
 
-        assertThat(record.getType()).isEqualTo(RecordType.ISSUE);       // 유형이 ISSUE인지 확인
+        assertThat(record.getType()).isEqualTo(ActivityType.ISSUE);       // 유형이 ISSUE인지 확인
         assertThat(record.getPriority()).isEqualTo(Priority.HIGH);      // 우선순위가 HIGH인지 확인
     }
 
@@ -68,7 +68,7 @@ class ActivitiesTest {
     void createRecord_issue_mediumPriority() {
         Activity record = Activity.builder()
                 .clientId(1L)
-                .type(RecordType.ISSUE)
+                .type(ActivityType.ISSUE)
                 .title("일반 이슈")
                 .date(LocalDate.now())
                 .authorId(10L)                 // 작성자 사용자 ID
@@ -87,7 +87,7 @@ class ActivitiesTest {
 
         Activity record = Activity.builder()
                 .clientId(1L)
-                .type(RecordType.SCHEDULE)     // 유형 = 일정
+                .type(ActivityType.SCHEDULE)     // 유형 = 일정
                 .title("해외 출장")
                 .date(LocalDate.now())
                 .authorId(10L)                 // 작성자 사용자 ID
@@ -95,7 +95,7 @@ class ActivitiesTest {
                 .scheduleTo(to)                // 일정 종료일 설정
                 .build();
 
-        assertThat(record.getType()).isEqualTo(RecordType.SCHEDULE);    // 유형이 SCHEDULE인지 확인
+        assertThat(record.getType()).isEqualTo(ActivityType.SCHEDULE);    // 유형이 SCHEDULE인지 확인
         assertThat(record.getScheduleFrom()).isEqualTo(from);           // 시작일 일치 확인
         assertThat(record.getScheduleTo()).isEqualTo(to);               // 종료일 일치 확인
     }
@@ -106,14 +106,14 @@ class ActivitiesTest {
     void createRecord_memo() {
         Activity record = Activity.builder()
                 .clientId(2L)
-                .type(RecordType.MEMO)         // 유형 = 메모/노트
+                .type(ActivityType.MEMO)         // 유형 = 메모/노트
                 .title("미팅 후 메모")
                 .content("논의된 사항 정리")   // 메모 내용 입력
                 .date(LocalDate.now())
                 .authorId(20L)                 // 작성자 사용자 ID
                 .build();
 
-        assertThat(record.getType()).isEqualTo(RecordType.MEMO);            // 유형 확인
+        assertThat(record.getType()).isEqualTo(ActivityType.MEMO);            // 유형 확인
         assertThat(record.getContent()).isEqualTo("논의된 사항 정리");       // 내용 확인
     }
 
@@ -123,7 +123,7 @@ class ActivitiesTest {
     void createRecord_withPoId() {
         Activity record = Activity.builder()
                 .clientId(1L)
-                .type(RecordType.MEETING)
+                .type(ActivityType.MEETING)
                 .title("PO 관련 미팅")
                 .date(LocalDate.now())
                 .authorId(10L)                // 작성자 사용자 ID
@@ -141,7 +141,7 @@ class ActivitiesTest {
 
         // update() 메서드로 모든 수정 가능 필드를 한 번에 변경
         record.update(
-                RecordType.MEMO,             // 유형 변경: MEETING → MEMO
+                ActivityType.MEMO,             // 유형 변경: MEETING → MEMO
                 "수정된 제목",               // 제목 변경
                 "수정된 내용",               // 내용 변경
                 LocalDate.of(2025, 5, 1),   // 날짜 변경
@@ -152,7 +152,7 @@ class ActivitiesTest {
                 null                         // 일정 종료일 없음
         );
 
-        assertThat(record.getType()).isEqualTo(RecordType.MEMO);            // 유형 변경 확인
+        assertThat(record.getType()).isEqualTo(ActivityType.MEMO);            // 유형 변경 확인
         assertThat(record.getTitle()).isEqualTo("수정된 제목");              // 제목 변경 확인
         assertThat(record.getContent()).isEqualTo("수정된 내용");            // 내용 변경 확인
         assertThat(record.getDate()).isEqualTo(LocalDate.of(2025, 5, 1));   // 날짜 변경 확인
@@ -172,7 +172,7 @@ class ActivitiesTest {
         LocalDate to   = LocalDate.of(2025, 6, 5);       // 새 일정 종료일
 
         record.update(
-                RecordType.SCHEDULE, // 유형을 SCHEDULE로 변경
+                ActivityType.SCHEDULE, // 유형을 SCHEDULE로 변경
                 "출장 일정",
                 "출장 일정 내용",
                 LocalDate.now(),
@@ -183,7 +183,7 @@ class ActivitiesTest {
                 to      // 일정 종료일 설정
         );
 
-        assertThat(record.getType()).isEqualTo(RecordType.SCHEDULE);  // SCHEDULE로 변경됐는지 확인
+        assertThat(record.getType()).isEqualTo(ActivityType.SCHEDULE);  // SCHEDULE로 변경됐는지 확인
         assertThat(record.getScheduleFrom()).isEqualTo(from);          // 시작일 저장 확인
         assertThat(record.getScheduleTo()).isEqualTo(to);              // 종료일 저장 확인
     }
@@ -198,40 +198,40 @@ class ActivitiesTest {
         assertThat(record.getClientId()).isEqualTo(1L); // 생성 시 값 그대로 유지 확인
     }
 
-    // ── 테스트 10: RecordType 열거값 목록 확인 ────────────────
+    // ── 테스트 10: ActivityType 열거값 목록 확인 ────────────────
     @Test
-    @DisplayName("RecordType 열거값 확인")
+    @DisplayName("ActivityType 열거값 확인")
     void recordType_values() {
         // 프론트엔드에서 사용하는 4가지 유형이 모두 정의되어 있는지 검증
-        assertThat(RecordType.values())
+        assertThat(ActivityType.values())
                 .containsExactlyInAnyOrder(
-                        RecordType.MEETING,  // 미팅/협의
-                        RecordType.ISSUE,    // 이슈
-                        RecordType.MEMO,     // 메모/노트
-                        RecordType.SCHEDULE  // 일정
+                        ActivityType.MEETING,  // 미팅/협의
+                        ActivityType.ISSUE,    // 이슈
+                        ActivityType.MEMO,     // 메모/노트
+                        ActivityType.SCHEDULE  // 일정
                 );
     }
 
-    // ── 테스트 11: RecordType JSON 직렬화 (영문 → 한글) ───────
+    // ── 테스트 11: ActivityType JSON 직렬화 (영문 → 한글) ───────
     @Test
-    @DisplayName("RecordType JSON 직렬화 - 한글 displayName 반환")
+    @DisplayName("ActivityType JSON 직렬화 - 한글 displayName 반환")
     void recordType_displayName() {
         // @JsonValue 가 붙은 getDisplayName()이 JSON 응답에 한글 문자열을 반환하는지 확인
-        assertThat(RecordType.MEETING.getDisplayName()).isEqualTo("미팅/협의"); // 프론트 표시값
-        assertThat(RecordType.ISSUE.getDisplayName()).isEqualTo("이슈");
-        assertThat(RecordType.MEMO.getDisplayName()).isEqualTo("메모/노트");
-        assertThat(RecordType.SCHEDULE.getDisplayName()).isEqualTo("일정");
+        assertThat(ActivityType.MEETING.getDisplayName()).isEqualTo("미팅/협의"); // 프론트 표시값
+        assertThat(ActivityType.ISSUE.getDisplayName()).isEqualTo("이슈");
+        assertThat(ActivityType.MEMO.getDisplayName()).isEqualTo("메모/노트");
+        assertThat(ActivityType.SCHEDULE.getDisplayName()).isEqualTo("일정");
     }
 
-    // ── 테스트 12: RecordType JSON 역직렬화 (한글 → 영문) ─────
+    // ── 테스트 12: ActivityType JSON 역직렬화 (한글 → 영문) ─────
     @Test
-    @DisplayName("RecordType JSON 역직렬화 - 한글 문자열로 생성")
+    @DisplayName("ActivityType JSON 역직렬화 - 한글 문자열로 생성")
     void recordType_fromDisplayName() {
         // 프론트에서 한글 문자열로 전송한 값을 @JsonCreator 로 enum 상수로 변환하는지 확인
-        assertThat(RecordType.from("미팅/협의")).isEqualTo(RecordType.MEETING);
-        assertThat(RecordType.from("이슈")).isEqualTo(RecordType.ISSUE);
-        assertThat(RecordType.from("메모/노트")).isEqualTo(RecordType.MEMO);
-        assertThat(RecordType.from("일정")).isEqualTo(RecordType.SCHEDULE);
+        assertThat(ActivityType.from("미팅/협의")).isEqualTo(ActivityType.MEETING);
+        assertThat(ActivityType.from("이슈")).isEqualTo(ActivityType.ISSUE);
+        assertThat(ActivityType.from("메모/노트")).isEqualTo(ActivityType.MEMO);
+        assertThat(ActivityType.from("일정")).isEqualTo(ActivityType.SCHEDULE);
     }
 
     // ── 테스트 13: Priority 열거값 목록 확인 ─────────────────────
@@ -271,7 +271,7 @@ class ActivitiesTest {
         Activity record = buildBasicRecord(); // 기존 레코드 (MEETING 타입)
 
         record.update(
-                RecordType.ISSUE,            // 유형 변경: MEETING → ISSUE
+                ActivityType.ISSUE,            // 유형 변경: MEETING → ISSUE
                 "긴급 품질 이슈",            // 제목 변경
                 "불량률 증가 관련",          // 내용 변경
                 LocalDate.now(),             // 날짜 변경
@@ -282,18 +282,18 @@ class ActivitiesTest {
                 null                         // 일정 종료일 없음
         );
 
-        assertThat(record.getType()).isEqualTo(RecordType.ISSUE);     // ISSUE로 변경 확인
+        assertThat(record.getType()).isEqualTo(ActivityType.ISSUE);     // ISSUE로 변경 확인
         assertThat(record.getPriority()).isEqualTo(Priority.HIGH);    // 우선순위 HIGH 확인
         assertThat(record.getScheduleFrom()).isNull();                 // 일정 시작일 없음 확인
         assertThat(record.getScheduleTo()).isNull();                   // 일정 종료일 없음 확인
     }
 
-    // ── 테스트 17: RecordType.from() 잘못된 값 예외 ──────────────
+    // ── 테스트 17: ActivityType.from() 잘못된 값 예외 ──────────────
     @Test
-    @DisplayName("RecordType.from() - 잘못된 값 전달 시 예외 발생")
+    @DisplayName("ActivityType.from() - 잘못된 값 전달 시 예외 발생")
     void recordType_fromInvalidValue_throwsException() {
         // from() 내부 for 루프의 "일치하는 값 없음" 브랜치 커버 → JaCoCo 브랜치 100% 달성
-        assertThatThrownBy(() -> RecordType.from("잘못된값"))
+        assertThatThrownBy(() -> ActivityType.from("잘못된값"))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 
