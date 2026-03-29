@@ -15,8 +15,8 @@ class ActivitiesTest {
 
     // ── 공통 픽스처 ────────────────────────────────────────────
     // 여러 테스트에서 반복 사용할 기본 Record 객체를 생성하는 헬퍼 메서드
-    private Record buildBasicRecord() {
-        return Record.builder()          // 빌더 패턴으로 객체 생성 시작
+    private Activity buildBasicRecord() {
+        return Activity.builder()          // 빌더 패턴으로 객체 생성 시작
                 .clientId(1L)            // 거래처 ID (필수, 마스터 서비스의 client PK)
                 .type(RecordType.MEETING) // 기록 유형 = 미팅/협의
                 .title("거래처 미팅")     // 기록 제목 (필수)
@@ -30,7 +30,7 @@ class ActivitiesTest {
     @Test
     @DisplayName("기본 Record 생성")
     void createRecord_basic() {
-        Record record = buildBasicRecord(); // 헬퍼로 기본 Record 생성
+        Activity record = buildBasicRecord(); // 헬퍼로 기본 Record 생성
 
         // 각 필드가 빌더에 전달한 값과 일치하는지 검증
         assertThat(record.getClientId()).isEqualTo(1L);                          // 거래처 ID 확인
@@ -49,7 +49,7 @@ class ActivitiesTest {
     @Test
     @DisplayName("이슈 타입 Record 생성 - priority 포함")
     void createRecord_issue_withPriority() {
-        Record record = Record.builder()
+        Activity record = Activity.builder()
                 .clientId(1L)
                 .type(RecordType.ISSUE)       // 유형 = 이슈
                 .title("긴급 이슈 발생")
@@ -66,7 +66,7 @@ class ActivitiesTest {
     @Test
     @DisplayName("이슈 보통 우선순위 Record 생성")
     void createRecord_issue_mediumPriority() {
-        Record record = Record.builder()
+        Activity record = Activity.builder()
                 .clientId(1L)
                 .type(RecordType.ISSUE)
                 .title("일반 이슈")
@@ -85,7 +85,7 @@ class ActivitiesTest {
         LocalDate from = LocalDate.of(2025, 4, 1); // 일정 시작일
         LocalDate to   = LocalDate.of(2025, 4, 5); // 일정 종료일
 
-        Record record = Record.builder()
+        Activity record = Activity.builder()
                 .clientId(1L)
                 .type(RecordType.SCHEDULE)     // 유형 = 일정
                 .title("해외 출장")
@@ -104,7 +104,7 @@ class ActivitiesTest {
     @Test
     @DisplayName("메모 타입 Record 생성")
     void createRecord_memo() {
-        Record record = Record.builder()
+        Activity record = Activity.builder()
                 .clientId(2L)
                 .type(RecordType.MEMO)         // 유형 = 메모/노트
                 .title("미팅 후 메모")
@@ -121,7 +121,7 @@ class ActivitiesTest {
     @Test
     @DisplayName("PO 연결된 Record 생성")
     void createRecord_withPoId() {
-        Record record = Record.builder()
+        Activity record = Activity.builder()
                 .clientId(1L)
                 .type(RecordType.MEETING)
                 .title("PO 관련 미팅")
@@ -137,7 +137,7 @@ class ActivitiesTest {
     @Test
     @DisplayName("Record 수정 - 모든 필드 변경")
     void updateRecord_allFields() {
-        Record record = buildBasicRecord(); // 기존 레코드 (MEETING 타입)
+        Activity record = buildBasicRecord(); // 기존 레코드 (MEETING 타입)
 
         // update() 메서드로 모든 수정 가능 필드를 한 번에 변경
         record.update(
@@ -167,7 +167,7 @@ class ActivitiesTest {
     @Test
     @DisplayName("Record 수정 - 일정 타입으로 변경")
     void updateRecord_toScheduleType() {
-        Record record = buildBasicRecord();               // 기존 레코드 (MEETING)
+        Activity record = buildBasicRecord();               // 기존 레코드 (MEETING)
         LocalDate from = LocalDate.of(2025, 6, 1);       // 새 일정 시작일
         LocalDate to   = LocalDate.of(2025, 6, 5);       // 새 일정 종료일
 
@@ -192,7 +192,7 @@ class ActivitiesTest {
     @Test
     @DisplayName("clientId는 수정 불가 - 고정 필드")
     void clientId_isImmutable() {
-        Record record = buildBasicRecord();
+        Activity record = buildBasicRecord();
         // clientId has no setter - verified by builder pattern
         // clientId는 생성 후 변경 불가 → update() 파라미터에 없음
         assertThat(record.getClientId()).isEqualTo(1L); // 생성 시 값 그대로 유지 확인
@@ -268,7 +268,7 @@ class ActivitiesTest {
     @Test
     @DisplayName("Record 수정 - 이슈 타입으로 변경 (priority 설정)")
     void updateRecord_toIssueType() {
-        Record record = buildBasicRecord(); // 기존 레코드 (MEETING 타입)
+        Activity record = buildBasicRecord(); // 기존 레코드 (MEETING 타입)
 
         record.update(
                 RecordType.ISSUE,            // 유형 변경: MEETING → ISSUE
