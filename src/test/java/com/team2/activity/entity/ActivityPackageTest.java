@@ -1,144 +1,199 @@
-package com.team2.activity.entity; // 테스트 대상 클래스와 같은 패키지
+package com.team2.activity.entity;
 
-import org.junit.jupiter.api.DisplayName; // 테스트 이름 표시 어노테이션
-import org.junit.jupiter.api.Test;         // 개별 테스트 메서드 표시 어노테이션
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.test.context.ActiveProfiles;
 
-import java.time.LocalDateTime; // 날짜+시간 타입 - 생성/수정 시각
-import java.util.List;          // 열람 권한 사용자 ID, 포함 활동기록 ID 목록
+import java.time.LocalDateTime;
+import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat; // AssertJ 검증 메서드 정적 import
+import static org.assertj.core.api.Assertions.assertThat;
 
-@DisplayName("ActivityPackage 엔티티 테스트") // 테스트 클래스 전체의 표시 이름
+@DataJpaTest
+@ActiveProfiles("test")
+@DisplayName("ActivityPackage 엔티티 테스트")
 class ActivityPackageTest {
 
-    // ── 공통 픽스처 ────────────────────────────────────────────
-    // 여러 테스트에서 반복 사용할 기본 ActivityPackage 객체 생성 헬퍼
+    @Autowired
+    private TestEntityManager em;
+
     private ActivityPackage buildBasicPackage() {
         return ActivityPackage.builder()
-                .title("2025 Q1 영업 활동 패키지")         // 패키지 제목 (필수)
-                .description("1분기 주요 거래처 활동 모음") // 패키지 설명 (선택)
-                .poId("PO-2025-001")                       // 연결된 수주건 ID (선택)
-                .creatorId(1L)                             // 패키지 생성자 사용자 ID (auth 서비스의 user PK)
-                .viewerIds(List.of(2L, 3L))                // 열람 권한이 부여된 사용자 ID 목록
-                .activityIds(List.of(100L, 101L, 102L))    // 패키지에 포함된 활동기록 ID 목록
+                .packageTitle("2025 Q1 영업 활동 패키지")
+                .packageDescription("1분기 주요 거래처 활동 모음")
+                .poId("PO-2025-001")
+                .creatorId(1L)
+                .viewers(List.of(ActivityPackageViewer.of(2L), ActivityPackageViewer.of(3L)))
+                .items(List.of(ActivityPackageItem.of(100L), ActivityPackageItem.of(101L), ActivityPackageItem.of(102L)))
                 .build();
     }
 
-    // ── 테스트 1: 기본 생성 ────────────────────────────────────
     @Test
     @DisplayName("기본 ActivityPackage 생성 성공")
     void createActivityPackage_basic() {
-        ActivityPackage pkg = buildBasicPackage(); // 헬퍼로 기본 패키지 생성
+        ActivityPackage pkg = buildBasicPackage();
 
-        assertThat(pkg.getTitle()).isEqualTo("2025 Q1 영업 활동 패키지");        // 제목 확인
-        assertThat(pkg.getDescription()).isEqualTo("1분기 주요 거래처 활동 모음"); // 설명 확인
-        assertThat(pkg.getPoId()).isEqualTo("PO-2025-001");                       // PO ID 확인
-        assertThat(pkg.getCreatorId()).isEqualTo(1L);                             // 생성자 ID 확인
-        assertThat(pkg.getViewerIds()).containsExactly(2L, 3L);                   // 열람 권한 목록 확인
-        assertThat(pkg.getActivityIds()).containsExactly(100L, 101L, 102L);       // 포함 활동 목록 확인
+        assertThat(pkg.getPackageTitle()).isEqualTo("2025 Q1 영업 활동 패키지");
+        assertThat(pkg.getPackageDescription()).isEqualTo("1분기 주요 거래처 활동 모음");
+        assertThat(pkg.getPoId()).isEqualTo("PO-2025-001");
+        assertThat(pkg.getCreatorId()).isEqualTo(1L);
+        assertThat(pkg.getViewers())
+                .extracting(ActivityPackageViewer::getUserId)
+                .containsExactly(2L, 3L);
+        assertThat(pkg.getItems())
+                .extracting(ActivityPackageItem::getActivityId)
+                .containsExactly(100L, 101L, 102L);
     }
 
-    // ── 테스트 2: 선택 필드 없이 생성 ─────────────────────────
     @Test
     @DisplayName("선택 필드 없이 ActivityPackage 생성")
     void createActivityPackage_withoutOptionalFields() {
         ActivityPackage pkg = ActivityPackage.builder()
-                .title("기본 패키지")  // title, creatorId만 필수
-                .creatorId(1L)         // 생성자 사용자 ID
+                .packageTitle("기본 패키지")
+                .creatorId(1L)
                 .build();
 
-        assertThat(pkg.getDescription()).isNull();  // 설명 미입력 → null
-        assertThat(pkg.getPoId()).isNull();          // PO ID 미입력 → null
+        assertThat(pkg.getPackageDescription()).isNull();
+        assertThat(pkg.getPoId()).isNull();
     }
 
-    // ── 테스트 3: viewerIds null → 빈 리스트 초기화 ───────────
     @Test
-    @DisplayName("viewerIds null 전달 시 빈 리스트로 초기화")
-    void createActivityPackage_nullViewerIds() {
+    @DisplayName("viewers null 전달 시 빈 리스트로 초기화")
+    void createActivityPackage_nullViewers() {
         ActivityPackage pkg = ActivityPackage.builder()
-                .title("패키지")
-                .creatorId(1L)          // 생성자 사용자 ID
-                .viewerIds(null)        // null → NPE 방지를 위해 빈 리스트로 초기화해야 함
-                .activityIds(null)      // null → 마찬가지로 빈 리스트로 초기화해야 함
+                .packageTitle("패키지")
+                .creatorId(1L)
+                .viewers(null)
+                .items(null)
                 .build();
 
-        assertThat(pkg.getViewerIds()).isNotNull().isEmpty();   // null이 아닌 빈 리스트 확인
-        assertThat(pkg.getActivityIds()).isNotNull().isEmpty(); // null이 아닌 빈 리스트 확인
+        assertThat(pkg.getViewers()).isNotNull().isEmpty();
+        assertThat(pkg.getItems()).isNotNull().isEmpty();
     }
 
-    // ── 테스트 4: viewerIds, activityIds 복수 저장 ────────────
     @Test
     @DisplayName("복수 열람 권한 및 포함 활동기록 저장")
-    void createActivityPackage_multipleViewersAndActivities() {
+    void createActivityPackage_multipleViewersAndItems() {
         ActivityPackage pkg = ActivityPackage.builder()
-                .title("대용량 패키지")
-                .creatorId(1L)                            // 생성자 사용자 ID
-                .viewerIds(List.of(2L, 3L, 4L, 5L))      // 4명의 열람 권한 부여
-                .activityIds(List.of(10L, 20L, 30L))      // 3개 활동기록 포함
+                .packageTitle("대용량 패키지")
+                .creatorId(1L)
+                .viewers(List.of(
+                        ActivityPackageViewer.of(2L),
+                        ActivityPackageViewer.of(3L),
+                        ActivityPackageViewer.of(4L),
+                        ActivityPackageViewer.of(5L)))
+                .items(List.of(
+                        ActivityPackageItem.of(10L),
+                        ActivityPackageItem.of(20L),
+                        ActivityPackageItem.of(30L)))
                 .build();
 
-        assertThat(pkg.getViewerIds()).hasSize(4).contains(2L, 3L, 4L, 5L); // 4명 열람 권한 확인
-        assertThat(pkg.getActivityIds()).hasSize(3).contains(10L, 20L, 30L); // 3개 활동기록 확인
+        assertThat(pkg.getViewers())
+                .extracting(ActivityPackageViewer::getUserId)
+                .containsExactlyInAnyOrder(2L, 3L, 4L, 5L);
+        assertThat(pkg.getItems())
+                .extracting(ActivityPackageItem::getActivityId)
+                .containsExactlyInAnyOrder(10L, 20L, 30L);
     }
 
-    // ── 테스트 5: update() - 수정 가능 필드 변경 ──────────────
     @Test
-    @DisplayName("ActivityPackage 수정 - title, description, poId 변경")
+    @DisplayName("ActivityPackage 수정 - packageTitle, packageDescription, poId 변경")
     void updateActivityPackage_allFields() {
-        ActivityPackage pkg = buildBasicPackage(); // 기존 패키지
+        ActivityPackage pkg = buildBasicPackage();
 
-        // update() 메서드로 수정 가능한 필드 변경
         pkg.update(
-                "수정된 패키지 제목",  // 제목 변경
-                "수정된 설명",         // 설명 변경
-                "PO-2025-999"          // PO ID 변경
+                "수정된 패키지 제목",
+                "수정된 설명",
+                "PO-2025-999"
         );
 
-        assertThat(pkg.getTitle()).isEqualTo("수정된 패키지 제목"); // 제목 변경 확인
-        assertThat(pkg.getDescription()).isEqualTo("수정된 설명");  // 설명 변경 확인
-        assertThat(pkg.getPoId()).isEqualTo("PO-2025-999");          // PO ID 변경 확인
+        assertThat(pkg.getPackageTitle()).isEqualTo("수정된 패키지 제목");
+        assertThat(pkg.getPackageDescription()).isEqualTo("수정된 설명");
+        assertThat(pkg.getPoId()).isEqualTo("PO-2025-999");
     }
 
-    // ── 테스트 6: update() - 선택 필드 null로 클리어 ───────────
     @Test
-    @DisplayName("ActivityPackage 수정 - description, poId null로 클리어")
+    @DisplayName("ActivityPackage 수정 - packageDescription, poId null로 클리어")
     void updateActivityPackage_clearOptionalFields() {
-        ActivityPackage pkg = buildBasicPackage(); // description, poId 모두 있는 상태
+        ActivityPackage pkg = buildBasicPackage();
 
-        // description, poId를 null로 전달하여 제거
         pkg.update("2025 Q1 영업 활동 패키지", null, null);
 
-        assertThat(pkg.getDescription()).isNull(); // 설명 null로 클리어 확인
-        assertThat(pkg.getPoId()).isNull();         // PO ID null로 클리어 확인
+        assertThat(pkg.getPackageDescription()).isNull();
+        assertThat(pkg.getPoId()).isNull();
     }
 
-    // ── 테스트 7: creatorId 불변성 확인 ───────────────────────
     @Test
     @DisplayName("creatorId는 수정 불가 - 패키지 생성자 고정")
     void creatorId_isImmutable() {
-        ActivityPackage pkg = buildBasicPackage(); // creatorId=1
+        ActivityPackage pkg = buildBasicPackage();
 
-        // update()에 creatorId 파라미터가 없으므로 변경 불가
         pkg.update("수정된 제목", null, null);
 
-        assertThat(pkg.getCreatorId()).isEqualTo(1L); // 생성자 ID 불변 확인
+        assertThat(pkg.getCreatorId()).isEqualTo(1L);
     }
 
-    // ── 테스트 8: createdAt 자동 설정 ─────────────────────────
     @Test
     @DisplayName("ActivityPackage 생성 시 createdAt 자동 설정")
     void createActivityPackage_createdAtAutoSet() {
-        LocalDateTime before = LocalDateTime.now(); // 생성 직전 시각 기록
+        LocalDateTime before = LocalDateTime.now();
 
         ActivityPackage pkg = ActivityPackage.builder()
-                .title("시각 테스트 패키지")
-                .creatorId(1L)                   // 생성자 사용자 ID
+                .packageTitle("시각 테스트 패키지")
+                .creatorId(1L)
                 .build();
 
-        LocalDateTime after = LocalDateTime.now(); // 생성 직후 시각 기록
+        LocalDateTime after = LocalDateTime.now();
 
         assertThat(pkg.getCreatedAt())
-                .isAfterOrEqualTo(before)   // createdAt이 생성 직전 시각 이후인지 확인
-                .isBeforeOrEqualTo(after);  // createdAt이 생성 직후 시각 이전인지 확인
+                .isAfterOrEqualTo(before)
+                .isBeforeOrEqualTo(after);
+    }
+
+    @Test
+    @DisplayName("DB - 기본 ActivityPackage 저장 및 조회")
+    void db_saveAndFind() {
+        ActivityPackage pkg = buildBasicPackage();
+
+        ActivityPackage saved = em.persistFlushFind(pkg);
+
+        assertThat(saved.getPackageId()).isNotNull();
+        assertThat(saved.getPackageTitle()).isEqualTo("2025 Q1 영업 활동 패키지");
+        assertThat(saved.getCreatorId()).isEqualTo(1L);
+        assertThat(saved.getCreatedAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("DB - viewers, items cascade 저장 확인")
+    void db_saveWithViewersAndItems() {
+        ActivityPackage pkg = buildBasicPackage();
+
+        ActivityPackage saved = em.persistFlushFind(pkg);
+
+        assertThat(saved.getViewers())
+                .extracting(ActivityPackageViewer::getUserId)
+                .containsExactlyInAnyOrder(2L, 3L);
+        assertThat(saved.getItems())
+                .extracting(ActivityPackageItem::getActivityId)
+                .containsExactlyInAnyOrder(100L, 101L, 102L);
+    }
+
+    @Test
+    @DisplayName("DB - update() 후 변경사항 DB 반영 확인")
+    void db_updatePersists() {
+        ActivityPackage pkg = buildBasicPackage();
+        ActivityPackage saved = em.persistAndFlush(pkg);
+
+        saved.update("수정된 패키지 제목", "수정된 설명", "PO-2025-999");
+        em.flush();
+        em.clear();
+
+        ActivityPackage found = em.find(ActivityPackage.class, saved.getPackageId());
+        assertThat(found.getPackageTitle()).isEqualTo("수정된 패키지 제목");
+        assertThat(found.getPackageDescription()).isEqualTo("수정된 설명");
+        assertThat(found.getPoId()).isEqualTo("PO-2025-999");
     }
 }

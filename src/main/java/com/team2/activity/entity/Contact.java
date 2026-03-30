@@ -1,33 +1,74 @@
 package com.team2.activity.entity;
 
-import lombok.Builder; // 빌더 패턴 자동 생성 어노테이션
-import lombok.Getter;  // 모든 필드의 getter 메서드 자동 생성 어노테이션
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-// 거래처 담당자 연락처 도메인 객체 (DB 테이블: contacts)
-// 연락처는 등록한 영업담당자 개인 자산으로 관리됨
-@Getter // 모든 필드의 getter 자동 생성 (getClientId(), getName() 등)
+import java.time.LocalDateTime;
+
+@Entity
+@Table(name = "contacts")
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Contact {
 
-    private final Long clientId; // 거래처 ID (생성 후 변경 불가 - final, FK→master.clients)
-    private String name;         // 담당자 이름 (필수)
-    private String position;     // 담당자 직위 (선택, 예: "Team Leader", "Team Member")
-    private String email;        // 담당자 이메일 (선택, 이메일 발송 시 수신자로 활용)
-    private String tel;          // 담당자 전화번호 (선택)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "contact_id")
+    private Long contactId;
 
-    @Builder // 이 생성자를 기반으로 빌더 클래스 자동 생성 → Contact.builder().clientId(1L)...build() 가능
-    private Contact(Long clientId, String name, String position, String email, String tel) {
-        this.clientId = clientId;   // 거래처 ID 초기화
-        this.name = name;           // 담당자 이름 초기화
-        this.position = position;   // 직위 초기화
-        this.email = email;         // 이메일 초기화
-        this.tel = tel;             // 전화번호 초기화
+    @Column(name = "client_id", nullable = false)
+    private Long clientId;
+
+    @Column(name = "writer_id")
+    private Long writerId;
+
+    @Column(name = "contact_name", nullable = false, length = 100)
+    private String contactName;
+
+    @Column(name = "contact_position", length = 100)
+    private String contactPosition;
+
+    @Column(name = "contact_email", length = 255)
+    private String contactEmail;
+
+    @Column(name = "contact_tel", length = 50)
+    private String contactTel;
+
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt;
+
+    @Builder
+    private Contact(Long clientId, Long writerId, String contactName, String contactPosition,
+                    String contactEmail, String contactTel) {
+        this.clientId = clientId;
+        this.writerId = writerId;
+        this.contactName = contactName;
+        this.contactPosition = contactPosition;
+        this.contactEmail = contactEmail;
+        this.contactTel = contactTel;
     }
 
-    // 연락처 수정 메서드 - clientId는 변경 불가이므로 파라미터에서 제외
-    public void update(String name, String position, String email, String tel) {
-        this.name = name;         // 담당자 이름 변경
-        this.position = position; // 직위 변경 (null 전달 시 제거)
-        this.email = email;       // 이메일 변경
-        this.tel = tel;           // 전화번호 변경 (null 전달 시 제거)
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    public void update(String contactName, String contactPosition, String contactEmail, String contactTel) {
+        this.contactName = contactName;
+        this.contactPosition = contactPosition;
+        this.contactEmail = contactEmail;
+        this.contactTel = contactTel;
     }
 }
