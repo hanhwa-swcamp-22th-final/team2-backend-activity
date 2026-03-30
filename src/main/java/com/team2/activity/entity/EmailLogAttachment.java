@@ -1,11 +1,14 @@
 package com.team2.activity.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "email_log_attachments")
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EmailLogAttachment {
 
     @Id
@@ -15,8 +18,6 @@ public class EmailLogAttachment {
 
     @Column(name = "email_attachment_filename", nullable = false, length = 255)
     private String emailAttachmentFilename;
-
-    protected EmailLogAttachment() {}
 
     private EmailLogAttachment(String emailAttachmentFilename) {
         this.emailAttachmentFilename = emailAttachmentFilename;

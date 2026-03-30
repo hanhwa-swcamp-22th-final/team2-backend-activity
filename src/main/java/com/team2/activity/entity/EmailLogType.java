@@ -3,11 +3,14 @@ package com.team2.activity.entity;
 import com.team2.activity.entity.converter.DocumentTypeConverter;
 import com.team2.activity.entity.enums.DocumentType;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "email_log_types")
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EmailLogType {
 
     @Id
@@ -18,8 +21,6 @@ public class EmailLogType {
     @Convert(converter = DocumentTypeConverter.class)
     @Column(name = "email_doc_type", nullable = false, length = 20)
     private DocumentType emailDocType;
-
-    protected EmailLogType() {}
 
     private EmailLogType(DocumentType emailDocType) {
         this.emailDocType = emailDocType;

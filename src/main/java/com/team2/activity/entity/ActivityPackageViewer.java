@@ -1,11 +1,14 @@
 package com.team2.activity.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "activity_package_viewers")
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ActivityPackageViewer {
 
     @Id
@@ -15,8 +18,6 @@ public class ActivityPackageViewer {
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
-
-    protected ActivityPackageViewer() {}
 
     private ActivityPackageViewer(Long userId) {
         this.userId = userId;

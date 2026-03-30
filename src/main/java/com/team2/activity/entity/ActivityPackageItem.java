@@ -1,11 +1,14 @@
 package com.team2.activity.entity;
 
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "activity_package_items")
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ActivityPackageItem {
 
     @Id
@@ -15,8 +18,6 @@ public class ActivityPackageItem {
 
     @Column(name = "activity_id", nullable = false)
     private Long activityId;
-
-    protected ActivityPackageItem() {}
 
     private ActivityPackageItem(Long activityId) {
         this.activityId = activityId;
