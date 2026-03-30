@@ -251,28 +251,16 @@ class ActivityRepositoryTest {
     @DisplayName("작성자 ID로 활동 목록 조회")
     // 테스트 메서드
     void findAll_filterByAuthorId() {
-        // 작성자 ID=10인 MEETING 활동 생성
-        Activity a1 = Activity.builder()
-                // 거래처 ID 설정
-                .clientId(1L)
-                // 작성자 ID 설정 (10L)
-                .activityAuthorId(10L)
-                // 활동 날짜 설정 (현재 날짜)
-                .activityDate(LocalDate.now())
-                // 활동 타입 설정
-                .activityType(ActivityType.MEETING)
-                // 활동 제목 설정
-                .activityTitle("작성자10")
-                // 빌드 완료
-                .build();
-        // 작성자 ID=20인 MEMO 활동 생성
+        // 작성자 ID=10인 MEETING 활동 생성 (buildActivity는 activityAuthorId=10L 고정)
+        Activity a1 = buildActivity(1L, ActivityType.MEETING, "작성자10");
+        // 작성자 ID=20인 MEMO 활동 생성 (별도 builder 사용, activityAuthorId 다름)
         Activity a2 = Activity.builder()
                 // 거래처 ID 설정
                 .clientId(1L)
-                // 작성자 ID 설정 (20L)
+                // 작성자 ID 설정 (20L, buildActivity 기본값 10L과 다름)
                 .activityAuthorId(20L)
-                // 활동 날짜 설정 (현재 날짜)
-                .activityDate(LocalDate.now())
+                // 활동 날짜 설정 (buildActivity와 동일한 날짜 사용)
+                .activityDate(LocalDate.of(2025, 4, 10))
                 // 활동 타입 설정
                 .activityType(ActivityType.MEMO)
                 // 활동 제목 설정
