@@ -52,6 +52,44 @@ class EmailLogCommandServiceTest {
     }
 
     @Test
+    @DisplayName("발송 실패 이메일 재전송 시 상태를 SENT로 변경한다")
+    void resend_updatesStatusWhenFailed() {
+        EmailLog emailLog = EmailLog.builder()
+                .clientId(1L).poId("PO-001").emailTitle("견적서 발송")
+                .emailRecipientName("김고객").emailRecipientEmail("client@example.com")
+                .emailSenderId(10L).emailStatus(MailStatus.FAILED)
+                .build();
+        when(emailLogRepository.findById(1L)).thenReturn(Optional.of(emailLog));
+
+        EmailLog result = emailLogCommandService.resend(1L);
+
+        assertThat(result).isSameAs(emailLog);
+        assertThat(emailLog.getEmailStatus()).isEqualTo(MailStatus.SENT);
+        verify(emailLogRepository).findById(1L);
+    }
+
+    @Test
+    @DisplayName("이미 발송된 이메일을 재전송하면 예외를 던진다")
+    void resend_throwsWhenAlreadySent() {
+        EmailLog emailLog = buildEmailLog(); // emailStatus = SENT
+        when(emailLogRepository.findById(1L)).thenReturn(Optional.of(emailLog));
+
+        assertThatThrownBy(() -> emailLogCommandService.resend(1L))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("이미 발송된 이메일입니다.");
+    }
+
+    @Test
+    @DisplayName("재전송 대상 이메일 로그가 없으면 예외를 던진다")
+    void resend_throwsWhenEmailLogDoesNotExist() {
+        when(emailLogRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> emailLogCommandService.resend(999L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("이메일 로그를 찾을 수 없습니다.");
+    }
+
+    @Test
     @DisplayName("이메일 상태 수정 시 조회한 엔티티의 상태를 변경한다")
     void updateStatus_updatesLoadedEntity() {
         EmailLog emailLog = buildEmailLog();

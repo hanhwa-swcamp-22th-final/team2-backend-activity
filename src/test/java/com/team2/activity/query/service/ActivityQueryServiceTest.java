@@ -100,6 +100,18 @@ class ActivityQueryServiceTest {
     }
 
     @Test
+    @DisplayName("날짜 범위 파라미터가 null이면 예외를 던진다")
+    void getActivitiesByDateRange_throwsWhenParamIsNull() {
+        assertThatThrownBy(() -> activityQueryService.getActivitiesByDateRange(null, LocalDate.of(2025, 4, 30)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("날짜 범위(from, to)는 필수입니다.");
+
+        assertThatThrownBy(() -> activityQueryService.getActivitiesByDateRange(LocalDate.of(2025, 4, 1), null))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("날짜 범위(from, to)는 필수입니다.");
+    }
+
+    @Test
     @DisplayName("날짜 범위 조건 조회를 위임한다")
     void getActivitiesByDateRange_delegatesToMapper() {
         LocalDate from = LocalDate.of(2025, 4, 1);

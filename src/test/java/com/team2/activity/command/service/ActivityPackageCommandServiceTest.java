@@ -118,6 +118,26 @@ class ActivityPackageCommandServiceTest {
     }
 
     @Test
+    @DisplayName("열람자 수정 시 대상 패키지가 없으면 예외를 던진다")
+    void updateViewers_throwsWhenPackageDoesNotExist() {
+        when(activityPackageRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> activityPackageCommandService.updateViewers(999L, List.of(1L)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("활동 패키지를 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("활동 항목 수정 시 대상 패키지가 없으면 예외를 던진다")
+    void updateItems_throwsWhenPackageDoesNotExist() {
+        when(activityPackageRepository.findById(999L)).thenReturn(Optional.empty());
+
+        assertThatThrownBy(() -> activityPackageCommandService.updateItems(999L, List.of(100L)))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("활동 패키지를 찾을 수 없습니다.");
+    }
+
+    @Test
     @DisplayName("패키지 삭제 시 조회한 엔티티를 삭제한다")
     void deletePackage_deletesLoadedEntity() {
         ActivityPackage activityPackage = buildPackage(List.of(1L), List.of(100L));
