@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.team2.activity.mapper.ActivityPackageQueryMapper">
+
+    <resultMap id="activityPackageResultMap" type="ActivityPackage">
+        <id property="packageId" column="package_id"/>
+        <result property="packageTitle" column="package_title"/>
+        <result property="packageDescription" column="package_description"/>
+        <result property="poId" column="po_id"/>
+        <result property="creatorId" column="creator_id"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+        <collection property="viewers" ofType="ActivityPackageViewer"
+                    select="selectViewersByPackageId" column="package_id"/>
+        <collection property="items" ofType="ActivityPackageItem"
+                    select="selectItemsByPackageId" column="package_id"/>
+    </resultMap>
+
+    <resultMap id="viewerResultMap" type="ActivityPackageViewer">
+        <id property="packageViewerId" column="package_viewer_id"/>
+        <result property="userId" column="user_id"/>
+    </resultMap>
+
+    <resultMap id="itemResultMap" type="ActivityPackageItem">
+        <id property="packageItemId" column="package_item_id"/>
+        <result property="activityId" column="activity_id"/>
+    </resultMap>
+
+    <select id="selectViewersByPackageId" resultMap="viewerResultMap">
+        SELECT package_viewer_id, user_id
+        FROM activity_package_viewers
+        WHERE package_id = #{packageId}
+    </select>
+
+    <select id="selectItemsByPackageId" resultMap="itemResultMap">
+        SELECT package_item_id, activity_id
+        FROM activity_package_items
+        WHERE package_id = #{packageId}
+    </select>
+
+    <select id="findById" resultMap="activityPackageResultMap">
+        SELECT package_id, package_title, package_description,
+               po_id, creator_id, created_at, updated_at
+        FROM activity_packages
+        WHERE package_id = #{packageId}
+    </select>
+
+    <select id="findAll" resultMap="activityPackageResultMap">
+        SELECT package_id, package_title, package_description,
+               po_id, creator_id, created_at, updated_at
+        FROM activity_packages
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findAllByCreatorId" resultMap="activityPackageResultMap">
+        SELECT package_id, package_title, package_description,
+               po_id, creator_id, created_at, updated_at
+        FROM activity_packages
+        WHERE creator_id = #{creatorId}
+        ORDER BY created_at DESC
+    </select>
+
+</mapper>

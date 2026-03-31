@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.team2.activity.mapper.EmailLogQueryMapper">
+
+    <resultMap id="emailLogResultMap" type="EmailLog">
+        <id property="emailLogId" column="email_log_id"/>
+        <result property="clientId" column="client_id"/>
+        <result property="poId" column="po_id"/>
+        <result property="emailTitle" column="email_title"/>
+        <result property="emailRecipientName" column="email_recipient_name"/>
+        <result property="emailRecipientEmail" column="email_recipient_email"/>
+        <result property="emailSenderId" column="email_sender_id"/>
+        <result property="emailStatus" column="email_status"
+                typeHandler="com.team2.activity.mapper.typehandler.MailStatusTypeHandler"/>
+        <result property="emailSentAt" column="email_sent_at"/>
+        <result property="createdAt" column="created_at"/>
+        <collection property="docTypes" ofType="EmailLogType"
+                    select="selectDocTypesByEmailLogId" column="email_log_id"/>
+        <collection property="attachments" ofType="EmailLogAttachment"
+                    select="selectAttachmentsByEmailLogId" column="email_log_id"/>
+    </resultMap>
+
+    <resultMap id="docTypeResultMap" type="EmailLogType">
+        <id property="emailLogTypeId" column="email_log_type_id"/>
+        <result property="emailDocType" column="email_doc_type"
+                typeHandler="com.team2.activity.mapper.typehandler.DocumentTypeHandler"/>
+    </resultMap>
+
+    <resultMap id="attachmentResultMap" type="EmailLogAttachment">
+        <id property="emailLogAttachmentId" column="email_log_attachment_id"/>
+        <result property="emailAttachmentFilename" column="email_attachment_filename"/>
+    </resultMap>
+
+    <select id="selectDocTypesByEmailLogId" resultMap="docTypeResultMap">
+        SELECT email_log_type_id, email_doc_type
+        FROM email_log_types
+        WHERE email_log_id = #{emailLogId}
+    </select>
+
+    <select id="selectAttachmentsByEmailLogId" resultMap="attachmentResultMap">
+        SELECT email_log_attachment_id, email_attachment_filename
+        FROM email_log_attachments
+        WHERE email_log_id = #{emailLogId}
+    </select>
+
+    <select id="findById" resultMap="emailLogResultMap">
+        SELECT email_log_id, client_id, po_id, email_title, email_recipient_name,
+               email_recipient_email, email_sender_id, email_status, email_sent_at, created_at
+        FROM email_logs
+        WHERE email_log_id = #{emailLogId}
+    </select>
+
+    <select id="findAll" resultMap="emailLogResultMap">
+        SELECT email_log_id, client_id, po_id, email_title, email_recipient_name,
+               email_recipient_email, email_sender_id, email_status, email_sent_at, created_at
+        FROM email_logs
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findByClientId" resultMap="emailLogResultMap">
+        SELECT email_log_id, client_id, po_id, email_title, email_recipient_name,
+               email_recipient_email, email_sender_id, email_status, email_sent_at, created_at
+        FROM email_logs
+        WHERE client_id = #{clientId}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findByEmailStatus" resultMap="emailLogResultMap">
+        SELECT email_log_id, client_id, po_id, email_title, email_recipient_name,
+               email_recipient_email, email_sender_id, email_status, email_sent_at, created_at
+        FROM email_logs
+        WHERE email_status = #{emailStatus}
+        ORDER BY created_at DESC
+    </select>
+
+</mapper>

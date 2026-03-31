@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.team2.activity.mapper.ActivityQueryMapper">
+
+    <resultMap id="activityResultMap" type="Activity">
+        <id property="activityId" column="activity_id"/>
+        <result property="clientId" column="client_id"/>
+        <result property="poId" column="po_id"/>
+        <result property="activityAuthorId" column="activity_author_id"/>
+        <result property="activityDate" column="activity_date"/>
+        <result property="activityType" column="activity_type"
+                typeHandler="com.team2.activity.mapper.typehandler.ActivityTypeHandler"/>
+        <result property="activityTitle" column="activity_title"/>
+        <result property="activityContent" column="activity_content"/>
+        <result property="activityPriority" column="activity_priority"
+                typeHandler="com.team2.activity.mapper.typehandler.PriorityTypeHandler"/>
+        <result property="activityScheduleFrom" column="activity_schedule_from"/>
+        <result property="activityScheduleTo" column="activity_schedule_to"/>
+        <result property="createdAt" column="created_at"/>
+        <result property="updatedAt" column="updated_at"/>
+    </resultMap>
+
+    <select id="findById" resultMap="activityResultMap">
+        SELECT activity_id, client_id, po_id, activity_author_id, activity_date,
+               activity_type, activity_title, activity_content, activity_priority,
+               activity_schedule_from, activity_schedule_to, created_at, updated_at
+        FROM activities
+        WHERE activity_id = #{activityId}
+    </select>
+
+    <select id="findAll" resultMap="activityResultMap">
+        SELECT activity_id, client_id, po_id, activity_author_id, activity_date,
+               activity_type, activity_title, activity_content, activity_priority,
+               activity_schedule_from, activity_schedule_to, created_at, updated_at
+        FROM activities
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findByClientId" resultMap="activityResultMap">
+        SELECT activity_id, client_id, po_id, activity_author_id, activity_date,
+               activity_type, activity_title, activity_content, activity_priority,
+               activity_schedule_from, activity_schedule_to, created_at, updated_at
+        FROM activities
+        WHERE client_id = #{clientId}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findByActivityType" resultMap="activityResultMap">
+        SELECT activity_id, client_id, po_id, activity_author_id, activity_date,
+               activity_type, activity_title, activity_content, activity_priority,
+               activity_schedule_from, activity_schedule_to, created_at, updated_at
+        FROM activities
+        WHERE activity_type = #{activityType}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findByDateRange" resultMap="activityResultMap">
+        SELECT activity_id, client_id, po_id, activity_author_id, activity_date,
+               activity_type, activity_title, activity_content, activity_priority,
+               activity_schedule_from, activity_schedule_to, created_at, updated_at
+        FROM activities
+        WHERE activity_date BETWEEN #{from} AND #{to}
+        ORDER BY activity_date DESC
+    </select>
+
+    <select id="findByAuthorId" resultMap="activityResultMap">
+        SELECT activity_id, client_id, po_id, activity_author_id, activity_date,
+               activity_type, activity_title, activity_content, activity_priority,
+               activity_schedule_from, activity_schedule_to, created_at, updated_at
+        FROM activities
+        WHERE activity_author_id = #{authorId}
+        ORDER BY created_at DESC
+    </select>
+
+    <select id="findByClientIdAndActivityType" resultMap="activityResultMap">
+        SELECT activity_id, client_id, po_id, activity_author_id, activity_date,
+               activity_type, activity_title, activity_content, activity_priority,
+               activity_schedule_from, activity_schedule_to, created_at, updated_at
+        FROM activities
+        WHERE client_id = #{clientId}
+          AND activity_type = #{activityType}
+        ORDER BY created_at DESC
+    </select>
+
+</mapper>
