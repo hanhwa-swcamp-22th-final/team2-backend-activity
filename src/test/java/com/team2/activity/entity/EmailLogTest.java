@@ -173,7 +173,7 @@ class EmailLogTest {
     }
 
     @Test
-    @DisplayName("한글 문서 유형(생산지시서, 출하지시서) 저장")
+    @DisplayName("영문 문서 유형(PRODUCTION_ORDER, SHIPPING_ORDER) 저장")
     void createEmailLog_koreanDocTypes() {
         EmailLog mail = EmailLog.builder()
                 .clientId(1L)
@@ -202,17 +202,17 @@ class EmailLogTest {
     }
 
     @Test
-    @DisplayName("MailStatus JSON 직렬화 - 한글 displayName 반환")
+    @DisplayName("MailStatus JSON 직렬화 - 영문 displayName 반환")
     void mailStatus_displayName() {
-        assertThat(MailStatus.SENT.getDisplayName()).isEqualTo("발송");
-        assertThat(MailStatus.FAILED.getDisplayName()).isEqualTo("실패");
+        assertThat(MailStatus.SENT.getDisplayName()).isEqualTo("SENT");     // 구: 발송
+        assertThat(MailStatus.FAILED.getDisplayName()).isEqualTo("FAILED"); // 구: 실패
     }
 
     @Test
-    @DisplayName("MailStatus JSON 역직렬화 - 한글 문자열로 생성")
+    @DisplayName("MailStatus JSON 역직렬화 - 영문 문자열로 생성")
     void mailStatus_fromDisplayName() {
-        assertThat(MailStatus.from("발송")).isEqualTo(MailStatus.SENT);
-        assertThat(MailStatus.from("실패")).isEqualTo(MailStatus.FAILED);
+        assertThat(MailStatus.from("SENT")).isEqualTo(MailStatus.SENT);     // 구: 발송
+        assertThat(MailStatus.from("FAILED")).isEqualTo(MailStatus.FAILED); // 구: 실패
     }
 
     @Test
@@ -234,8 +234,8 @@ class EmailLogTest {
         assertThat(DocumentType.PI.getDisplayName()).isEqualTo("PI");
         assertThat(DocumentType.CI.getDisplayName()).isEqualTo("CI");
         assertThat(DocumentType.PL.getDisplayName()).isEqualTo("PL");
-        assertThat(DocumentType.PRODUCTION_ORDER.getDisplayName()).isEqualTo("생산지시서");
-        assertThat(DocumentType.SHIPPING_ORDER.getDisplayName()).isEqualTo("출하지시서");
+        assertThat(DocumentType.PRODUCTION_ORDER.getDisplayName()).isEqualTo("PRODUCTION_ORDER"); // 구: 생산지시서
+        assertThat(DocumentType.SHIPPING_ORDER.getDisplayName()).isEqualTo("SHIPPING_ORDER");     // 구: 출하지시서
     }
 
     @Test
@@ -244,8 +244,8 @@ class EmailLogTest {
         assertThat(DocumentType.from("PI")).isEqualTo(DocumentType.PI);
         assertThat(DocumentType.from("CI")).isEqualTo(DocumentType.CI);
         assertThat(DocumentType.from("PL")).isEqualTo(DocumentType.PL);
-        assertThat(DocumentType.from("생산지시서")).isEqualTo(DocumentType.PRODUCTION_ORDER);
-        assertThat(DocumentType.from("출하지시서")).isEqualTo(DocumentType.SHIPPING_ORDER);
+        assertThat(DocumentType.from("PRODUCTION_ORDER")).isEqualTo(DocumentType.PRODUCTION_ORDER); // 구: 생산지시서
+        assertThat(DocumentType.from("SHIPPING_ORDER")).isEqualTo(DocumentType.SHIPPING_ORDER);     // 구: 출하지시서
     }
 
     @Test
