@@ -1,6 +1,7 @@
-package com.team2.activity.mapper;
+package com.team2.activity.query.mapper;
 
 import com.team2.activity.entity.EmailLog;
+import com.team2.activity.entity.enums.MailStatus;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
@@ -14,5 +15,5 @@ public interface EmailLogQueryMapper {
 
     List<EmailLog> findByClientId(Long clientId);
 
-    List<EmailLog> findByEmailStatus(String emailStatus);
+    List<EmailLog> findByEmailStatus(MailStatus emailStatus);
 }

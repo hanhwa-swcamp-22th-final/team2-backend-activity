@@ -1,4 +1,4 @@
-package com.team2.activity.mapper;
+package com.team2.activity.query.mapper;
 
 import com.team2.activity.entity.ActivityPackage;
 import org.apache.ibatis.annotations.Mapper;

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.team2.activity.mapper.ActivityQueryMapper">
+<mapper namespace="com.team2.activity.query.mapper.ActivityQueryMapper">
 
     <resultMap id="activityResultMap" type="Activity">
         <id property="activityId" column="activity_id"/>
@@ -11,11 +11,11 @@
         <result property="activityAuthorId" column="activity_author_id"/>
         <result property="activityDate" column="activity_date"/>
         <result property="activityType" column="activity_type"
-                typeHandler="com.team2.activity.mapper.typehandler.ActivityTypeHandler"/>
+                typeHandler="com.team2.activity.query.mapper.typehandler.ActivityTypeHandler"/>
         <result property="activityTitle" column="activity_title"/>
         <result property="activityContent" column="activity_content"/>
         <result property="activityPriority" column="activity_priority"
-                typeHandler="com.team2.activity.mapper.typehandler.PriorityTypeHandler"/>
+                typeHandler="com.team2.activity.query.mapper.typehandler.PriorityTypeHandler"/>
         <result property="activityScheduleFrom" column="activity_schedule_from"/>
         <result property="activityScheduleTo" column="activity_schedule_to"/>
         <result property="createdAt" column="created_at"/>

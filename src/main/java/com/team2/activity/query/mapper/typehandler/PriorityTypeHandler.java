@@ -1,4 +1,4 @@
-package com.team2.activity.mapper.typehandler;
+package com.team2.activity.query.mapper.typehandler;
 
 import com.team2.activity.entity.enums.Priority;
 import org.apache.ibatis.type.BaseTypeHandler;

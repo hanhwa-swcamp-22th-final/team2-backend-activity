@@ -1,5 +1,5 @@
 // EmailLogSpecification: EmailLog 엔티티의 동적 쿼리 필터링 정의
-package com.team2.activity.repository;
+package com.team2.activity.command.repository;
 
 // EmailLog 엔티티 import
 import com.team2.activity.entity.EmailLog;

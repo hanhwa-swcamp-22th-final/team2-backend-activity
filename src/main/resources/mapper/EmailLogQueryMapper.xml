@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.team2.activity.mapper.EmailLogQueryMapper">
+<mapper namespace="com.team2.activity.query.mapper.EmailLogQueryMapper">
 
     <resultMap id="emailLogResultMap" type="EmailLog">
         <id property="emailLogId" column="email_log_id"/>
@@ -12,7 +12,7 @@
         <result property="emailRecipientEmail" column="email_recipient_email"/>
         <result property="emailSenderId" column="email_sender_id"/>
         <result property="emailStatus" column="email_status"
-                typeHandler="com.team2.activity.mapper.typehandler.MailStatusTypeHandler"/>
+                typeHandler="com.team2.activity.query.mapper.typehandler.MailStatusTypeHandler"/>
         <result property="emailSentAt" column="email_sent_at"/>
         <result property="createdAt" column="created_at"/>
         <collection property="docTypes" ofType="EmailLogType"
@@ -24,7 +24,7 @@
     <resultMap id="docTypeResultMap" type="EmailLogType">
         <id property="emailLogTypeId" column="email_log_type_id"/>
         <result property="emailDocType" column="email_doc_type"
-                typeHandler="com.team2.activity.mapper.typehandler.DocumentTypeHandler"/>
+                typeHandler="com.team2.activity.query.mapper.typehandler.DocumentTypeHandler"/>
     </resultMap>
 
     <resultMap id="attachmentResultMap" type="EmailLogAttachment">

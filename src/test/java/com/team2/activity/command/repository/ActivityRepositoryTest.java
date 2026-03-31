@@ -1,5 +1,5 @@
 // ActivityRepositoryTest: Activity 엔티티의 Repository 계층 테스트
-package com.team2.activity.repository;
+package com.team2.activity.command.repository;
 
 // Activity 엔티티 import
 import com.team2.activity.entity.Activity;
