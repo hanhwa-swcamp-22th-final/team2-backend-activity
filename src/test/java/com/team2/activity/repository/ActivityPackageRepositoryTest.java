@@ -15,8 +15,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 // JPA 테스트 설정 import
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-// 테스트 DB 교체 방지 설정 import
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 // 테스트 프로파일 활성화 import
 import org.springframework.test.context.ActiveProfiles;
 
@@ -28,8 +26,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 // JPA 테스트 설정 어노테이션
 @DataJpaTest
-// application-test.properties의 H2 datasource를 그대로 사용 (교체하지 않음)
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 // 테스트 프로파일 설정
 @ActiveProfiles("test")
 // 테스트 클래스 표시명
