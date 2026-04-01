@@ -1,7 +1,7 @@
 package com.team2.activity.query.service;
 
-import com.team2.activity.entity.EmailLog;
-import com.team2.activity.entity.enums.MailStatus;
+import com.team2.activity.command.domain.entity.EmailLog;
+import com.team2.activity.command.domain.entity.enums.MailStatus;
 import com.team2.activity.query.mapper.EmailLogQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

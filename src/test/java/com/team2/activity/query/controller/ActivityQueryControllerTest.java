@@ -1,7 +1,7 @@
 package com.team2.activity.query.controller;
 
-import com.team2.activity.entity.Activity;
-import com.team2.activity.entity.enums.ActivityType;
+import com.team2.activity.command.domain.entity.Activity;
+import com.team2.activity.command.domain.entity.enums.ActivityType;
 import com.team2.activity.query.service.ActivityQueryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -82,7 +82,7 @@ class ActivityQueryControllerTest {
 
         // client_id 파라미터 요청이 정상 응답으로 변환되는지 확인한다.
         // 응답 상태가 200 OK인지 확인한다.
-        mockMvc.perform(get("/api/activities").param("client_id", "1"))
+        mockMvc.perform(get("/api/activities").param("clientId", "1"))
                 .andExpect(status().isOk())
                 // content 필드가 배열인지 확인한다.
                 .andExpect(jsonPath("$.content").isArray());

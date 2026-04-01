@@ -1,6 +1,6 @@
 package com.team2.activity.query.controller;
 
-import com.team2.activity.entity.Contact;
+import com.team2.activity.command.domain.entity.Contact;
 import com.team2.activity.query.service.ContactQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

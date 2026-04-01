@@ -1,8 +1,8 @@
 package com.team2.activity.query.entity;
 
-import com.team2.activity.entity.ActivityPackage;
-import com.team2.activity.entity.ActivityPackageItem;
-import com.team2.activity.entity.ActivityPackageViewer;
+import com.team2.activity.command.domain.entity.ActivityPackage;
+import com.team2.activity.command.domain.entity.ActivityPackageItem;
+import com.team2.activity.command.domain.entity.ActivityPackageViewer;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

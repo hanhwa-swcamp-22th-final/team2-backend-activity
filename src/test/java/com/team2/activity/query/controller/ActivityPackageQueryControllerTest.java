@@ -1,6 +1,6 @@
 package com.team2.activity.query.controller;
 
-import com.team2.activity.entity.ActivityPackage;
+import com.team2.activity.command.domain.entity.ActivityPackage;
 import com.team2.activity.query.service.ActivityPackageQueryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -71,7 +71,7 @@ class ActivityPackageQueryControllerTest {
 
         // 생성자 필터 요청이 정상 응답으로 처리되는지 확인한다.
         // 응답 상태가 200 OK인지 확인한다.
-        mockMvc.perform(get("/api/activity-packages").param("creator_id", "10"))
+        mockMvc.perform(get("/api/activity-packages").param("creatorId", "10"))
                 .andExpect(status().isOk())
                 // content 필드가 배열인지 확인한다.
                 .andExpect(jsonPath("$.content").isArray());

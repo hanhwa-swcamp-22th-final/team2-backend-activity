@@ -1,7 +1,7 @@
 package com.team2.activity.query.controller;
 
-import com.team2.activity.entity.EmailLog;
-import com.team2.activity.entity.enums.MailStatus;
+import com.team2.activity.command.domain.entity.EmailLog;
+import com.team2.activity.command.domain.entity.enums.MailStatus;
 import com.team2.activity.query.service.EmailLogQueryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -82,7 +82,7 @@ class EmailLogQueryControllerTest {
 
         // 거래처 조건 목록 요청이 정상 응답으로 처리되는지 확인한다.
         // 응답 상태가 200 OK인지 확인한다.
-        mockMvc.perform(get("/api/email-logs").param("client_id", "1"))
+        mockMvc.perform(get("/api/email-logs").param("clientId", "1"))
                 .andExpect(status().isOk())
                 // content 필드가 배열인지 확인한다.
                 .andExpect(jsonPath("$.content").isArray());
@@ -96,7 +96,7 @@ class EmailLogQueryControllerTest {
 
         // 상태 필터 요청이 빈 목록이어도 정상 응답하는지 확인한다.
         // 응답 상태가 200 OK인지 확인한다.
-        mockMvc.perform(get("/api/email-logs").param("email_status", "FAILED"))
+        mockMvc.perform(get("/api/email-logs").param("emailStatus", "FAILED"))
                 .andExpect(status().isOk())
                 // content 필드가 배열인지 확인한다.
                 .andExpect(jsonPath("$.content").isArray());

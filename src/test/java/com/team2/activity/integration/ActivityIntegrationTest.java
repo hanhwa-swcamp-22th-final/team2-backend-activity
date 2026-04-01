@@ -2,7 +2,7 @@ package com.team2.activity.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.team2.activity.command.repository.ActivityRepository;
+import com.team2.activity.command.domain.repository.ActivityRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

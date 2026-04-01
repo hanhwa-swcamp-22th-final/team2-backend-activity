@@ -1,8 +1,8 @@
 package com.team2.activity.query.repository;
 
-import com.team2.activity.entity.Activity;
-import com.team2.activity.entity.enums.ActivityType;
-import com.team2.activity.entity.enums.Priority;
+import com.team2.activity.command.domain.entity.Activity;
+import com.team2.activity.command.domain.entity.enums.ActivityType;
+import com.team2.activity.command.domain.entity.enums.Priority;
 import com.team2.activity.query.mapper.ActivityQueryMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

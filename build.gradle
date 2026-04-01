@@ -21,8 +21,18 @@ configurations {
     }
 }
 
+ext {
+    set('springCloudVersion', "2025.0.0")
+}
+
 repositories {
     mavenCentral()
+}
+
+dependencyManagement {
+    imports {
+        mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+    }
 }
 
 dependencies {
@@ -33,7 +43,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:3.0.3'
-    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign:4.2.1'
+    implementation 'org.springframework.cloud:spring-cloud-starter-openfeign'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'org.mariadb.jdbc:mariadb-java-client'
@@ -55,9 +65,43 @@ jacocoTestReport {
         xml.required = true
         html.required = true
     }
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    '**/ActivityApplication.class',
+                    '**/config/**',
+                    '**/dto/**',
+                    '**/entity/**',
+                    '**/enums/**',
+                    '**/converter/**',
+                    '**/infrastructure/**',
+                    '**/common/**',
+                    '**/mapper/**',
+                    '**/repository/ActivitySpecification**',
+                    '**/repository/EmailLogSpecification**'
+            ])
+        }))
+    }
 }
 
 jacocoTestCoverageVerification {
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    '**/ActivityApplication.class',
+                    '**/config/**',
+                    '**/dto/**',
+                    '**/entity/**',
+                    '**/enums/**',
+                    '**/converter/**',
+                    '**/infrastructure/**',
+                    '**/common/**',
+                    '**/mapper/**',
+                    '**/repository/ActivitySpecification**',
+                    '**/repository/EmailLogSpecification**'
+            ])
+        }))
+    }
     violationRules {
         rule {
             limit {

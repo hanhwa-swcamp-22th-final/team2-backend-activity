@@ -1,7 +1,7 @@
 package com.team2.activity.query.controller;
 
 import com.team2.activity.common.PagedResponse;
-import com.team2.activity.entity.Activity;
+import com.team2.activity.command.domain.entity.Activity;
 import com.team2.activity.query.service.ActivityQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

@@ -1,8 +1,8 @@
 package com.team2.activity.query.controller;
 
 import com.team2.activity.common.PagedResponse;
-import com.team2.activity.entity.EmailLog;
-import com.team2.activity.entity.enums.MailStatus;
+import com.team2.activity.command.domain.entity.EmailLog;
+import com.team2.activity.command.domain.entity.enums.MailStatus;
 import com.team2.activity.query.service.EmailLogQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

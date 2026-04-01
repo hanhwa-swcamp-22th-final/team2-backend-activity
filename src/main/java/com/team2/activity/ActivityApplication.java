@@ -6,8 +6,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 // 스프링 부트 자동 설정과 컴포넌트 스캔을 시작하는 애플리케이션 진입점이다.
 @SpringBootApplication
-// 외부 문서 서비스와 통신하는 Feign 클라이언트를 활성화한다.
-@EnableFeignClients(basePackages = "com.team2.activity.client")
+@EnableFeignClients(basePackages = "com.team2.activity.command.infrastructure.client")
 public class ActivityApplication {
 
     // JVM 실행 시 스프링 애플리케이션 컨텍스트를 부팅한다.

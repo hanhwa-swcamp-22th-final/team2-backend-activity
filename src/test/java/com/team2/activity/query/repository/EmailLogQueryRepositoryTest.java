@@ -1,10 +1,10 @@
 package com.team2.activity.query.repository;
 
-import com.team2.activity.entity.EmailLog;
-import com.team2.activity.entity.EmailLogAttachment;
-import com.team2.activity.entity.EmailLogType;
-import com.team2.activity.entity.enums.DocumentType;
-import com.team2.activity.entity.enums.MailStatus;
+import com.team2.activity.command.domain.entity.EmailLog;
+import com.team2.activity.command.domain.entity.EmailLogAttachment;
+import com.team2.activity.command.domain.entity.EmailLogType;
+import com.team2.activity.command.domain.entity.enums.DocumentType;
+import com.team2.activity.command.domain.entity.enums.MailStatus;
 import com.team2.activity.query.mapper.EmailLogQueryMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

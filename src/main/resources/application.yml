@@ -37,7 +37,7 @@ spring:
 
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml
-  type-aliases-package: com.team2.activity.entity
+  type-aliases-package: com.team2.activity.command.domain.entity
   type-handlers-package: com.team2.activity.query.mapper.typehandler
   configuration:
     map-underscore-to-camel-case: true

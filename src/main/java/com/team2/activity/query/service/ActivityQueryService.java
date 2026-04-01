@@ -1,7 +1,7 @@
 package com.team2.activity.query.service;
 
-import com.team2.activity.entity.Activity;
-import com.team2.activity.entity.enums.ActivityType;
+import com.team2.activity.command.domain.entity.Activity;
+import com.team2.activity.command.domain.entity.enums.ActivityType;
 import com.team2.activity.query.mapper.ActivityQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

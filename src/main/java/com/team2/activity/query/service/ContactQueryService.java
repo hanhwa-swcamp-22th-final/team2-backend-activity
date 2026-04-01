@@ -1,6 +1,6 @@
 package com.team2.activity.query.service;
 
-import com.team2.activity.entity.Contact;
+import com.team2.activity.command.domain.entity.Contact;
 import com.team2.activity.query.mapper.ContactQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

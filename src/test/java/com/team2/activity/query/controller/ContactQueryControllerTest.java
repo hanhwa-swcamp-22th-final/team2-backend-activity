@@ -1,6 +1,6 @@
 package com.team2.activity.query.controller;
 
-import com.team2.activity.entity.Contact;
+import com.team2.activity.command.domain.entity.Contact;
 import com.team2.activity.query.service.ContactQueryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -73,7 +73,7 @@ class ContactQueryControllerTest {
 
         // 필터가 있는 목록 요청도 배열 응답으로 처리되는지 확인한다.
         // 응답 상태가 200 OK인지 확인한다.
-        mockMvc.perform(get("/api/contacts").param("client_id", "1"))
+        mockMvc.perform(get("/api/contacts").param("clientId", "1"))
                 .andExpect(status().isOk())
                 // 응답 본문이 배열인지 확인한다.
                 .andExpect(jsonPath("$").isArray());

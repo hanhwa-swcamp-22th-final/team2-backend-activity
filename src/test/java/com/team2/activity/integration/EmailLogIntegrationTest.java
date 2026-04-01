@@ -2,9 +2,9 @@ package com.team2.activity.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.team2.activity.command.repository.EmailLogRepository;
-import com.team2.activity.entity.EmailLog;
-import com.team2.activity.entity.enums.MailStatus;
+import com.team2.activity.command.domain.repository.EmailLogRepository;
+import com.team2.activity.command.domain.entity.EmailLog;
+import com.team2.activity.command.domain.entity.enums.MailStatus;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

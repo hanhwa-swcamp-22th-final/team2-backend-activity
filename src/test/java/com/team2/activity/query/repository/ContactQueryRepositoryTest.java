@@ -1,6 +1,6 @@
 package com.team2.activity.query.repository;
 
-import com.team2.activity.entity.Contact;
+import com.team2.activity.command.domain.entity.Contact;
 import com.team2.activity.query.mapper.ContactQueryMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;

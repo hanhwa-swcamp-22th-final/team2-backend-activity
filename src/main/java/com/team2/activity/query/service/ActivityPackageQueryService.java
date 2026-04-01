@@ -1,6 +1,6 @@
 package com.team2.activity.query.service;
 
-import com.team2.activity.entity.ActivityPackage;
+import com.team2.activity.command.domain.entity.ActivityPackage;
 import com.team2.activity.query.mapper.ActivityPackageQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

@@ -1,14 +1,15 @@
 package com.team2.activity.query.controller;
 
 import com.team2.activity.common.PagedResponse;
-import com.team2.activity.dto.ActivityPackageResponse;
-import com.team2.activity.entity.ActivityPackage;
+import com.team2.activity.query.dto.ActivityPackageResponse;
+import com.team2.activity.command.domain.entity.ActivityPackage;
 import com.team2.activity.query.service.ActivityPackageQueryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import com.team2.activity.query.dto.ActivityPackageResponse;
 
 // 활동 패키지 읽기 API를 제공하는 query controller다.
 @RestController

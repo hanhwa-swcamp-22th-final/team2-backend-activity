@@ -1,6 +1,6 @@
 package com.team2.activity.query.mapper;
 
-import com.team2.activity.entity.ActivityPackage;
+import com.team2.activity.command.domain.entity.ActivityPackage;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
