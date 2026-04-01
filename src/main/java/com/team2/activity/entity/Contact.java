@@ -44,8 +44,9 @@ public class Contact {
     private LocalDateTime updatedAt;
 
     @Builder
-    private Contact(Long clientId, Long writerId, String contactName, String contactPosition,
+    private Contact(Long contactId, Long clientId, Long writerId, String contactName, String contactPosition,
                     String contactEmail, String contactTel) {
+        this.contactId = contactId;
         this.clientId = clientId;
         this.writerId = writerId;
         this.contactName = contactName;

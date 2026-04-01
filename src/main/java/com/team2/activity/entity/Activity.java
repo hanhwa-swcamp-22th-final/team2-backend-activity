@@ -63,9 +63,10 @@ public class Activity {
     private LocalDateTime updatedAt;
 
     @Builder
-    private Activity(Long clientId, String poId, Long activityAuthorId, LocalDate activityDate,
+    private Activity(Long activityId, Long clientId, String poId, Long activityAuthorId, LocalDate activityDate,
                      ActivityType activityType, String activityTitle, String activityContent,
                      Priority activityPriority, LocalDate activityScheduleFrom, LocalDate activityScheduleTo) {
+        this.activityId = activityId;
         this.clientId = clientId;
         this.poId = poId;
         this.activityAuthorId = activityAuthorId;

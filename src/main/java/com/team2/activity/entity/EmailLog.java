@@ -62,9 +62,10 @@ public class EmailLog {
     private List<EmailLogAttachment> attachments = new ArrayList<>();
 
     @Builder
-    private EmailLog(Long clientId, String poId, String emailTitle, String emailRecipientName,
+    private EmailLog(Long emailLogId, Long clientId, String poId, String emailTitle, String emailRecipientName,
                      String emailRecipientEmail, Long emailSenderId, MailStatus emailStatus,
                      LocalDateTime emailSentAt, List<EmailLogType> docTypes, List<EmailLogAttachment> attachments) {
+        this.emailLogId = emailLogId;
         this.clientId = clientId;
         this.poId = poId;
         this.emailTitle = emailTitle;

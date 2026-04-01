@@ -5,6 +5,9 @@ spring:
   application:
     name: team2-backend-activity
 
+  jackson:
+    property-naming-strategy: SNAKE_CASE
+
   datasource:
     url: ${DB_URL:jdbc:mariadb://localhost:3306/team2_activity}
     username: ${DB_USERNAME:root}

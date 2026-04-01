@@ -48,9 +48,10 @@ public class ActivityPackage {
     private List<ActivityPackageItem> items = new ArrayList<>();
 
     @Builder
-    private ActivityPackage(String packageTitle, String packageDescription, String poId,
+    private ActivityPackage(Long packageId, String packageTitle, String packageDescription, String poId,
                              Long creatorId, List<ActivityPackageViewer> viewers,
                              List<ActivityPackageItem> items) {
+        this.packageId = packageId;
         this.packageTitle = packageTitle;
         this.packageDescription = packageDescription;
         this.poId = poId;
