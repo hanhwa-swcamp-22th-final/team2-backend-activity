@@ -86,11 +86,11 @@ class ActivityCommandControllerTest {
     @Test
     @DisplayName("PUT /api/activities/{activity_id} → 200 OK")
     void updateActivity_returns200() throws Exception {
-        when(activityCommandService.updateActivity(eq(1L), any(), any(), any(), any(), any(), any(), any(), any(), any()))
-                .thenReturn(buildActivity());
+        when(activityCommandService.updateActivity(eq(1L), any(), any())).thenReturn(buildActivity());
 
         mockMvc.perform(put("/api/activities/1")
                         .with(csrf())
+                        .header("X-User-Id", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -111,11 +111,12 @@ class ActivityCommandControllerTest {
     @Test
     @DisplayName("PUT /api/activities/{activity_id} - 존재하지 않는 ID → 404 Not Found")
     void updateActivity_returns404WhenNotFound() throws Exception {
-        when(activityCommandService.updateActivity(eq(999L), any(), any(), any(), any(), any(), any(), any(), any(), any()))
+        when(activityCommandService.updateActivity(eq(999L), any(), any()))
                 .thenThrow(new IllegalArgumentException("활동을 찾을 수 없습니다."));
 
         mockMvc.perform(put("/api/activities/999")
                         .with(csrf())
+                        .header("X-User-Id", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {

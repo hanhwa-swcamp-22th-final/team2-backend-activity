@@ -1,14 +1,11 @@
 package com.team2.activity.command.service;
 
 import com.team2.activity.command.repository.ActivityRepository;
+import com.team2.activity.dto.ActivityUpdateRequest;
 import com.team2.activity.entity.Activity;
-import com.team2.activity.entity.enums.ActivityType;
-import com.team2.activity.entity.enums.Priority;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
 
 @Service
 @RequiredArgsConstructor
@@ -21,13 +18,11 @@ public class ActivityCommandService {
         return activityRepository.save(activity);
     }
 
-    public Activity updateActivity(Long activityId, ActivityType activityType, String activityTitle,
-                                   String activityContent, LocalDate activityDate, Long activityAuthorId,
-                                   String poId, Priority activityPriority,
-                                   LocalDate activityScheduleFrom, LocalDate activityScheduleTo) {
+    public Activity updateActivity(Long activityId, ActivityUpdateRequest request, Long authorId) {
         Activity activity = findById(activityId);
-        activity.update(activityType, activityTitle, activityContent, activityDate, activityAuthorId,
-                poId, activityPriority, activityScheduleFrom, activityScheduleTo);
+        activity.update(request.activityType(), request.activityTitle(), request.activityContent(),
+                request.activityDate(), authorId, request.poId(), request.activityPriority(),
+                request.activityScheduleFrom(), request.activityScheduleTo());
         return activity;
     }
 

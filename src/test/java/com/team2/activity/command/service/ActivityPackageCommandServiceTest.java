@@ -1,6 +1,7 @@
 package com.team2.activity.command.service;
 
 import com.team2.activity.command.repository.ActivityPackageRepository;
+import com.team2.activity.dto.ActivityPackageUpdateRequest;
 import com.team2.activity.entity.ActivityPackage;
 import com.team2.activity.entity.ActivityPackageItem;
 import com.team2.activity.entity.ActivityPackageViewer;
@@ -135,6 +136,27 @@ class ActivityPackageCommandServiceTest {
         assertThatThrownBy(() -> activityPackageCommandService.updateItems(999L, List.of(100L)))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("활동 패키지를 찾을 수 없습니다.");
+    }
+
+    @Test
+    @DisplayName("패키지 전체 수정 시 단일 조회로 필드, 열람자, 항목을 교체한다")
+    void updateAll_updatesPackageViewersAndItems() {
+        ActivityPackage activityPackage = buildPackage(List.of(1L, 2L), List.of(100L, 101L));
+        when(activityPackageRepository.findById(10L)).thenReturn(Optional.of(activityPackage));
+
+        ActivityPackageUpdateRequest request = new ActivityPackageUpdateRequest(
+                "월간 패키지", "월간 활동 묶음", "PO-2025-002", List.of(200L, 300L), List.of(30L, 40L));
+        ActivityPackage result = activityPackageCommandService.updateAll(10L, request);
+
+        assertThat(result).isSameAs(activityPackage);
+        assertThat(activityPackage.getPackageTitle()).isEqualTo("월간 패키지");
+        assertThat(activityPackage.getViewers())
+                .extracting(ActivityPackageViewer::getUserId)
+                .containsExactly(30L, 40L);
+        assertThat(activityPackage.getItems())
+                .extracting(ActivityPackageItem::getActivityId)
+                .containsExactly(200L, 300L);
+        verify(activityPackageRepository).findById(10L);
     }
 
     @Test

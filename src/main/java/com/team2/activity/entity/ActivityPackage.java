@@ -58,7 +58,6 @@ public class ActivityPackage {
         this.creatorId = creatorId;
         this.viewers = viewers != null ? new ArrayList<>(viewers) : new ArrayList<>();
         this.items = items != null ? new ArrayList<>(items) : new ArrayList<>();
-        this.createdAt = LocalDateTime.now(); // 단위 테스트(JPA 없는 환경)에서도 값이 있도록 설정
     }
 
     @PrePersist

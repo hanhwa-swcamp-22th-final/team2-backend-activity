@@ -21,32 +21,16 @@ public class ActivityCommandController {
     public ResponseEntity<Activity> createActivity(
             @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody ActivityCreateRequest request) {
-        Activity activity = Activity.builder()
-                .clientId(request.clientId())
-                .activityDate(request.activityDate())
-                .activityType(request.activityType())
-                .activityTitle(request.activityTitle())
-                .activityAuthorId(userId)
-                .build();
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(activityCommandService.createActivity(activity));
+                .body(activityCommandService.createActivity(request.toEntity(userId)));
     }
 
     @PutMapping("/{activityId}")
     public ResponseEntity<Activity> updateActivity(
             @PathVariable Long activityId,
+            @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody ActivityUpdateRequest request) {
-        Activity activity = activityCommandService.updateActivity(
-                activityId,
-                request.activityType(),
-                request.activityTitle(),
-                request.activityContent(),
-                request.activityDate(),
-                null,
-                request.poId(),
-                request.activityPriority(),
-                request.activityScheduleFrom(),
-                request.activityScheduleTo());
+        Activity activity = activityCommandService.updateActivity(activityId, request, userId);
         return ResponseEntity.ok(activity);
     }
 

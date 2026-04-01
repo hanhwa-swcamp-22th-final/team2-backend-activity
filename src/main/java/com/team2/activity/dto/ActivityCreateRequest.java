@@ -1,5 +1,6 @@
 package com.team2.activity.dto;
 
+import com.team2.activity.entity.Activity;
 import com.team2.activity.entity.enums.ActivityType;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -11,4 +12,14 @@ public record ActivityCreateRequest(
         @NotNull LocalDate activityDate,
         @NotNull ActivityType activityType,
         @NotBlank String activityTitle
-) {}
+) {
+    public Activity toEntity(Long userId) {
+        return Activity.builder()
+                .clientId(clientId)
+                .activityDate(activityDate)
+                .activityType(activityType)
+                .activityTitle(activityTitle)
+                .activityAuthorId(userId)
+                .build();
+    }
+}

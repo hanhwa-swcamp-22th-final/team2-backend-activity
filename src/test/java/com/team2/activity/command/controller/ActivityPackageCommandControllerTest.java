@@ -76,12 +76,7 @@ class ActivityPackageCommandControllerTest {
     @Test
     @DisplayName("PUT /api/activity-packages/{package_id} → 200 OK")
     void updatePackage_returns200() throws Exception {
-        when(activityPackageCommandService.updatePackage(eq(1L), any(), any(), any()))
-                .thenReturn(buildPackage());
-        when(activityPackageCommandService.updateViewers(eq(1L), any()))
-                .thenReturn(buildPackage());
-        when(activityPackageCommandService.updateItems(eq(1L), any()))
-                .thenReturn(buildPackage());
+        when(activityPackageCommandService.updateAll(eq(1L), any())).thenReturn(buildPackage());
 
         mockMvc.perform(put("/api/activity-packages/1")
                         .with(csrf())
@@ -100,7 +95,7 @@ class ActivityPackageCommandControllerTest {
     @Test
     @DisplayName("PUT /api/activity-packages/{package_id} - 존재하지 않는 ID → 404 Not Found")
     void updatePackage_returns404WhenNotFound() throws Exception {
-        when(activityPackageCommandService.updatePackage(eq(999L), any(), any(), any()))
+        when(activityPackageCommandService.updateAll(eq(999L), any()))
                 .thenThrow(new IllegalArgumentException("활동 패키지를 찾을 수 없습니다."));
 
         mockMvc.perform(put("/api/activity-packages/999")

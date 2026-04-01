@@ -1,6 +1,7 @@
 package com.team2.activity.command.service;
 
 import com.team2.activity.command.repository.ActivityPackageRepository;
+import com.team2.activity.dto.ActivityPackageUpdateRequest;
 import com.team2.activity.entity.ActivityPackage;
 import com.team2.activity.entity.ActivityPackageItem;
 import com.team2.activity.entity.ActivityPackageViewer;
@@ -39,6 +40,23 @@ public class ActivityPackageCommandService {
 
     public ActivityPackage updateItems(Long packageId, List<Long> activityIds) {
         ActivityPackage activityPackage = findById(packageId);
+        activityPackage.getItems().clear();
+        activityPackage.getItems().addAll(activityIds.stream()
+                .map(ActivityPackageItem::of)
+                .toList());
+        return activityPackage;
+    }
+
+    public ActivityPackage updateAll(Long packageId, ActivityPackageUpdateRequest request) {
+        ActivityPackage activityPackage = findById(packageId);
+        activityPackage.update(request.packageTitle(), request.packageDescription(), request.poId());
+        if (request.viewerIds() != null) {
+            activityPackage.getViewers().clear();
+            activityPackage.getViewers().addAll(request.viewerIds().stream()
+                    .map(ActivityPackageViewer::of)
+                    .toList());
+        }
+        List<Long> activityIds = request.activityIds() != null ? request.activityIds() : List.of();
         activityPackage.getItems().clear();
         activityPackage.getItems().addAll(activityIds.stream()
                 .map(ActivityPackageItem::of)

@@ -7,7 +7,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -134,23 +133,6 @@ class ActivityPackageTest {
         pkg.update("수정된 제목", null, null);
 
         assertThat(pkg.getCreatorId()).isEqualTo(1L);
-    }
-
-    @Test
-    @DisplayName("ActivityPackage 생성 시 createdAt 자동 설정")
-    void createActivityPackage_createdAtAutoSet() {
-        LocalDateTime before = LocalDateTime.now();
-
-        ActivityPackage pkg = ActivityPackage.builder()
-                .packageTitle("시각 테스트 패키지")
-                .creatorId(1L)
-                .build();
-
-        LocalDateTime after = LocalDateTime.now();
-
-        assertThat(pkg.getCreatedAt())
-                .isAfterOrEqualTo(before)
-                .isBeforeOrEqualTo(after);
     }
 
     @Test

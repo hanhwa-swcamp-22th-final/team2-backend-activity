@@ -1,6 +1,7 @@
 package com.team2.activity.command.service;
 
 import com.team2.activity.command.repository.ActivityRepository;
+import com.team2.activity.dto.ActivityUpdateRequest;
 import com.team2.activity.entity.Activity;
 import com.team2.activity.entity.enums.ActivityType;
 import com.team2.activity.entity.enums.Priority;
@@ -58,18 +59,17 @@ class ActivityCommandServiceTest {
         Activity activity = buildActivity();
         when(activityRepository.findById(1L)).thenReturn(Optional.of(activity));
 
-        Activity result = activityCommandService.updateActivity(
-                1L,
+        ActivityUpdateRequest request = new ActivityUpdateRequest(
+                LocalDate.of(2025, 4, 5),
                 ActivityType.ISSUE,
                 "긴급 이슈",
                 "우선 처리 필요",
-                LocalDate.of(2025, 4, 5),
-                99L,
                 "PO-2025-001",
                 Priority.HIGH,
                 LocalDate.of(2025, 4, 6),
                 LocalDate.of(2025, 4, 7)
         );
+        Activity result = activityCommandService.updateActivity(1L, request, 99L);
 
         assertThat(result).isSameAs(activity);
         assertThat(activity.getActivityType()).isEqualTo(ActivityType.ISSUE);
@@ -89,18 +89,9 @@ class ActivityCommandServiceTest {
     void updateActivity_throwsWhenActivityDoesNotExist() {
         when(activityRepository.findById(999L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> activityCommandService.updateActivity(
-                999L,
-                ActivityType.MEMO,
-                "제목",
-                "내용",
-                LocalDate.of(2025, 4, 1),
-                10L,
-                null,
-                null,
-                null,
-                null
-        ))
+        ActivityUpdateRequest request = new ActivityUpdateRequest(
+                LocalDate.of(2025, 4, 1), ActivityType.MEMO, "제목", "내용", null, null, null, null);
+        assertThatThrownBy(() -> activityCommandService.updateActivity(999L, request, 10L))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("활동을 찾을 수 없습니다.");
     }
