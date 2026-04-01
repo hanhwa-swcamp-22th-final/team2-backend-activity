@@ -20,35 +20,51 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+// EmailLog 쓰기 API의 생성과 재전송 응답을 검증한다.
 @WebMvcTest(EmailLogCommandController.class)
 @WithMockUser
 @DisplayName("EmailLogCommandController 테스트")
 class EmailLogCommandControllerTest {
 
+    // 컨트롤러 요청을 수행하는 MockMvc다.
     @Autowired
     private MockMvc mockMvc;
 
+    // 컨트롤러가 호출할 이메일 로그 command 서비스 목 객체다.
     @MockBean
     private EmailLogCommandService emailLogCommandService;
 
+    // 상태별 응답 검증에 사용할 공통 이메일 로그 픽스처다.
     private EmailLog buildEmailLog(MailStatus status) {
         return EmailLog.builder()
+                // 테스트용 이메일 로그 ID를 설정한다.
                 .emailLogId(1L)
+                // 테스트용 거래처 ID를 설정한다.
                 .clientId(1L)
+                // 테스트용 PO ID를 설정한다.
                 .poId("PO-001")
+                // 테스트용 이메일 제목을 설정한다.
                 .emailTitle("견적서 발송")
+                // 테스트용 수신자 이름을 설정한다.
                 .emailRecipientName("김고객")
+                // 테스트용 수신자 이메일을 설정한다.
                 .emailRecipientEmail("client@example.com")
+                // 테스트용 발송자 ID를 설정한다.
                 .emailSenderId(10L)
+                // 테스트용 메일 상태를 설정한다.
                 .emailStatus(status)
+                // 공통 EmailLog 픽스처 생성을 마무리한다.
                 .build();
     }
 
     @Test
     @DisplayName("POST /api/email-logs → 201 Created, email_log_id 포함")
     void createEmailLog_returns201() throws Exception {
+        // 생성 요청에 대한 서비스 반환값을 준비한다.
         when(emailLogCommandService.createEmailLog(any())).thenReturn(buildEmailLog(MailStatus.SENT));
 
+        // 유효한 생성 요청이 201 응답으로 처리되는지 확인한다.
+        // 응답 상태가 201 Created인지 확인한다.
         mockMvc.perform(post("/api/email-logs")
                         .with(csrf())
                         .header("X-User-Id", "10")
@@ -64,16 +80,22 @@ class EmailLogCommandControllerTest {
                                 }
                                 """))
                 .andExpect(status().isCreated())
+                // 응답 본문에 email_log_id가 포함되는지 확인한다.
                 .andExpect(jsonPath("$.email_log_id").exists())
+                // 응답 본문에 email_status가 SENT로 내려오는지 확인한다.
                 .andExpect(jsonPath("$.email_status").value("SENT"))
+                // 응답 본문에 email_sender_id가 포함되는지 확인한다.
                 .andExpect(jsonPath("$.email_sender_id").exists());
 
+        // 헤더의 사용자 ID가 senderId로 매핑됐는지 검증한다.
         verify(emailLogCommandService).createEmailLog(argThat(e -> Long.valueOf(10L).equals(e.getEmailSenderId())));
     }
 
     @Test
     @DisplayName("POST /api/email-logs - 필수 필드 누락 → 400 Bad Request")
     void createEmailLog_returns400WhenRequiredFieldMissing() throws Exception {
+        // 필수 필드 누락 요청이 검증 오류로 처리되는지 확인한다.
+        // 응답 상태가 400 Bad Request인지 확인한다.
         mockMvc.perform(post("/api/email-logs")
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -84,21 +106,28 @@ class EmailLogCommandControllerTest {
     @Test
     @DisplayName("POST /api/email-logs/{email_log_id}/resend - FAILED 상태 → 200 OK")
     void resendEmailLog_returns200WhenFailed() throws Exception {
+        // 재전송 성공 시 SENT 상태 응답을 반환하도록 설정한다.
         when(emailLogCommandService.resend(1L)).thenReturn(buildEmailLog(MailStatus.SENT));
 
+        // FAILED 상태 재전송 요청이 200 응답을 반환하는지 확인한다.
+        // 응답 상태가 200 OK인지 확인한다.
         mockMvc.perform(post("/api/email-logs/1/resend")
                         .with(csrf()))
                 .andExpect(status().isOk())
+                // 응답 본문에 email_log_id가 포함되는지 확인한다.
                 .andExpect(jsonPath("$.email_log_id").exists())
+                // 응답 본문에 email_status가 SENT로 내려오는지 확인한다.
                 .andExpect(jsonPath("$.email_status").value("SENT"));
     }
 
     @Test
     @DisplayName("POST /api/email-logs/{email_log_id}/resend - 이미 SENT 상태 → 409 Conflict")
     void resendEmailLog_returns409WhenAlreadySent() throws Exception {
+        // 이미 발송된 메일 재전송 요청은 상태 충돌 예외를 반환한다.
         when(emailLogCommandService.resend(1L))
                 .thenThrow(new IllegalStateException("이미 발송된 이메일입니다."));
 
+        // 응답 상태가 409 Conflict인지 확인한다.
         mockMvc.perform(post("/api/email-logs/1/resend")
                         .with(csrf()))
                 .andExpect(status().isConflict());
@@ -107,9 +136,11 @@ class EmailLogCommandControllerTest {
     @Test
     @DisplayName("POST /api/email-logs/{email_log_id}/resend - 존재하지 않는 ID → 404 Not Found")
     void resendEmailLog_returns404WhenNotFound() throws Exception {
+        // 존재하지 않는 메일 재전송 요청은 404 응답으로 변환돼야 한다.
         when(emailLogCommandService.resend(999L))
                 .thenThrow(new IllegalArgumentException("이메일 로그를 찾을 수 없습니다."));
 
+        // 응답 상태가 404 Not Found인지 확인한다.
         mockMvc.perform(post("/api/email-logs/999/resend")
                         .with(csrf()))
                 .andExpect(status().isNotFound());

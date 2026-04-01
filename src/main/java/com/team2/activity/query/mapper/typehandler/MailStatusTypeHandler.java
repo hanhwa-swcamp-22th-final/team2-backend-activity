@@ -16,27 +16,38 @@ import java.sql.SQLException;
 @MappedTypes(MailStatus.class)
 public class MailStatusTypeHandler extends BaseTypeHandler<MailStatus> {
 
+    // enum 값을 PreparedStatement에 문자열로 세팅한다.
     @Override
     public void setNonNullParameter(PreparedStatement ps, int i, MailStatus parameter, JdbcType jdbcType)
             throws SQLException {
+        // enum의 displayName을 JDBC 문자열 파라미터로 넣는다.
         ps.setString(i, parameter.getDisplayName());
     }
 
+    // 컬럼명 기준 조회 결과를 enum 값으로 변환한다.
     @Override
     public MailStatus getNullableResult(ResultSet rs, String columnName) throws SQLException {
+        // 지정한 컬럼명에서 원본 문자열 값을 읽는다.
         String value = rs.getString(columnName);
+        // 값이 있으면 enum으로 변환하고 없으면 null을 반환한다.
         return value == null ? null : MailStatus.from(value);
     }
 
+    // 컬럼 인덱스 기준 조회 결과를 enum 값으로 변환한다.
     @Override
     public MailStatus getNullableResult(ResultSet rs, int columnIndex) throws SQLException {
+        // 지정한 컬럼 인덱스에서 원본 문자열 값을 읽는다.
         String value = rs.getString(columnIndex);
+        // 값이 있으면 enum으로 변환하고 없으면 null을 반환한다.
         return value == null ? null : MailStatus.from(value);
     }
 
+    // 프로시저 호출 결과를 enum 값으로 변환한다.
     @Override
     public MailStatus getNullableResult(CallableStatement cs, int columnIndex) throws SQLException {
+        // 프로시저 결과의 지정 인덱스에서 원본 문자열 값을 읽는다.
         String value = cs.getString(columnIndex);
+        // 값이 있으면 enum으로 변환하고 없으면 null을 반환한다.
         return value == null ? null : MailStatus.from(value);
     }
 }

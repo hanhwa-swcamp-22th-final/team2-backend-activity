@@ -13,12 +13,14 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+// 조회 전용 EmailLog 엔티티의 컬렉션 필드와 기본 상태값을 검증한다.
 @DisplayName("Query EmailLog 엔티티 테스트")
 class EmailLogQueryEntityTest {
 
     @Test
     @DisplayName("조회용 EmailLog는 문서 유형과 첨부파일을 가진다")
     void createReadEmailLog_withCollections() {
+        // 문서 유형과 첨부파일을 포함한 이메일 로그를 생성한다.
         EmailLog emailLog = EmailLog.builder()
                 .clientId(1L)
                 .poId("PO-001")
@@ -32,6 +34,7 @@ class EmailLogQueryEntityTest {
                 .attachments(List.of(EmailLogAttachment.of("PI001.pdf"), EmailLogAttachment.of("CI001.pdf")))
                 .build();
 
+        // 조회 시 상태와 하위 컬렉션이 모두 유지되는지 확인한다.
         assertThat(emailLog.getEmailStatus()).isEqualTo(MailStatus.SENT);
         assertThat(emailLog.getDocTypes())
                 .extracting(EmailLogType::getEmailDocType)
@@ -44,6 +47,7 @@ class EmailLogQueryEntityTest {
     @Test
     @DisplayName("조회용 EmailLog는 상태 미지정 시 SENT 기본값을 가진다")
     void createReadEmailLog_defaultStatus() {
+        // 상태를 지정하지 않은 이메일 로그를 생성한다.
         EmailLog emailLog = EmailLog.builder()
                 .clientId(1L)
                 .emailTitle("기본 상태 메일")
@@ -51,6 +55,7 @@ class EmailLogQueryEntityTest {
                 .emailSenderId(10L)
                 .build();
 
+        // 기본 메일 상태가 SENT로 초기화되는지 확인한다.
         assertThat(emailLog.getEmailStatus()).isEqualTo(MailStatus.SENT);
     }
 }
