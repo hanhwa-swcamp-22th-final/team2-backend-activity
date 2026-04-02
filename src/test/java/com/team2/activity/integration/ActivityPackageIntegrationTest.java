@@ -1,5 +1,7 @@
 package com.team2.activity.integration;
 
+import com.team2.activity.command.infrastructure.client.PurchaseOrderResponse;
+import com.team2.activity.command.infrastructure.client.UserResponse;
 import com.team2.activity.command.domain.repository.ActivityPackageRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -7,12 +9,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.nio.charset.StandardCharsets;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -175,5 +182,122 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                 .andExpect(status().isNotFound())
                 // 응답 본문의 메시지가 정확한지 확인한다.
                 .andExpect(jsonPath("$.message").value("활동 패키지를 찾을 수 없습니다."));
+    }
+
+    @Test
+    @DisplayName("패키지 PDF 보고서 다운로드 시 application/pdf 응답을 반환한다")
+    void downloadPackageReport_returnsPdf() throws Exception {
+        // 문서 서비스가 PO 번호를 반환하도록 목 응답을 설정한다.
+        given(documentsFeignClient.getPurchaseOrder("PO-REPORT-001"))
+                .willReturn(new PurchaseOrderResponse("PO-REPORT-001", "PO12345", "APPROVED"));
+        // 패키지 작성자 이름 조회용 목 응답을 설정한다.
+        given(authFeignClient.getUser(7L))
+                .willReturn(new UserResponse(7L, "패키지 작성자", "package@example.com"));
+        // 활동 작성자 이름 조회용 목 응답을 설정한다.
+        given(authFeignClient.getUser(10L))
+                .willReturn(new UserResponse(10L, "활동 작성자", "activity@example.com"));
+
+        // 패키지에 포함할 첫 번째 활동을 생성한다.
+        MvcResult meetingResult = mockMvc.perform(post("/api/activities")
+                        .with(csrf())
+                        .header("X-User-Id", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "client_id": 1,
+                                  "activity_date": "2025-04-01",
+                                  "activity_type": "MEETING",
+                                  "activity_title": "보고용 미팅"
+                                }
+                                """))
+                // 활동 생성이 성공하는지 확인한다.
+                .andExpect(status().isCreated())
+                // 응답 본문에 activity_id가 포함되는지 확인한다.
+                .andExpect(jsonPath("$.activity_id").exists())
+                .andReturn();
+        // 첫 번째 활동 ID를 응답에서 추출한다.
+        long meetingActivityId = extractLong(meetingResult, "activity_id");
+
+        // 패키지에 포함할 두 번째 활동을 일정 유형으로 생성한다.
+        MvcResult scheduleResult = mockMvc.perform(post("/api/activities")
+                        .with(csrf())
+                        .header("X-User-Id", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "client_id": 1,
+                                  "activity_date": "2025-04-02",
+                                  "activity_type": "SCHEDULE",
+                                  "activity_title": "보고용 일정"
+                                }
+                                """))
+                // 활동 생성이 성공하는지 확인한다.
+                .andExpect(status().isCreated())
+                // 응답 본문에 activity_id가 포함되는지 확인한다.
+                .andExpect(jsonPath("$.activity_id").exists())
+                .andReturn();
+        // 두 번째 활동 ID를 응답에서 추출한다.
+        long scheduleActivityId = extractLong(scheduleResult, "activity_id");
+
+        // 일정 활동에 시작일과 종료일을 채워 보고서 표시 데이터를 완성한다.
+        mockMvc.perform(put("/api/activities/{activityId}", scheduleActivityId)
+                        .with(csrf())
+                        .header("X-User-Id", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "activity_date": "2025-04-02",
+                                  "activity_type": "SCHEDULE",
+                                  "activity_title": "보고용 일정",
+                                  "activity_content": "PDF 일정 테스트",
+                                  "po_id": "PO-REPORT-001",
+                                  "activity_priority": null,
+                                  "activity_schedule_from": "2025-04-10",
+                                  "activity_schedule_to": "2025-04-11"
+                                }
+                                """))
+                // 일정 업데이트가 성공하는지 확인한다.
+                .andExpect(status().isOk());
+
+        // PDF 대상으로 사용할 패키지를 생성한다.
+        MvcResult packageResult = mockMvc.perform(post("/api/activity-packages")
+                        .with(csrf())
+                        .header("X-User-Id", "7")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "package_title": "PDF 보고서 패키지",
+                                  "package_description": "보고서 다운로드 테스트",
+                                  "po_id": "PO-REPORT-001",
+                                  "activity_ids": [%d, %d],
+                                  "viewer_ids": [2, 3]
+                                }
+                                """.formatted(meetingActivityId, scheduleActivityId)))
+                // 패키지 생성이 성공하는지 확인한다.
+                .andExpect(status().isCreated())
+                // 응답 본문에 package_id가 포함되는지 확인한다.
+                .andExpect(jsonPath("$.package_id").exists())
+                .andReturn();
+        // PDF 다운로드에 사용할 package_id를 응답에서 추출한다.
+        long packageId = extractLong(packageResult, "package_id");
+
+        // 생성한 패키지에 대한 PDF 다운로드 요청을 수행한다.
+        MvcResult reportResult = mockMvc.perform(get("/api/activity-packages/{packageId}/report", packageId))
+                // 응답 상태가 200 OK인지 확인한다.
+                .andExpect(status().isOk())
+                // 응답 MIME 타입이 application/pdf인지 확인한다.
+                .andExpect(content().contentType(MediaType.APPLICATION_PDF))
+                // 다운로드용 attachment 헤더가 포함되는지 확인한다.
+                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("attachment")))
+                .andReturn();
+
+        // 응답 본문의 PDF 바이트 배열을 꺼낸다.
+        byte[] pdfBytes = reportResult.getResponse().getContentAsByteArray();
+        // PDF 바이트 배열이 비어 있지 않은지 확인한다.
+        assertThat(pdfBytes).isNotEmpty();
+        // PDF 시그니처 검증을 위해 앞 5바이트를 ASCII 문자열로 변환한다.
+        String pdfSignature = new String(pdfBytes, 0, 5, StandardCharsets.US_ASCII);
+        // 생성된 응답이 실제 PDF 파일 시그니처를 가지는지 확인한다.
+        assertThat(pdfSignature).isEqualTo("%PDF-");
     }
 }

@@ -56,6 +56,10 @@ master:
   service:
     url: ${MASTER_SERVICE_URL:http://localhost:8082}
 
+report:
+  pdf:
+    font-path: ${REPORT_PDF_FONT_PATH:}
+
 management:
   endpoints:
     web:

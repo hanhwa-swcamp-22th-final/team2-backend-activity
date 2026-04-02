@@ -2,6 +2,9 @@ package com.team2.activity.integration;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.team2.activity.command.infrastructure.client.AuthFeignClient;
+import com.team2.activity.command.infrastructure.client.DocumentsFeignClient;
+import com.team2.activity.command.infrastructure.client.MasterFeignClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,6 +31,18 @@ public abstract class IntegrationTestSupport {
     // SMTP 연결 없이 메일 발송 로직을 시뮬레이션할 목 빈을 등록한다.
     @MockBean
     protected JavaMailSender mailSender;
+
+    // 외부 문서 서비스 호출 없이 발주 정보 조회를 시뮬레이션할 목 빈을 등록한다.
+    @MockBean
+    protected DocumentsFeignClient documentsFeignClient;
+
+    // 외부 인증 서비스 호출 없이 사용자 조회를 시뮬레이션할 목 빈을 등록한다.
+    @MockBean
+    protected AuthFeignClient authFeignClient;
+
+    // 외부 마스터 서비스 호출 없이 거래처 조회를 시뮬레이션할 목 빈을 등록한다.
+    @MockBean
+    protected MasterFeignClient masterFeignClient;
 
     // 실제 HTTP 요청처럼 API를 호출하는 MockMvc를 자동 주입한다.
     @Autowired

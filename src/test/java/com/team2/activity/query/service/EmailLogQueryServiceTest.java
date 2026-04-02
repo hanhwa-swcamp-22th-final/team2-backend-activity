@@ -2,6 +2,7 @@ package com.team2.activity.query.service;
 
 import com.team2.activity.command.domain.entity.EmailLog;
 import com.team2.activity.command.domain.entity.enums.MailStatus;
+import com.team2.activity.query.dto.EmailLogResponse;
 import com.team2.activity.query.mapper.EmailLogQueryMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -33,6 +34,8 @@ class EmailLogQueryServiceTest {
     // 이메일 로그 조회 테스트에 사용할 공통 픽스처를 만든다.
     private EmailLog buildEmailLog(Long clientId, MailStatus mailStatus) {
         return EmailLog.builder()
+                // 테스트용 이메일 로그 ID를 설정한다.
+                .emailLogId(1L)
                 // 테스트용 거래처 ID를 설정한다.
                 .clientId(clientId)
                 // 테스트용 PO ID를 설정한다.
@@ -59,11 +62,17 @@ class EmailLogQueryServiceTest {
         // mapper findById 호출 시 같은 엔티티를 반환하도록 설정한다.
         when(emailLogQueryMapper.findById(1L)).thenReturn(emailLog);
 
-        // 서비스가 mapper 결과를 그대로 반환하는지 확인한다.
-        EmailLog result = emailLogQueryService.getEmailLog(1L);
+        // 서비스가 mapper 결과를 응답 DTO로 변환해 반환하는지 확인한다.
+        EmailLogResponse result = emailLogQueryService.getEmailLog(1L);
 
-        // 반환 결과가 mapper가 돌려준 엔티티와 같은 객체인지 확인한다.
-        assertThat(result).isSameAs(emailLog);
+        // 반환 DTO의 이메일 로그 ID가 mapper 결과와 같은지 확인한다.
+        assertThat(result.emailLogId()).isEqualTo(emailLog.getEmailLogId());
+        // 반환 DTO의 거래처 ID가 mapper 결과와 같은지 확인한다.
+        assertThat(result.clientId()).isEqualTo(emailLog.getClientId());
+        // 반환 DTO의 PO ID가 mapper 결과와 같은지 확인한다.
+        assertThat(result.poId()).isEqualTo(emailLog.getPoId());
+        // 반환 DTO의 메일 상태가 mapper 결과와 같은지 확인한다.
+        assertThat(result.emailStatus()).isEqualTo(emailLog.getEmailStatus());
         // findById가 정확히 한 번 호출됐는지 검증한다.
         verify(emailLogQueryMapper).findById(1L);
     }

@@ -2,6 +2,7 @@ package com.team2.activity.query.controller;
 
 import com.team2.activity.command.domain.entity.EmailLog;
 import com.team2.activity.command.domain.entity.enums.MailStatus;
+import com.team2.activity.query.dto.EmailLogResponse;
 import com.team2.activity.query.service.EmailLogQueryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -52,6 +53,12 @@ class EmailLogQueryControllerTest {
                 .emailStatus(MailStatus.SENT)
                 // 공통 EmailLog 픽스처 생성을 마무리한다.
                 .build();
+    }
+
+    // 상세 조회 응답 검증에 사용할 EmailLogResponse 픽스처를 만든다.
+    private EmailLogResponse buildEmailLogResponse() {
+        // 공통 EmailLog 엔티티 픽스처를 DTO로 변환해 반환한다.
+        return EmailLogResponse.from(buildEmailLog(), "발송자");
     }
 
     @Test
@@ -106,7 +113,7 @@ class EmailLogQueryControllerTest {
     @DisplayName("GET /api/email-logs/{email_log_id} → 200 OK, 상세 필드 포함")
     void getEmailLog_returns200WithDetail() throws Exception {
         // 단건 이메일 로그 조회 결과를 준비한다.
-        when(emailLogQueryService.getEmailLog(1L)).thenReturn(buildEmailLog());
+        when(emailLogQueryService.getEmailLog(1L)).thenReturn(buildEmailLogResponse());
 
         // 상세 응답에 문서 유형과 첨부파일 배열이 포함되는지 확인한다.
         // 응답 상태가 200 OK인지 확인한다.

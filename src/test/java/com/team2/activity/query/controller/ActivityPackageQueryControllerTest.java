@@ -1,6 +1,7 @@
 package com.team2.activity.query.controller;
 
 import com.team2.activity.command.domain.entity.ActivityPackage;
+import com.team2.activity.query.service.ActivityPackagePdfReportService;
 import com.team2.activity.query.service.ActivityPackageQueryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,10 @@ class ActivityPackageQueryControllerTest {
     // 컨트롤러가 호출할 패키지 조회 서비스 목 객체다.
     @MockBean
     private ActivityPackageQueryService activityPackageQueryService;
+
+    // 컨트롤러가 호출할 PDF 보고서 생성 서비스 목 객체다.
+    @MockBean
+    private ActivityPackagePdfReportService activityPackagePdfReportService;
 
     // 응답 검증에 사용할 공통 ActivityPackage 픽스처를 만든다.
     private ActivityPackage buildPackage() {
@@ -107,5 +112,25 @@ class ActivityPackageQueryControllerTest {
         // 응답 상태가 404 Not Found인지 확인한다.
         mockMvc.perform(get("/api/activity-packages/999"))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("GET /api/activity-packages/{package_id}/report → 200 OK, PDF 다운로드 응답")
+    void downloadPackageReport_returnsPdfAttachment() throws Exception {
+        // PDF 다운로드 응답 본문으로 사용할 바이트 배열을 준비한다.
+        byte[] pdfBytes = "%PDF-1.7".getBytes();
+        // 컨트롤러가 PDF 생성 서비스 결과를 그대로 사용하도록 설정한다.
+        when(activityPackagePdfReportService.generatePackageReport(1L)).thenReturn(pdfBytes);
+
+        // PDF 다운로드 요청이 정상 응답과 첨부파일 헤더를 반환하는지 확인한다.
+        mockMvc.perform(get("/api/activity-packages/1/report"))
+                // 응답 상태가 200 OK인지 확인한다.
+                .andExpect(status().isOk())
+                // 응답 MIME 타입이 application/pdf인지 확인한다.
+                .andExpect(content().contentType("application/pdf"))
+                // Content-Disposition이 attachment 형태인지 확인한다.
+                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("attachment")))
+                // 응답 본문이 PDF 바이트 배열과 같은지 확인한다.
+                .andExpect(content().bytes(pdfBytes));
     }
 }

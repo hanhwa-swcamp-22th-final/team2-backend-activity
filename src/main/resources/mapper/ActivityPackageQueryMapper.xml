@@ -31,12 +31,14 @@
         SELECT package_viewer_id, user_id
         FROM activity_package_viewers
         WHERE package_id = #{packageId}
+        ORDER BY package_viewer_id ASC
     </select>
 
     <select id="selectItemsByPackageId" resultMap="itemResultMap">
         SELECT package_item_id, activity_id
         FROM activity_package_items
         WHERE package_id = #{packageId}
+        ORDER BY package_item_id ASC
     </select>
 
     <select id="findById" resultMap="activityPackageResultMap">

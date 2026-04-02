@@ -2,6 +2,7 @@ package com.team2.activity.query.service;
 
 import com.team2.activity.command.domain.entity.Activity;
 import com.team2.activity.command.domain.entity.enums.ActivityType;
+import com.team2.activity.query.dto.ActivityResponse;
 import com.team2.activity.query.mapper.ActivityQueryMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,8 @@ class ActivityQueryServiceTest {
     // 활동 조회 테스트에서 재사용할 공통 Activity 픽스처를 만든다.
     private Activity buildActivity(Long clientId, ActivityType activityType, String title) {
         return Activity.builder()
+                // 테스트용 활동 ID를 설정한다.
+                .activityId(1L)
                 // 테스트용 거래처 ID를 설정한다.
                 .clientId(clientId)
                 // 테스트용 작성자 ID를 설정한다.
@@ -56,11 +59,17 @@ class ActivityQueryServiceTest {
         // mapper findById 호출 시 같은 엔티티를 반환하도록 설정한다.
         when(activityQueryMapper.findById(1L)).thenReturn(activity);
 
-        // 서비스가 mapper 결과를 그대로 반환하는지 확인한다.
-        Activity result = activityQueryService.getActivity(1L);
+        // 서비스가 mapper 결과를 응답 DTO로 변환해 반환하는지 확인한다.
+        ActivityResponse result = activityQueryService.getActivity(1L);
 
-        // 반환 결과가 mapper가 돌려준 엔티티와 같은 객체인지 확인한다.
-        assertThat(result).isSameAs(activity);
+        // 반환 DTO의 활동 ID가 mapper 결과와 같은지 확인한다.
+        assertThat(result.activityId()).isEqualTo(activity.getActivityId());
+        // 반환 DTO의 거래처 ID가 mapper 결과와 같은지 확인한다.
+        assertThat(result.clientId()).isEqualTo(activity.getClientId());
+        // 반환 DTO의 활동 타입이 mapper 결과와 같은지 확인한다.
+        assertThat(result.activityType()).isEqualTo(activity.getActivityType());
+        // 반환 DTO의 활동 제목이 mapper 결과와 같은지 확인한다.
+        assertThat(result.activityTitle()).isEqualTo(activity.getActivityTitle());
         // findById가 정확히 한 번 호출됐는지 검증한다.
         verify(activityQueryMapper).findById(1L);
     }

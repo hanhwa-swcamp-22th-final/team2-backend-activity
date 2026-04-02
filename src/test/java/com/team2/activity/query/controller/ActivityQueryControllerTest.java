@@ -2,6 +2,7 @@ package com.team2.activity.query.controller;
 
 import com.team2.activity.command.domain.entity.Activity;
 import com.team2.activity.command.domain.entity.enums.ActivityType;
+import com.team2.activity.query.dto.ActivityResponse;
 import com.team2.activity.query.service.ActivityQueryService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -54,6 +55,12 @@ class ActivityQueryControllerTest {
                 .build();
     }
 
+    // 상세 조회 응답 검증에 사용할 ActivityResponse 픽스처를 만든다.
+    private ActivityResponse buildActivityResponse() {
+        // 공통 Activity 엔티티 픽스처를 DTO로 변환해 반환한다.
+        return ActivityResponse.from(buildActivity(), "홍길동", "고객사");
+    }
+
     @Test
     @DisplayName("GET /api/activities → 200 OK, 페이징 응답 구조 포함")
     void getActivities_returns200WithPagedResult() throws Exception {
@@ -92,7 +99,7 @@ class ActivityQueryControllerTest {
     @DisplayName("GET /api/activities/{activity_id} → 200 OK, 상세 필드 포함")
     void getActivity_returns200WithDetail() throws Exception {
         // 단건 조회 결과를 서비스 목 객체에 등록한다.
-        when(activityQueryService.getActivity(1L)).thenReturn(buildActivity());
+        when(activityQueryService.getActivity(1L)).thenReturn(buildActivityResponse());
 
         // 상세 조회 응답에 핵심 필드가 포함되는지 확인한다.
         // 응답 상태가 200 OK인지 확인한다.
