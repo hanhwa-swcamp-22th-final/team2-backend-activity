@@ -46,6 +46,16 @@ documents:
   service:
     url: ${DOCUMENTS_SERVICE_URL:http://localhost:8084}
 
+# 인증 서비스 URL (사용자 이름 조회에 사용한다)
+auth:
+  service:
+    url: ${AUTH_SERVICE_URL:http://localhost:8081}
+
+# 거래처 마스터 서비스 URL (거래처명 조회에 사용한다)
+master:
+  service:
+    url: ${MASTER_SERVICE_URL:http://localhost:8082}
+
 management:
   endpoints:
     web:

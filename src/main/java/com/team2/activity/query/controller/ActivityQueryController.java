@@ -37,7 +37,7 @@ public class ActivityQueryController {
     // 활동 ID로 단건 상세를 조회한다.
     @GetMapping("/{activityId}")
     public ResponseEntity<ActivityResponse> getActivity(@PathVariable Long activityId) {
-        // 서비스에서 조회한 엔티티를 DTO로 변환해 200 OK로 반환한다.
-        return ResponseEntity.ok(ActivityResponse.from(activityQueryService.getActivity(activityId)));
+        // 서비스가 외부 서비스 enrichment까지 완료한 DTO를 반환하므로 그대로 응답한다.
+        return ResponseEntity.ok(activityQueryService.getActivity(activityId));
     }
 }

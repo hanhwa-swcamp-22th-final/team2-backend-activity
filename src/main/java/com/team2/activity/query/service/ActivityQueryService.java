@@ -2,6 +2,11 @@ package com.team2.activity.query.service;
 
 import com.team2.activity.command.domain.entity.Activity;
 import com.team2.activity.command.domain.entity.enums.ActivityType;
+import com.team2.activity.command.infrastructure.client.AuthFeignClient;
+import com.team2.activity.command.infrastructure.client.ClientResponse;
+import com.team2.activity.command.infrastructure.client.MasterFeignClient;
+import com.team2.activity.command.infrastructure.client.UserResponse;
+import com.team2.activity.query.dto.ActivityResponse;
 import com.team2.activity.query.mapper.ActivityQueryMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,17 +25,55 @@ public class ActivityQueryService {
 
     // 활동 조회용 MyBatis mapper다.
     private final ActivityQueryMapper activityQueryMapper;
+    // 작성자 이름 조회를 위한 인증 서비스 Feign 클라이언트다.
+    private final AuthFeignClient authFeignClient;
+    // 거래처명 조회를 위한 마스터 서비스 Feign 클라이언트다.
+    private final MasterFeignClient masterFeignClient;
 
-    // 활동 ID로 단건을 조회하고 없으면 예외를 던진다.
-    public Activity getActivity(Long activityId) {
+    // 활동 ID로 단건을 조회하고 작성자·거래처 이름을 enrichment해서 반환한다.
+    public ActivityResponse getActivity(Long activityId) {
         // mapper를 호출해 activityId에 해당하는 활동을 조회한다.
         Activity activity = activityQueryMapper.findById(activityId);
         // 조회 결과가 없으면 단건 조회 실패 예외를 던진다.
         if (activity == null) {
             throw new IllegalArgumentException("활동을 찾을 수 없습니다.");
         }
-        // 조회된 활동 엔티티를 그대로 반환한다.
-        return activity;
+        // 인증 서비스에서 작성자 이름을 조회한다 (서비스 오류 시 null을 반환한다).
+        String authorName = fetchUserName(activity.getActivityAuthorId());
+        // 마스터 서비스에서 거래처명을 조회한다 (서비스 오류 시 null을 반환한다).
+        String clientName = fetchClientName(activity.getClientId());
+        // 엔티티와 외부 서비스 데이터를 합쳐 응답 DTO를 생성한다.
+        return ActivityResponse.from(activity, authorName, clientName);
+    }
+
+    // 인증 서비스에서 사용자 이름을 안전하게 조회한다.
+    private String fetchUserName(Long userId) {
+        // userId가 없으면 조회하지 않는다.
+        if (userId == null) return null;
+        try {
+            // 인증 서비스에 사용자 정보를 요청한다.
+            UserResponse user = authFeignClient.getUser(userId);
+            // 응답이 있으면 이름을 반환하고, 없으면 null을 반환한다.
+            return user != null ? user.getName() : null;
+        } catch (Exception e) {
+            // 인증 서비스가 응답하지 않아도 조회 전체가 실패하지 않도록 null을 반환한다.
+            return null;
+        }
+    }
+
+    // 마스터 서비스에서 거래처명을 안전하게 조회한다.
+    private String fetchClientName(Long clientId) {
+        // clientId가 없으면 조회하지 않는다.
+        if (clientId == null) return null;
+        try {
+            // 마스터 서비스에 거래처 정보를 요청한다.
+            ClientResponse client = masterFeignClient.getClient(clientId);
+            // 응답이 있으면 이름을 반환하고, 없으면 null을 반환한다.
+            return client != null ? client.getName() : null;
+        } catch (Exception e) {
+            // 마스터 서비스가 응답하지 않아도 조회 전체가 실패하지 않도록 null을 반환한다.
+            return null;
+        }
     }
 
     // 전체 활동 목록을 조회한다.

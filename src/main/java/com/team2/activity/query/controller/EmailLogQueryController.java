@@ -44,7 +44,7 @@ public class EmailLogQueryController {
     // 이메일 로그 ID로 단건 상세를 조회한다.
     @GetMapping("/{emailLogId}")
     public ResponseEntity<EmailLogResponse> getEmailLog(@PathVariable Long emailLogId) {
-        // 서비스에서 조회한 엔티티를 DTO로 변환해 200 OK로 반환한다.
-        return ResponseEntity.ok(EmailLogResponse.from(emailLogQueryService.getEmailLog(emailLogId)));
+        // 서비스가 외부 서비스 enrichment까지 완료한 DTO를 반환하므로 그대로 응답한다.
+        return ResponseEntity.ok(emailLogQueryService.getEmailLog(emailLogId));
     }
 }
