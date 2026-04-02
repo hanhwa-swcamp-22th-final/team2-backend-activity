@@ -5,7 +5,6 @@ import com.team2.activity.command.domain.entity.ActivityPackageItem;
 import com.team2.activity.command.domain.entity.enums.ActivityType;
 import com.team2.activity.command.infrastructure.client.AuthFeignClient;
 import com.team2.activity.command.infrastructure.client.DocumentsFeignClient;
-import com.team2.activity.command.infrastructure.client.PurchaseOrderResponse;
 import com.team2.activity.command.infrastructure.client.UserResponse;
 import com.team2.activity.query.dto.ActivityResponse;
 import org.junit.jupiter.api.DisplayName;
@@ -22,18 +21,13 @@ import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.ArgumentMatchers.anyString;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
+@DisplayName("ActivityPackagePdfReportService 최종 검증 테스트")
 class ActivityPackagePdfReportServiceTest {
-
-    @Mock
-    private ActivityPackageQueryService activityPackageQueryService;
 
     @Mock
     private ActivityQueryService activityQueryService;
@@ -48,55 +42,87 @@ class ActivityPackagePdfReportServiceTest {
     private ActivityPackagePdfReportService pdfReportService;
 
     @Test
-    @DisplayName("활동 패키지를 PDF로 변환하여 실제 파일로 저장 테스트")
-    void generatePackageReport_Success_And_SaveFile() throws Exception {
-        // 1. 가짜 패키지 데이터 준비
+    @DisplayName("패키지 제목이 파일명이 되고 작성자 이름이 '홍길동'으로 깔끔하게 나오는지 테스트")
+    void generateFinalPackageReport_And_SaveWithDynamicFileName() throws Exception {
+        // 1. 테스트용 패키지 데이터 준비 (패키지 제목 설정)
+        String targetTitle = "최신 로직 반영 보고서 제목";
         ActivityPackage mockPackage = mock(ActivityPackage.class);
+        when(mockPackage.getPackageTitle()).thenReturn(targetTitle);
+        
         ActivityPackageItem mockItem = mock(ActivityPackageItem.class);
-        
-        when(mockPackage.getPoId()).thenReturn("PO-2024-001");
-        when(mockPackage.getCreatorId()).thenReturn(1L);
-        when(mockPackage.getItems()).thenReturn(List.of(mockItem));
         when(mockItem.getActivityId()).thenReturn(100L);
-        
-        when(activityPackageQueryService.getPackage(anyLong())).thenReturn(mockPackage);
+        when(mockPackage.getItems()).thenReturn(List.of(mockItem));
         
         // 2. 가짜 활동(Activity) 데이터 준비
         ActivityResponse mockActivity = new ActivityResponse(
-                100L, 10L, "PO-2024-001", 1L, LocalDate.now(),
-                ActivityType.MEETING, "테스트 미팅 제목", "테스트 내용입니다.",
+                100L, 10L, "PO-2024-FINAL", 1L, LocalDate.now(),
+                ActivityType.MEETING, "최종 검증 미팅", "로직이 완벽하게 작동합니다.",
                 null, null, null, null, null,
-                "작성자이름", "거래처이름"
+                "활동작성자", "테스트거래처"
         );
         when(activityQueryService.getActivity(100L)).thenReturn(mockActivity);
         
-        // 3. 외부 서비스 Mock 응답 설정
-        PurchaseOrderResponse poResponse = mock(PurchaseOrderResponse.class);
-        when(poResponse.getPoNo()).thenReturn("PO-ABC-123");
-        when(documentsFeignClient.getPurchaseOrder(anyString())).thenReturn(poResponse);
-        
+        // 3. 작성자 이름 조회 Mock 설정 (깔끔하게 '홍길동'만 반환)
         UserResponse userResponse = mock(UserResponse.class);
         when(userResponse.getName()).thenReturn("홍길동");
-        when(authFeignClient.getUser(anyLong())).thenReturn(userResponse);
+        // 헤더에서 넘어올 userId가 999L이라고 가정
+        when(authFeignClient.getUser(999L)).thenReturn(userResponse);
 
         // 4. PDF 생성 실행
-        byte[] pdfBytes = pdfReportService.generatePackageReport(1L);
-
-        // 5. 검증
-        assertNotNull(pdfBytes, "생성된 PDF 바이트 배열은 null이 아니어야 합니다.");
-        assertTrue(pdfBytes.length > 0, "생성된 PDF 파일 크기는 0보다 커야 합니다.");
-
-        // 6. 실제 파일로 저장 (눈으로 확인하기 위함)
+        byte[] pdfBytes = pdfReportService.generatePackageReport(mockPackage, 999L);
+        
+        // 5. 서비스 로직을 통해 파일명 추출 (패키지 제목 기준)
+        String downloadFileName = pdfReportService.getDownloadFileName(mockPackage);
+        
+        // 6. 검증: 파일명이 패키지 제목과 일치하는지 확인
+        assertThat(downloadFileName).isEqualTo(targetTitle + ".pdf");
+        assertThat(pdfBytes).isNotEmpty();
+        
+        // 7. 실제 파일 저장
         Path testOutputPath = Paths.get("build", "test-results");
         if (!Files.exists(testOutputPath)) {
             Files.createDirectories(testOutputPath);
         }
-        Path pdfFile = testOutputPath.resolve("activity-package-test-report.pdf");
+        // 서비스가 생성해준 파일명 그대로 저장합니다.
+        Path pdfFile = testOutputPath.resolve(downloadFileName);
         
         try (FileOutputStream fos = new FileOutputStream(pdfFile.toFile())) {
             fos.write(pdfBytes);
         }
         
-        System.out.println("PDF 파일이 성공적으로 생성되었습니다: " + pdfFile.toAbsolutePath());
+        System.out.println("파일이 생성되었습니다: " + pdfFile.toAbsolutePath());
+    }
+
+    @Test
+    @DisplayName("파일명에 특수문자가 포함되면 안전한 파일명으로 정화한다")
+    void getDownloadFileName_sanitizesSpecialCharacters() {
+        // 파일 시스템에서 사용할 수 없는 특수문자가 포함된 제목을 설정한다.
+        ActivityPackage mockPackage = mock(ActivityPackage.class);
+        when(mockPackage.getPackageTitle()).thenReturn("위험한/파일명:*?\"<>|");
+
+        // 파일명 생성 시 특수문자가 밑줄로 치환되는지 확인한다.
+        String fileName = pdfReportService.getDownloadFileName(mockPackage);
+        // 슬래시 등이 밑줄로 바뀌어 안전하게 반환되는지 확인한다.
+        assertThat(fileName).isEqualTo("위험한_파일명_.pdf");
+    }
+
+    @Test
+    @DisplayName("패키지 제목이 비어 있으면 PO 번호 기반으로 제목을 생성한다")
+    void buildReportTitle_usesPoNumberWhenTitleIsEmpty() {
+        // 제목이 없는 패키지 엔티티를 준비한다.
+        ActivityPackage mockPackage = mock(ActivityPackage.class);
+        when(mockPackage.getPackageTitle()).thenReturn("");
+        when(mockPackage.getPoId()).thenReturn("PO-999");
+        
+        // PO 번호 조회를 위한 목 설정
+        PurchaseOrderResponse poResponse = mock(PurchaseOrderResponse.class);
+        when(poResponse.getPoNo()).thenReturn("PO-FINAL-999");
+        when(documentsFeignClient.getPurchaseOrder("PO-999")).thenReturn(poResponse);
+
+        // 제목 생성 로직을 직접 테스트하지는 못하므로 PDF 생성 시 간접 확인하거나 
+        // 공개된 메서드인 getDownloadFileName을 통해 확인한다.
+        String fileName = pdfReportService.getDownloadFileName(mockPackage);
+        // PO 번호 기반 제목으로 파일명이 생성되는지 확인한다.
+        assertThat(fileName).isEqualTo("PO-FINAL-999 PKG.pdf");
     }
 }

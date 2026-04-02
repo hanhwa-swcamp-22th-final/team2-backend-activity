@@ -6,6 +6,7 @@ import com.team2.activity.command.domain.repository.ActivityPackageRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
@@ -293,8 +294,14 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
 
         // 응답 본문의 PDF 바이트 배열을 꺼낸다.
         byte[] pdfBytes = reportResult.getResponse().getContentAsByteArray();
+        // 다운로드 파일명 검증을 위해 Content-Disposition 헤더를 읽는다.
+        String contentDisposition = reportResult.getResponse().getHeader("Content-Disposition");
+        // 다운로드 헤더를 파싱 가능한 ContentDisposition 객체로 변환한다.
+        ContentDisposition parsedContentDisposition = ContentDisposition.parse(contentDisposition);
         // PDF 바이트 배열이 비어 있지 않은지 확인한다.
         assertThat(pdfBytes).isNotEmpty();
+        // 다운로드 파일명이 패키지 제목 기반으로 생성됐는지 확인한다.
+        assertThat(parsedContentDisposition.getFilename()).isEqualTo("PDF 보고서 패키지.pdf");
         // PDF 시그니처 검증을 위해 앞 5바이트를 ASCII 문자열로 변환한다.
         String pdfSignature = new String(pdfBytes, 0, 5, StandardCharsets.US_ASCII);
         // 생성된 응답이 실제 PDF 파일 시그니처를 가지는지 확인한다.

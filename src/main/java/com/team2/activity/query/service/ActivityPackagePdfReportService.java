@@ -54,8 +54,6 @@ public class ActivityPackagePdfReportService {
     // Linux 환경에서 자주 사용하는 Noto CJK 폰트 후보 경로다.
     private static final String LINUX_NOTO_FONT_PATH = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc";
 
-    // 기존 PKG 단건 조회 로직을 재사용한다.
-    private final ActivityPackageQueryService activityPackageQueryService;
     // PKG에 포함된 Activity 상세 조회 로직을 재사용한다.
     private final ActivityQueryService activityQueryService;
     // 작성자 이름 조회를 위해 인증 서비스 클라이언트를 재사용한다.
@@ -67,18 +65,26 @@ public class ActivityPackagePdfReportService {
     @Value("${report.pdf.font-path:}")
     private String configuredFontPath;
 
-    // 패키지 ID를 기준으로 PDF 보고서 바이트 배열을 생성한다.
-    public byte[] generatePackageReport(Long packageId) {
-        // 기존 PKG 조회 로직으로 패키지 본문과 포함 Activity ID 목록을 읽는다.
-        ActivityPackage activityPackage = activityPackageQueryService.getPackage(packageId);
+    // 패키지 엔티티와 현재 요청자 ID를 기준으로 PDF 보고서 바이트 배열을 생성한다.
+    public byte[] generatePackageReport(ActivityPackage activityPackage, Long userId) {
         // 제목에 사용할 PO 표시값을 만든다.
         String title = buildReportTitle(activityPackage);
-        // 제목 아래에 표시할 작성자 이름을 만든다.
-        String creatorName = resolveCreatorName(activityPackage);
+        // 제목 아래에 표시할 작성자 이름을 만든다 (헤더 ID 우선, 없으면 패키지 생성자 ID).
+        String creatorName = resolveCreatorName(activityPackage, userId);
         // PKG item 순서대로 Activity 상세 데이터를 읽어 온다.
         List<ActivityResponse> activities = loadPackageActivities(activityPackage);
         // 수집한 데이터를 기준으로 PDF 문서를 생성한다.
         return buildPdf(title, creatorName, activities);
+    }
+
+    // 패키지 제목을 기준으로 다운로드용 PDF 파일명을 생성한다.
+    public String getDownloadFileName(ActivityPackage activityPackage) {
+        // 보고서 제목 규칙과 동일한 기준으로 파일명 기본값을 만든다.
+        String reportTitle = buildReportTitle(activityPackage);
+        // 파일명에 사용할 수 없는 문자를 안전한 문자로 치환한다.
+        String sanitizedTitle = sanitizeFileName(reportTitle);
+        // 다운로드 시 PDF 확장자가 붙은 파일명을 반환한다.
+        return sanitizedTitle + ".pdf";
     }
 
     // 패키지에 포함된 Activity ID 순서대로 상세 데이터를 조회한다.
@@ -93,27 +99,33 @@ public class ActivityPackagePdfReportService {
                 .toList();
     }
 
-    // PO 번호 + PKG 형식의 보고서 제목을 만든다.
+    // 패키지 제목을 우선 사용하고 없으면 PO 번호 + PKG 형식의 보고서 제목을 만든다.
     private String buildReportTitle(ActivityPackage activityPackage) {
+        // 사용자가 입력한 패키지 제목이 있으면 그 값을 문서 제목으로 사용한다.
+        if (activityPackage.getPackageTitle() != null && !activityPackage.getPackageTitle().isBlank()) {
+            return activityPackage.getPackageTitle().trim();
+        }
         // PO 번호 조회 결과가 있으면 그 값을 사용한다.
         String poNumber = fetchPurchaseOrderNumber(activityPackage.getPoId());
         // 제목 규칙에 맞춰 "PO번호 PKG" 형식으로 조합한다.
         return poNumber + " PKG";
     }
 
-    // 패키지 작성자 이름을 조회하고 실패 시 안전한 대체값을 반환한다.
-    private String resolveCreatorName(ActivityPackage activityPackage) {
-        // creatorId를 기준으로 사용자 이름을 조회한다.
-        String creatorName = fetchUserName(activityPackage.getCreatorId());
+    // 헤더에서 받은 userId 또는 패키지 작성자 ID로 사용자 이름을 조회한다.
+    private String resolveCreatorName(ActivityPackage activityPackage, Long userId) {
+        // 헤더에서 넘어온 요청자 ID가 있으면 우선적으로 그 이름을 조회한다.
+        Long targetId = (userId != null) ? userId : activityPackage.getCreatorId();
+        // 대상 ID를 기준으로 인증 서비스에서 이름을 조회한다.
+        String creatorName = fetchUserName(targetId);
         // 조회 성공 시 이름을 그대로 사용한다.
         if (creatorName != null && !creatorName.isBlank()) {
             return creatorName;
         }
-        // 이름 조회 실패 시 creatorId 문자열을 대체값으로 사용한다.
-        if (activityPackage.getCreatorId() != null) {
-            return String.valueOf(activityPackage.getCreatorId());
+        // 이름 조회 실패 시 대상 ID 문자열을 대체값으로 사용한다.
+        if (targetId != null) {
+            return String.valueOf(targetId);
         }
-        // creatorId도 없으면 알 수 없음 문자열을 사용한다.
+        // 대상 ID도 전혀 없으면 알 수 없음 문자열을 사용한다.
         return "-";
     }
 
@@ -169,6 +181,8 @@ public class ActivityPackagePdfReportService {
             PdfWriter.getInstance(document, outputStream);
             // 문서 쓰기를 시작한다.
             document.open();
+            // PDF 메타데이터 제목도 문서 상단 제목과 같은 값으로 기록한다.
+            document.addTitle(title);
             
             // 한글 출력을 위해 시스템 폰트를 로드한다.
             BaseFont baseFont = loadBaseFont();
@@ -244,8 +258,8 @@ public class ActivityPackagePdfReportService {
             if (document.isOpen()) {
                 document.close();
             }
-            // 예외 원인을 포함하여 실패 예외를 던진다.
-            throw new IllegalStateException("활동 패키지 PDF 보고서를 생성할 수 없습니다. 사유: " + e.getMessage(), e);
+            // 예외 원인을 포함해 PDF 생성 실패 예외를 던진다.
+            throw new IllegalStateException("활동 패키지 PDF 보고서를 생성할 수 없습니다.", e);
         }
     }
 
@@ -356,6 +370,18 @@ public class ActivityPackagePdfReportService {
         }
         // 텍스트가 없으면 하이픈을 반환한다.
         return "-";
+    }
+
+    // 운영체제 파일명에 사용할 수 없는 문자를 안전한 문자로 치환한다.
+    private String sanitizeFileName(String fileName) {
+        // 줄바꿈과 파일 경로 예약 문자를 밑줄로 치환해 안전한 파일명을 만든다.
+        String sanitizedFileName = fileName.replaceAll("[\\\\/:*?\"<>|\\r\\n]+", "_").trim();
+        // 치환 결과가 비어 있지 않으면 그 값을 그대로 사용한다.
+        if (!sanitizedFileName.isBlank()) {
+            return sanitizedFileName;
+        }
+        // 치환 후 비어 있으면 안전한 기본 파일명을 사용한다.
+        return "activity-package-report";
     }
 
     // PDF에 사용할 한글 BaseFont를 로드한다.

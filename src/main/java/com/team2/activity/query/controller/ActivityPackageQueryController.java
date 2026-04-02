@@ -60,11 +60,16 @@ public class ActivityPackageQueryController {
 
     // 패키지 ID를 기준으로 PDF 보고서를 생성해 다운로드 응답으로 반환한다.
     @GetMapping(value = "/{packageId}/report", produces = MediaType.APPLICATION_PDF_VALUE)
-    public ResponseEntity<byte[]> downloadPackageReport(@PathVariable Long packageId) {
-        // 패키지 데이터로 생성한 PDF 바이트 배열을 조회한다.
-        byte[] pdfBytes = activityPackagePdfReportService.generatePackageReport(packageId);
-        // 다운로드 파일명을 패키지 ID 기반으로 생성한다.
-        String fileName = "activity-package-" + packageId + "-report.pdf";
+    public ResponseEntity<byte[]> downloadPackageReport(
+            @PathVariable Long packageId,
+            // 헤더에서 현재 요청자의 ID를 추출한다.
+            @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+        // 기존 PKG 조회 로직으로 패키지 상세를 먼저 읽어 온다.
+        ActivityPackage activityPackage = activityPackageQueryService.getPackage(packageId);
+        // 패키지 데이터와 요청자 ID를 기준으로 생성한 PDF 바이트 배열을 조회한다.
+        byte[] pdfBytes = activityPackagePdfReportService.generatePackageReport(activityPackage, userId);
+        // 사용자가 입력한 패키지 제목 기준으로 다운로드 파일명을 생성한다.
+        String fileName = activityPackagePdfReportService.getDownloadFileName(activityPackage);
         // 응답 헤더 객체를 생성한다.
         HttpHeaders headers = new HttpHeaders();
         // 브라우저가 첨부파일 다운로드로 처리하도록 Content-Disposition 헤더를 설정한다.
