@@ -111,4 +111,55 @@ class ContactIntegrationTest extends IntegrationTestSupport {
         // 최종적으로 DB에서 연락처가 제거됐는지 확인한다.
         assertThat(contactRepository.findById(contactId)).isEmpty();
     }
+
+    @Test
+    @DisplayName("필수 필드 없이 연락처 생성 시 400을 반환한다")
+    void createContact_returns400WhenNameMissing() throws Exception {
+        // contact_name은 @NotBlank 필수 필드이므로 누락 시 400이어야 한다.
+        mockMvc.perform(post("/api/clients/{clientId}/contacts", 1L)
+                        .with(csrf())
+                        .header("X-User-Id", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        // contact_name을 포함하지 않는 요청을 전송한다.
+                        .content("""
+                                {
+                                  "contact_position": "과장",
+                                  "contact_email": "kim@example.com"
+                                }
+                                """))
+                // 유효성 검증 실패로 400 Bad Request가 반환되는지 확인한다.
+                .andExpect(status().isBadRequest())
+                // 응답 본문에 message 필드가 포함되는지 확인한다.
+                .andExpect(jsonPath("$.message").exists());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 연락처 수정 시 404를 반환한다")
+    void updateContact_returns404WhenNotFound() throws Exception {
+        // 존재하지 않는 ID로 수정 시도 시 IllegalArgumentException → 404여야 한다.
+        mockMvc.perform(put("/api/contacts/{contactId}", 99999L)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        // 유효한 수정 요청 본문을 전송해 존재 여부에서 실패하도록 한다.
+                        .content("""
+                                {
+                                  "contact_name": "없는 담당자"
+                                }
+                                """))
+                // 연락처 없음 예외가 404로 변환되는지 확인한다.
+                .andExpect(status().isNotFound())
+                // 응답 본문의 메시지가 정확한지 확인한다.
+                .andExpect(jsonPath("$.message").value("연락처를 찾을 수 없습니다."));
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 연락처 삭제 시 404를 반환한다")
+    void deleteContact_returns404WhenNotFound() throws Exception {
+        // 존재하지 않는 ID로 삭제 시도 시 IllegalArgumentException → 404여야 한다.
+        mockMvc.perform(delete("/api/contacts/{contactId}", 99999L).with(csrf()))
+                // 연락처 없음 예외가 404로 변환되는지 확인한다.
+                .andExpect(status().isNotFound())
+                // 응답 본문의 메시지가 정확한지 확인한다.
+                .andExpect(jsonPath("$.message").value("연락처를 찾을 수 없습니다."));
+    }
 }

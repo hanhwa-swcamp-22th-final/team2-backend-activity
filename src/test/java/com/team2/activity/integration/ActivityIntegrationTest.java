@@ -113,4 +113,64 @@ class ActivityIntegrationTest extends IntegrationTestSupport {
         // 최종적으로 DB에서도 활동이 제거됐는지 확인한다.
         assertThat(activityRepository.findById(activityId)).isEmpty();
     }
+
+    @Test
+    @DisplayName("필수 필드 없이 활동 생성 시 400을 반환한다")
+    void createActivity_returns400WhenRequiredFieldsMissing() throws Exception {
+        // client_id, activity_date, activity_type, activity_title 모두 필수이므로 빈 요청은 400이어야 한다.
+        mockMvc.perform(post("/api/activities")
+                        .with(csrf())
+                        .header("X-User-Id", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        // 필수 필드를 하나도 포함하지 않는 빈 JSON을 전송한다.
+                        .content("{}"))
+                // 유효성 검증 실패로 400 Bad Request가 반환되는지 확인한다.
+                .andExpect(status().isBadRequest())
+                // 응답 본문에 message 필드가 포함되는지 확인한다.
+                .andExpect(jsonPath("$.message").exists());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 활동 단건 조회 시 404를 반환한다")
+    void getActivity_returns404WhenNotFound() throws Exception {
+        // 존재하지 않는 ID로 단건 조회 시 IllegalArgumentException → 404여야 한다.
+        mockMvc.perform(get("/api/activities/{activityId}", 99999L))
+                // 활동 없음 예외가 404로 변환되는지 확인한다.
+                .andExpect(status().isNotFound())
+                // 응답 본문에 message 필드가 포함되는지 확인한다.
+                .andExpect(jsonPath("$.message").value("활동을 찾을 수 없습니다."));
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 활동 수정 시 404를 반환한다")
+    void updateActivity_returns404WhenNotFound() throws Exception {
+        // 존재하지 않는 ID로 수정 시도 시 IllegalArgumentException → 404여야 한다.
+        mockMvc.perform(put("/api/activities/{activityId}", 99999L)
+                        .with(csrf())
+                        .header("X-User-Id", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        // 유효한 수정 요청 본문을 전송해 유효성 검증이 아닌 존재 여부에서 실패하도록 한다.
+                        .content("""
+                                {
+                                  "activity_date": "2025-04-01",
+                                  "activity_type": "MEETING",
+                                  "activity_title": "없는 활동 수정"
+                                }
+                                """))
+                // 활동 없음 예외가 404로 변환되는지 확인한다.
+                .andExpect(status().isNotFound())
+                // 응답 본문의 메시지가 정확한지 확인한다.
+                .andExpect(jsonPath("$.message").value("활동을 찾을 수 없습니다."));
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 활동 삭제 시 404를 반환한다")
+    void deleteActivity_returns404WhenNotFound() throws Exception {
+        // 존재하지 않는 ID로 삭제 시도 시 IllegalArgumentException → 404여야 한다.
+        mockMvc.perform(delete("/api/activities/{activityId}", 99999L).with(csrf()))
+                // 활동 없음 예외가 404로 변환되는지 확인한다.
+                .andExpect(status().isNotFound())
+                // 응답 본문의 메시지가 정확한지 확인한다.
+                .andExpect(jsonPath("$.message").value("활동을 찾을 수 없습니다."));
+    }
 }

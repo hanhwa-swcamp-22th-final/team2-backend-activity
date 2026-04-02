@@ -152,4 +152,48 @@ class EmailLogIntegrationTest extends IntegrationTestSupport {
                 // 충돌 응답 메시지가 기대값과 같은지 확인한다.
                 .andExpect(jsonPath("$.message").value("이미 발송된 이메일입니다."));
     }
+
+    @Test
+    @DisplayName("필수 필드 없이 이메일 로그 생성 시 400을 반환한다")
+    void createEmailLog_returns400WhenRequiredFieldsMissing() throws Exception {
+        // email_recipient_email은 @NotBlank 필수 필드이므로 누락 시 400이어야 한다.
+        mockMvc.perform(post("/api/email-logs")
+                        .with(csrf())
+                        .header("X-User-Id", "10")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        // email_recipient_email을 포함하지 않는 요청을 전송한다.
+                        .content("""
+                                {
+                                  "client_id": 1,
+                                  "po_id": "PO-001",
+                                  "email_title": "제목"
+                                }
+                                """))
+                // 유효성 검증 실패로 400 Bad Request가 반환되는지 확인한다.
+                .andExpect(status().isBadRequest())
+                // 응답 본문에 message 필드가 포함되는지 확인한다.
+                .andExpect(jsonPath("$.message").exists());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 이메일 로그 단건 조회 시 404를 반환한다")
+    void getEmailLog_returns404WhenNotFound() throws Exception {
+        // 존재하지 않는 ID로 단건 조회 시 IllegalArgumentException → 404여야 한다.
+        mockMvc.perform(get("/api/email-logs/{emailLogId}", 99999L))
+                // 이메일 로그 없음 예외가 404로 변환되는지 확인한다.
+                .andExpect(status().isNotFound())
+                // 응답 본문의 메시지가 정확한지 확인한다.
+                .andExpect(jsonPath("$.message").value("이메일 로그를 찾을 수 없습니다."));
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 이메일 로그 재전송 시 404를 반환한다")
+    void resend_returns404WhenNotFound() throws Exception {
+        // 존재하지 않는 ID로 재전송 시도 시 IllegalArgumentException → 404여야 한다.
+        mockMvc.perform(post("/api/email-logs/{emailLogId}/resend", 99999L).with(csrf()))
+                // 이메일 로그 없음 예외가 404로 변환되는지 확인한다.
+                .andExpect(status().isNotFound())
+                // 응답 본문의 메시지가 정확한지 확인한다.
+                .andExpect(jsonPath("$.message").value("이메일 로그를 찾을 수 없습니다."));
+    }
 }

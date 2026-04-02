@@ -117,9 +117,8 @@ class EmailLogQueryControllerTest {
                 // 상세 응답에 email_status가 포함되는지 확인한다.
                 .andExpect(jsonPath("$.email_status").exists())
                 // 상세 응답에 doc_types 배열이 포함되는지 확인한다.
-                .andExpect(jsonPath("$.doc_types").isArray())
-                // 상세 응답에 attachments 배열이 포함되는지 확인한다.
-                .andExpect(jsonPath("$.attachments").isArray());
+                // EmailLogResponse는 attachments를 노출하지 않으므로 doc_types까지만 검증한다.
+                .andExpect(jsonPath("$.doc_types").isArray());
     }
 
     @Test

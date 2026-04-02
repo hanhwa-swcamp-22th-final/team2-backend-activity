@@ -113,4 +113,67 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
         // 최종적으로 패키지가 DB에서 제거됐는지 확인한다.
         assertThat(activityPackageRepository.findById(packageId)).isEmpty();
     }
+
+    @Test
+    @DisplayName("필수 필드 없이 패키지 생성 시 400을 반환한다")
+    void createPackage_returns400WhenTitleMissing() throws Exception {
+        // package_title은 @NotBlank 필수 필드이므로 누락 시 400이어야 한다.
+        mockMvc.perform(post("/api/activity-packages")
+                        .with(csrf())
+                        .header("X-User-Id", "7")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        // package_title을 포함하지 않는 요청을 전송한다.
+                        .content("""
+                                {
+                                  "package_description": "설명만 있음",
+                                  "activity_ids": [1],
+                                  "viewer_ids": [2]
+                                }
+                                """))
+                // 유효성 검증 실패로 400 Bad Request가 반환되는지 확인한다.
+                .andExpect(status().isBadRequest())
+                // 응답 본문에 message 필드가 포함되는지 확인한다.
+                .andExpect(jsonPath("$.message").exists());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 패키지 단건 조회 시 404를 반환한다")
+    void getPackage_returns404WhenNotFound() throws Exception {
+        // 존재하지 않는 ID로 단건 조회 시 IllegalArgumentException → 404여야 한다.
+        mockMvc.perform(get("/api/activity-packages/{packageId}", 99999L))
+                // 패키지 없음 예외가 404로 변환되는지 확인한다.
+                .andExpect(status().isNotFound())
+                // 응답 본문의 메시지가 정확한지 확인한다.
+                .andExpect(jsonPath("$.message").value("활동 패키지를 찾을 수 없습니다."));
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 패키지 수정 시 404를 반환한다")
+    void updatePackage_returns404WhenNotFound() throws Exception {
+        // 존재하지 않는 ID로 수정 시도 시 IllegalArgumentException → 404여야 한다.
+        mockMvc.perform(put("/api/activity-packages/{packageId}", 99999L)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        // 유효한 수정 요청 본문을 전송해 존재 여부에서 실패하도록 한다.
+                        .content("""
+                                {
+                                  "package_title": "없는 패키지 수정"
+                                }
+                                """))
+                // 패키지 없음 예외가 404로 변환되는지 확인한다.
+                .andExpect(status().isNotFound())
+                // 응답 본문의 메시지가 정확한지 확인한다.
+                .andExpect(jsonPath("$.message").value("활동 패키지를 찾을 수 없습니다."));
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 패키지 삭제 시 404를 반환한다")
+    void deletePackage_returns404WhenNotFound() throws Exception {
+        // 존재하지 않는 ID로 삭제 시도 시 IllegalArgumentException → 404여야 한다.
+        mockMvc.perform(delete("/api/activity-packages/{packageId}", 99999L).with(csrf()))
+                // 패키지 없음 예외가 404로 변환되는지 확인한다.
+                .andExpect(status().isNotFound())
+                // 응답 본문의 메시지가 정확한지 확인한다.
+                .andExpect(jsonPath("$.message").value("활동 패키지를 찾을 수 없습니다."));
+    }
 }
