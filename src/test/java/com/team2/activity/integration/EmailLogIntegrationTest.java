@@ -1,21 +1,15 @@
 package com.team2.activity.integration;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team2.activity.command.domain.repository.EmailLogRepository;
 import com.team2.activity.command.domain.entity.EmailLog;
 import com.team2.activity.command.domain.entity.enums.MailStatus;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -25,25 +19,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 // EmailLog API의 생성, 조회, 상태 필터, 재전송 흐름을 통합 레벨에서 검증한다.
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@WithMockUser
-@ActiveProfiles("test")
 @DisplayName("EmailLog 통합 테스트")
-class EmailLogIntegrationTest {
-
-    // 실제 HTTP 요청처럼 이메일 로그 API를 호출하는 MockMvc다.
-    @Autowired
-    private MockMvc mockMvc;
-
-    // 응답 JSON에서 email_log_id를 추출할 ObjectMapper다.
-    @Autowired
-    private ObjectMapper objectMapper;
+class EmailLogIntegrationTest extends IntegrationTestSupport {
 
     // 재전송 이후 DB 상태를 직접 확인할 repository다.
     @Autowired
     private EmailLogRepository emailLogRepository;
+
+    // 1차 캐시 초기화에 사용할 EntityManager다.
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @Test
     @DisplayName("이메일 로그 생성 후 상세 조회와 상태 필터 조회를 검증한다")
@@ -68,7 +53,7 @@ class EmailLogIntegrationTest {
                 .andExpect(jsonPath("$.email_log_id").exists())
                 // 생성 응답에 email_sender_id가 헤더 값으로 반영됐는지 확인한다.
                 .andExpect(jsonPath("$.email_sender_id").value(10))
-                // 생성 응답의 상태가 SENT인지 확인한다.
+                // 목 메일 발송 성공으로 SENT 상태가 되는지 확인한다.
                 .andExpect(jsonPath("$.email_status").value("SENT"))
                 // 생성 응답의 첫 문서 유형이 PI인지 확인한다.
                 .andExpect(jsonPath("$.doc_types[0].email_doc_type").value("PI"))
@@ -87,8 +72,11 @@ class EmailLogIntegrationTest {
                 // 상세 응답의 두 번째 문서 유형이 CI인지 확인한다.
                 .andExpect(jsonPath("$.doc_types[1].email_doc_type").value("CI"));
 
+        // JPA INSERT를 MyBatis SELECT 전에 DB에 반영한다.
+        emailLogRepository.flush();
+
         // 상태 필터 목록 조회에서 생성된 메일이 노출되는지 확인한다.
-        mockMvc.perform(get("/api/email-logs").param("email_status", "SENT"))
+        mockMvc.perform(get("/api/email-logs").param("emailStatus", "SENT"))
                 .andExpect(status().isOk())
                 // 목록 첫 원소의 email_log_id가 생성한 ID와 같은지 확인한다.
                 .andExpect(jsonPath("$.content[0].email_log_id").value(emailLogId))
@@ -123,8 +111,13 @@ class EmailLogIntegrationTest {
                 .andExpect(status().isOk())
                 // 재전송 응답의 email_log_id가 실패 로그 ID와 같은지 확인한다.
                 .andExpect(jsonPath("$.email_log_id").value(failedLog.getEmailLogId()))
-                // 재전송 응답의 상태가 SENT로 바뀌었는지 확인한다.
+                // 목 발송 성공으로 SENT 상태가 됐는지 확인한다.
                 .andExpect(jsonPath("$.email_status").value("SENT"));
+
+        // JPA UPDATE를 DB에 즉시 반영한다.
+        emailLogRepository.flush();
+        // 1차 캐시를 비워 DB에서 최신 상태를 다시 읽도록 한다.
+        entityManager.clear();
 
         // DB에도 실제로 상태 변경이 반영됐는지 확인한다.
         assertThat(emailLogRepository.findById(failedLog.getEmailLogId()))
@@ -158,13 +151,5 @@ class EmailLogIntegrationTest {
                 .andExpect(status().isConflict())
                 // 충돌 응답 메시지가 기대값과 같은지 확인한다.
                 .andExpect(jsonPath("$.message").value("이미 발송된 이메일입니다."));
-    }
-
-    // JSON 응답 본문에서 지정한 숫자 필드를 추출한다.
-    private long extractLong(MvcResult result, String fieldName) throws Exception {
-        // 응답 본문 문자열을 JSON 트리로 파싱한다.
-        JsonNode jsonNode = objectMapper.readTree(result.getResponse().getContentAsString());
-        // 지정한 필드의 숫자 값을 long으로 꺼낸다.
-        return jsonNode.get(fieldName).asLong();
     }
 }

@@ -4,6 +4,7 @@ import com.team2.activity.command.application.service.ContactCommandService;
 import com.team2.activity.command.application.dto.ContactCreateRequest;
 import com.team2.activity.command.application.dto.ContactUpdateRequest;
 import com.team2.activity.command.domain.entity.Contact;
+import com.team2.activity.query.dto.ContactResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,9 +20,9 @@ public class ContactCommandController {
     // 연락처 쓰기 로직을 서비스에 위임한다.
     private final ContactCommandService contactCommandService;
 
-    // 특정 거래처에 새 연락처를 생성한다.
+    // 특정 거래처에 새 연락처를 생성하고 DTO 응답을 반환한다.
     @PostMapping("/api/clients/{clientId}/contacts")
-    public ResponseEntity<Contact> createContact(
+    public ResponseEntity<ContactResponse> createContact(
             // URL 경로에서 거래처 ID를 받는다.
             @PathVariable Long clientId,
             // 헤더에서 작성자 사용자 ID를 받는다.
@@ -44,15 +45,17 @@ public class ContactCommandController {
                 .contactTel(request.contactTel())
                 // 모든 필드 복사가 끝난 Contact 엔티티 생성을 마무리한다.
                 .build();
-        // 응답 상태 코드를 201 Created로 설정한다.
+        // 저장된 연락처 엔티티를 서비스에서 받는다.
+        Contact saved = contactCommandService.createContact(contact);
+        // 응답 상태 코드를 201 Created로 설정하고 엔티티를 DTO로 변환해 반환한다.
         return ResponseEntity.status(HttpStatus.CREATED)
-                // 저장된 연락처 엔티티를 응답 본문으로 반환한다.
-                .body(contactCommandService.createContact(contact));
+                // JPA 엔티티를 응답 DTO로 변환해 직접 노출을 막는다.
+                .body(ContactResponse.from(saved));
     }
 
-    // 기존 연락처의 수정 가능한 필드를 갱신한다.
+    // 기존 연락처의 수정 가능한 필드를 갱신하고 DTO 응답을 반환한다.
     @PutMapping("/api/contacts/{contactId}")
-    public ResponseEntity<Contact> updateContact(
+    public ResponseEntity<ContactResponse> updateContact(
             // URL 경로에서 수정 대상 연락처 ID를 받는다.
             @PathVariable Long contactId,
             // 요청 본문을 검증한 뒤 DTO로 바인딩한다.
@@ -69,8 +72,8 @@ public class ContactCommandController {
                 request.contactEmail(),
                 // 요청의 전화번호를 전달한다.
                 request.contactTel());
-        // 수정 성공 응답 본문으로 갱신된 연락처를 반환한다.
-        return ResponseEntity.ok(contact);
+        // 수정 성공 응답 본문으로 갱신된 연락처를 DTO로 변환해 반환한다.
+        return ResponseEntity.ok(ContactResponse.from(contact));
     }
 
     // 연락처 삭제 요청을 받아 대상 연락처를 제거한다.

@@ -4,6 +4,7 @@ import com.team2.activity.command.application.service.ActivityCommandService;
 import com.team2.activity.command.application.dto.ActivityCreateRequest;
 import com.team2.activity.command.application.dto.ActivityUpdateRequest;
 import com.team2.activity.command.domain.entity.Activity;
+import com.team2.activity.query.dto.ActivityResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,32 +22,34 @@ public class ActivityCommandController {
     // 활동 쓰기 로직을 서비스 계층에 위임한다.
     private final ActivityCommandService activityCommandService;
 
-    // 활동 생성 요청을 받아 저장한 뒤 생성된 엔티티를 반환한다.
+    // 활동 생성 요청을 받아 저장한 뒤 DTO 응답을 반환한다.
     @PostMapping
-    public ResponseEntity<Activity> createActivity(
+    public ResponseEntity<ActivityResponse> createActivity(
             // 헤더에서 현재 사용자 ID를 받아 작성자로 사용한다.
             @RequestHeader("X-User-Id") Long userId,
             // 요청 본문을 검증한 뒤 DTO로 바인딩한다.
             @Valid @RequestBody ActivityCreateRequest request) {
-        // 응답 상태 코드를 201 Created로 설정한다.
+        // DTO를 엔티티로 바꿔 서비스에 전달하고 저장된 엔티티를 받는다.
+        Activity activity = activityCommandService.createActivity(request.toEntity(userId));
+        // 응답 상태 코드를 201 Created로 설정하고 엔티티를 DTO로 변환해 반환한다.
         return ResponseEntity.status(HttpStatus.CREATED)
-                // DTO를 엔티티로 바꿔 서비스에 전달한다.
-                .body(activityCommandService.createActivity(request.toEntity(userId)));
+                // JPA 엔티티를 응답 DTO로 변환해 직접 노출을 막는다.
+                .body(ActivityResponse.from(activity));
     }
 
-    // 활동 수정 요청을 받아 기존 활동을 갱신한다.
+    // 활동 수정 요청을 받아 기존 활동을 갱신한 뒤 DTO 응답을 반환한다.
     @PutMapping("/{activityId}")
-    public ResponseEntity<Activity> updateActivity(
+    public ResponseEntity<ActivityResponse> updateActivity(
             // URL 경로에서 수정 대상 활동 ID를 받는다.
             @PathVariable Long activityId,
             // 헤더에서 수정 수행 사용자 ID를 받는다.
             @RequestHeader("X-User-Id") Long userId,
             // 요청 본문을 검증한 뒤 DTO로 바인딩한다.
             @Valid @RequestBody ActivityUpdateRequest request) {
-        // 수정된 엔티티를 서비스에서 받아 응답으로 반환한다.
+        // 수정된 엔티티를 서비스에서 받는다.
         Activity activity = activityCommandService.updateActivity(activityId, request, userId);
-        // 수정 성공 응답 본문으로 갱신된 엔티티를 반환한다.
-        return ResponseEntity.ok(activity);
+        // 수정 성공 응답 본문으로 갱신된 엔티티를 DTO로 변환해 반환한다.
+        return ResponseEntity.ok(ActivityResponse.from(activity));
     }
 
     // 활동 삭제 요청을 받아 대상 활동을 제거한다.

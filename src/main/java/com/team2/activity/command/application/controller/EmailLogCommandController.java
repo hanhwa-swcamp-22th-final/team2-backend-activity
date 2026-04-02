@@ -3,6 +3,7 @@ package com.team2.activity.command.application.controller;
 import com.team2.activity.command.application.service.EmailLogCommandService;
 import com.team2.activity.command.application.dto.EmailLogCreateRequest;
 import com.team2.activity.command.domain.entity.EmailLog;
+import com.team2.activity.query.dto.EmailLogResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,23 +21,25 @@ public class EmailLogCommandController {
     // 이메일 로그 쓰기 로직을 서비스에 위임한다.
     private final EmailLogCommandService emailLogCommandService;
 
-    // 이메일 로그 생성 요청을 받아 저장된 로그를 반환한다.
+    // 이메일 로그 생성 요청을 받아 저장 후 발송하고 DTO 응답을 반환한다.
     @PostMapping
-    public ResponseEntity<EmailLog> createEmailLog(
+    public ResponseEntity<EmailLogResponse> createEmailLog(
             // 헤더에서 현재 사용자 ID를 발송자로 받는다.
             @RequestHeader("X-User-Id") Long userId,
             // 요청 본문을 검증한 뒤 DTO로 바인딩한다.
             @Valid @RequestBody EmailLogCreateRequest request) {
-        // 응답 상태 코드를 201 Created로 설정한다.
+        // DTO를 엔티티로 바꿔 서비스에 전달하고 저장·발송된 엔티티를 받는다.
+        EmailLog emailLog = emailLogCommandService.createEmailLog(request.toEntity(userId));
+        // 응답 상태 코드를 201 Created로 설정하고 엔티티를 DTO로 변환해 반환한다.
         return ResponseEntity.status(HttpStatus.CREATED)
-                // DTO를 엔티티로 바꿔 서비스에 전달한다.
-                .body(emailLogCommandService.createEmailLog(request.toEntity(userId)));
+                // JPA 엔티티를 응답 DTO로 변환해 직접 노출을 막는다.
+                .body(EmailLogResponse.from(emailLog));
     }
 
-    // 실패한 이메일 로그를 재전송 처리한다.
+    // 실패한 이메일 로그를 재전송 처리하고 DTO 응답을 반환한다.
     @PostMapping("/{emailLogId}/resend")
-    public ResponseEntity<EmailLog> resend(@PathVariable Long emailLogId) {
-        // 재전송 결과 엔티티를 그대로 응답으로 반환한다.
-        return ResponseEntity.ok(emailLogCommandService.resend(emailLogId));
+    public ResponseEntity<EmailLogResponse> resend(@PathVariable Long emailLogId) {
+        // 재전송 결과 엔티티를 서비스에서 받은 뒤 DTO로 변환해 반환한다.
+        return ResponseEntity.ok(EmailLogResponse.from(emailLogCommandService.resend(emailLogId)));
     }
 }

@@ -1,19 +1,11 @@
 package com.team2.activity.integration;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team2.activity.command.domain.repository.ActivityPackageRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -25,21 +17,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 // ActivityPackage API의 생성, 조회, 수정, 삭제가 전체 계층에서 동작하는지 검증한다.
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@WithMockUser
-@ActiveProfiles("test")
 @DisplayName("ActivityPackage 통합 테스트")
-class ActivityPackageIntegrationTest {
-
-    // 실제 HTTP 요청처럼 패키지 API를 호출하는 MockMvc다.
-    @Autowired
-    private MockMvc mockMvc;
-
-    // 응답 JSON에서 식별자를 꺼낼 ObjectMapper다.
-    @Autowired
-    private ObjectMapper objectMapper;
+class ActivityPackageIntegrationTest extends IntegrationTestSupport {
 
     // 삭제 이후 DB 상태를 직접 확인할 repository다.
     @Autowired
@@ -117,7 +96,7 @@ class ActivityPackageIntegrationTest {
         activityPackageRepository.flush();
 
         // 목록 조회에서 수정된 제목이 노출되는지 확인한다.
-        mockMvc.perform(get("/api/activity-packages").param("creator_id", "7"))
+        mockMvc.perform(get("/api/activity-packages").param("creatorId", "7"))
                 .andExpect(status().isOk())
                 // 목록 응답 첫 원소의 package_id가 수정한 패키지 ID와 같은지 확인한다.
                 .andExpect(jsonPath("$.content[0].package_id").value(packageId))
@@ -133,13 +112,5 @@ class ActivityPackageIntegrationTest {
 
         // 최종적으로 패키지가 DB에서 제거됐는지 확인한다.
         assertThat(activityPackageRepository.findById(packageId)).isEmpty();
-    }
-
-    // JSON 응답 본문에서 지정한 숫자 필드를 추출한다.
-    private long extractLong(MvcResult result, String fieldName) throws Exception {
-        // 응답 본문 문자열을 JSON 트리로 파싱한다.
-        JsonNode jsonNode = objectMapper.readTree(result.getResponse().getContentAsString());
-        // 지정한 필드의 숫자 값을 long으로 꺼낸다.
-        return jsonNode.get(fieldName).asLong();
     }
 }

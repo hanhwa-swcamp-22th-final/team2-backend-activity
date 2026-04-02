@@ -70,114 +70,6 @@ class ActivityPackageCommandServiceTest {
     }
 
     @Test
-    @DisplayName("패키지 기본 정보 수정 시 조회한 엔티티의 필드를 변경한다")
-    void updatePackage_updatesLoadedEntity() {
-        // 기본 정보 수정 대상 패키지를 조회하도록 설정한다.
-        ActivityPackage activityPackage = buildPackage(List.of(1L, 2L), List.of(100L, 101L));
-        when(activityPackageRepository.findById(10L)).thenReturn(Optional.of(activityPackage));
-
-        // 제목, 설명, PO 번호가 변경되는지 확인한다.
-        ActivityPackage result = activityPackageCommandService.updatePackage(
-                10L,
-                "월간 패키지",
-                "월간 활동 묶음",
-                "PO-2025-002"
-        );
-
-        // 반환 결과가 조회한 기존 엔티티와 같은 객체인지 확인한다.
-        assertThat(result).isSameAs(activityPackage);
-        // 제목이 새 값으로 바뀌었는지 확인한다.
-        assertThat(activityPackage.getPackageTitle()).isEqualTo("월간 패키지");
-        // 설명이 새 값으로 바뀌었는지 확인한다.
-        assertThat(activityPackage.getPackageDescription()).isEqualTo("월간 활동 묶음");
-        // PO ID가 새 값으로 바뀌었는지 확인한다.
-        assertThat(activityPackage.getPoId()).isEqualTo("PO-2025-002");
-        // 수정 전에 findById가 호출됐는지 검증한다.
-        verify(activityPackageRepository).findById(10L);
-    }
-
-    @Test
-    @DisplayName("패키지 열람자 수정 시 기존 열람자를 교체한다")
-    void updateViewers_replacesExistingViewers() {
-        // 기존 열람자가 있는 패키지를 조회하도록 설정한다.
-        ActivityPackage activityPackage = buildPackage(List.of(1L, 2L), List.of(100L));
-        when(activityPackageRepository.findById(10L)).thenReturn(Optional.of(activityPackage));
-
-        // 열람자 목록이 새 값으로 완전히 교체되는지 확인한다.
-        ActivityPackage result = activityPackageCommandService.updateViewers(10L, List.of(30L, 40L));
-
-        // 반환 결과가 조회한 기존 엔티티와 같은 객체인지 확인한다.
-        assertThat(result).isSameAs(activityPackage);
-        // viewer 목록이 새 사용자 ID 목록으로 교체됐는지 확인한다.
-        assertThat(activityPackage.getViewers())
-                .extracting(ActivityPackageViewer::getUserId)
-                .containsExactly(30L, 40L);
-        // 수정 전에 findById가 호출됐는지 검증한다.
-        verify(activityPackageRepository).findById(10L);
-    }
-
-    @Test
-    @DisplayName("패키지 활동 항목 수정 시 기존 항목을 교체한다")
-    void updateItems_replacesExistingItems() {
-        // 기존 활동 항목이 있는 패키지를 조회하도록 설정한다.
-        ActivityPackage activityPackage = buildPackage(List.of(1L), List.of(100L, 101L));
-        when(activityPackageRepository.findById(10L)).thenReturn(Optional.of(activityPackage));
-
-        // 활동 항목 목록이 새 값으로 교체되는지 확인한다.
-        ActivityPackage result = activityPackageCommandService.updateItems(10L, List.of(200L, 300L));
-
-        // 반환 결과가 조회한 기존 엔티티와 같은 객체인지 확인한다.
-        assertThat(result).isSameAs(activityPackage);
-        // item 목록이 새 활동 ID 목록으로 교체됐는지 확인한다.
-        assertThat(activityPackage.getItems())
-                .extracting(ActivityPackageItem::getActivityId)
-                .containsExactly(200L, 300L);
-        // 수정 전에 findById가 호출됐는지 검증한다.
-        verify(activityPackageRepository).findById(10L);
-    }
-
-    @Test
-    @DisplayName("수정 대상 패키지가 없으면 예외를 던진다")
-    void updatePackage_throwsWhenPackageDoesNotExist() {
-        // 조회 결과가 없으면 기본 정보 수정도 실패해야 한다.
-        when(activityPackageRepository.findById(999L)).thenReturn(Optional.empty());
-
-        // 없는 패키지 수정 시 IllegalArgumentException이 발생하는지 확인한다.
-        assertThatThrownBy(() -> activityPackageCommandService.updatePackage(
-                999L,
-                "제목",
-                "설명",
-                "PO-999"
-        ))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("활동 패키지를 찾을 수 없습니다.");
-    }
-
-    @Test
-    @DisplayName("열람자 수정 시 대상 패키지가 없으면 예외를 던진다")
-    void updateViewers_throwsWhenPackageDoesNotExist() {
-        // 패키지가 없으면 열람자 수정도 예외여야 한다.
-        when(activityPackageRepository.findById(999L)).thenReturn(Optional.empty());
-
-        // 없는 패키지의 viewer 수정 시 IllegalArgumentException이 발생하는지 확인한다.
-        assertThatThrownBy(() -> activityPackageCommandService.updateViewers(999L, List.of(1L)))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("활동 패키지를 찾을 수 없습니다.");
-    }
-
-    @Test
-    @DisplayName("활동 항목 수정 시 대상 패키지가 없으면 예외를 던진다")
-    void updateItems_throwsWhenPackageDoesNotExist() {
-        // 패키지가 없으면 활동 항목 수정도 예외여야 한다.
-        when(activityPackageRepository.findById(999L)).thenReturn(Optional.empty());
-
-        // 없는 패키지의 item 수정 시 IllegalArgumentException이 발생하는지 확인한다.
-        assertThatThrownBy(() -> activityPackageCommandService.updateItems(999L, List.of(100L)))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage("활동 패키지를 찾을 수 없습니다.");
-    }
-
-    @Test
     @DisplayName("패키지 전체 수정 시 단일 조회로 필드, 열람자, 항목을 교체한다")
     void updateAll_updatesPackageViewersAndItems() {
         // 전체 수정 대상 패키지를 조회하도록 설정한다.
@@ -208,17 +100,22 @@ class ActivityPackageCommandServiceTest {
     @Test
     @DisplayName("패키지 전체 수정 시 viewerIds가 null이면 열람자를 변경하지 않는다")
     void updateAll_skipsViewersWhenNull() {
+        // viewerIds null 요청 시 기존 viewer 목록이 유지되는지 확인한다.
         ActivityPackage activityPackage = buildPackage(List.of(1L, 2L), List.of(100L));
         when(activityPackageRepository.findById(10L)).thenReturn(Optional.of(activityPackage));
 
+        // viewerIds를 null로 전달해 viewer 교체가 건너뛰어지는지 확인한다.
         ActivityPackageUpdateRequest request = new ActivityPackageUpdateRequest(
                 "월간 패키지", "월간 활동 묶음", "PO-002", List.of(200L), null);
         ActivityPackage result = activityPackageCommandService.updateAll(10L, request);
 
+        // 반환 결과가 조회한 기존 엔티티와 같은 객체인지 확인한다.
         assertThat(result).isSameAs(activityPackage);
+        // viewer 목록이 원래 값 그대로 유지됐는지 확인한다.
         assertThat(activityPackage.getViewers())
                 .extracting(ActivityPackageViewer::getUserId)
                 .containsExactly(1L, 2L);
+        // item 목록은 새 값으로 교체됐는지 확인한다.
         assertThat(activityPackage.getItems())
                 .extracting(ActivityPackageItem::getActivityId)
                 .containsExactly(200L);
@@ -227,15 +124,20 @@ class ActivityPackageCommandServiceTest {
     @Test
     @DisplayName("패키지 전체 수정 시 activityIds가 null이면 빈 목록으로 처리한다")
     void updateAll_treatsNullActivityIdsAsEmpty() {
+        // activityIds null 요청 시 item 목록이 비워지는지 확인한다.
         ActivityPackage activityPackage = buildPackage(List.of(1L), List.of(100L, 101L));
         when(activityPackageRepository.findById(10L)).thenReturn(Optional.of(activityPackage));
 
+        // activityIds를 null로 전달해 item 목록이 빈 목록으로 처리되는지 확인한다.
         ActivityPackageUpdateRequest request = new ActivityPackageUpdateRequest(
                 "월간 패키지", "월간 활동 묶음", "PO-002", null, List.of(30L));
         ActivityPackage result = activityPackageCommandService.updateAll(10L, request);
 
+        // 반환 결과가 조회한 기존 엔티티와 같은 객체인지 확인한다.
         assertThat(result).isSameAs(activityPackage);
+        // item 목록이 비워졌는지 확인한다.
         assertThat(activityPackage.getItems()).isEmpty();
+        // viewer 목록은 새 값으로 교체됐는지 확인한다.
         assertThat(activityPackage.getViewers())
                 .extracting(ActivityPackageViewer::getUserId)
                 .containsExactly(30L);
@@ -244,8 +146,10 @@ class ActivityPackageCommandServiceTest {
     @Test
     @DisplayName("패키지 전체 수정 시 대상 패키지가 없으면 예외를 던진다")
     void updateAll_throwsWhenPackageDoesNotExist() {
+        // 조회 결과가 없으면 전체 수정도 실패해야 한다.
         when(activityPackageRepository.findById(999L)).thenReturn(Optional.empty());
 
+        // 없는 패키지 전체 수정 시 IllegalArgumentException이 발생하는지 확인한다.
         ActivityPackageUpdateRequest request = new ActivityPackageUpdateRequest(
                 "제목", "설명", "PO-999", List.of(1L), List.of(1L));
         assertThatThrownBy(() -> activityPackageCommandService.updateAll(999L, request))
@@ -256,8 +160,10 @@ class ActivityPackageCommandServiceTest {
     @Test
     @DisplayName("패키지 삭제 시 대상 패키지가 없으면 예외를 던진다")
     void deletePackage_throwsWhenPackageDoesNotExist() {
+        // 조회 결과가 없으면 삭제 요청도 예외여야 한다.
         when(activityPackageRepository.findById(999L)).thenReturn(Optional.empty());
 
+        // 없는 패키지 삭제 시 IllegalArgumentException이 발생하는지 확인한다.
         assertThatThrownBy(() -> activityPackageCommandService.deletePackage(999L))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("활동 패키지를 찾을 수 없습니다.");

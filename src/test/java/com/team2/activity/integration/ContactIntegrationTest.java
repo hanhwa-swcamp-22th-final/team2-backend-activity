@@ -1,19 +1,12 @@
 package com.team2.activity.integration;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team2.activity.command.domain.repository.ContactRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -25,25 +18,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 // Contact API가 생성부터 삭제까지 전체 계층에서 동작하는지 검증한다.
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@WithMockUser
-@ActiveProfiles("test")
 @DisplayName("Contact 통합 테스트")
-class ContactIntegrationTest {
-
-    // 실제 HTTP 요청처럼 연락처 API를 호출하는 MockMvc다.
-    @Autowired
-    private MockMvc mockMvc;
-
-    // 응답 JSON에서 contact_id를 추출할 ObjectMapper다.
-    @Autowired
-    private ObjectMapper objectMapper;
+class ContactIntegrationTest extends IntegrationTestSupport {
 
     // 삭제 이후 DB 상태를 직접 검증할 repository다.
     @Autowired
     private ContactRepository contactRepository;
+
+    // MyBatis 1차 캐시를 초기화할 때 사용할 SqlSessionTemplate다.
+    @Autowired
+    private SqlSessionTemplate sqlSessionTemplate;
 
     @Test
     @DisplayName("연락처 생성 후 목록 조회, 수정, 삭제까지 통합 흐름을 검증한다")
@@ -72,6 +56,9 @@ class ContactIntegrationTest {
 
         // 후속 요청에서 사용할 contact_id를 응답에서 읽어 온다.
         long contactId = extractLong(createResult, "contact_id");
+
+        // JPA INSERT를 MyBatis SELECT 전에 DB에 반영한다.
+        contactRepository.flush();
 
         // 생성된 연락처가 거래처별 목록 조회에 노출되는지 확인한다.
         mockMvc.perform(get("/api/clients/{clientId}/contacts", 1L))
@@ -103,14 +90,16 @@ class ContactIntegrationTest {
 
         // 변경된 연락처 상태를 DB에 즉시 반영한다.
         contactRepository.flush();
+        // MyBatis 1차 캐시를 비워 다음 SELECT가 DB에서 최신 값을 읽도록 한다.
+        sqlSessionTemplate.clearCache();
 
         // 공통 목록 API에서도 수정된 이메일이 보이는지 확인한다.
-        mockMvc.perform(get("/api/contacts").param("client_id", "1"))
+        mockMvc.perform(get("/api/contacts").param("clientId", "1"))
                 .andExpect(status().isOk())
-                // 목록 첫 원소의 contact_id가 수정한 연락처 ID와 같은지 확인한다.
-                .andExpect(jsonPath("$[0].contact_id").value(contactId))
+                // PagedResponse 구조의 content 배열에서 첫 원소를 확인한다.
+                .andExpect(jsonPath("$.content[0].contact_id").value(contactId))
                 // 목록 첫 원소의 이메일이 수정 값으로 바뀌었는지 확인한다.
-                .andExpect(jsonPath("$[0].contact_email").value("park@example.com"));
+                .andExpect(jsonPath("$.content[0].contact_email").value("park@example.com"));
 
         // 삭제 요청이 정상 처리되는지 확인한다.
         mockMvc.perform(delete("/api/contacts/{contactId}", contactId).with(csrf()))
@@ -121,13 +110,5 @@ class ContactIntegrationTest {
 
         // 최종적으로 DB에서 연락처가 제거됐는지 확인한다.
         assertThat(contactRepository.findById(contactId)).isEmpty();
-    }
-
-    // JSON 응답 본문에서 지정한 숫자 필드를 추출한다.
-    private long extractLong(MvcResult result, String fieldName) throws Exception {
-        // 응답 본문 문자열을 JSON 트리로 파싱한다.
-        JsonNode jsonNode = objectMapper.readTree(result.getResponse().getContentAsString());
-        // 지정한 필드의 숫자 값을 long으로 꺼낸다.
-        return jsonNode.get(fieldName).asLong();
     }
 }

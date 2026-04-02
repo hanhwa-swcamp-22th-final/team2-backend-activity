@@ -28,50 +28,7 @@ public class ActivityPackageCommandService {
         return activityPackageRepository.save(activityPackage);
     }
 
-    // 패키지 기본 정보만 수정한다.
-    public ActivityPackage updatePackage(Long packageId, String packageTitle,
-                                         String packageDescription, String poId) {
-        // 수정 대상 패키지를 먼저 조회한다.
-        ActivityPackage activityPackage = findById(packageId);
-        // 제목, 설명, PO ID를 한 번에 갱신한다.
-        activityPackage.update(packageTitle, packageDescription, poId);
-        // 변경 감지 대상 엔티티를 그대로 반환한다.
-        return activityPackage;
-    }
-
-    // 패키지 열람자 목록을 새 목록으로 교체한다.
-    public ActivityPackage updateViewers(Long packageId, List<Long> viewerUserIds) {
-        // 수정 대상 패키지를 먼저 조회한다.
-        ActivityPackage activityPackage = findById(packageId);
-        // 기존 열람자 연결을 모두 제거한다.
-        activityPackage.getViewers().clear();
-        // 새 사용자 ID 목록을 viewer 엔티티로 바꿔 다시 채운다.
-        activityPackage.getViewers().addAll(viewerUserIds.stream()
-                // 각 사용자 ID를 viewer 엔티티로 변환한다.
-                .map(ActivityPackageViewer::of)
-                // 변환된 viewer 엔티티들을 리스트로 모은다.
-                .toList());
-        // 변경 감지 대상 엔티티를 그대로 반환한다.
-        return activityPackage;
-    }
-
-    // 패키지 활동 항목 목록을 새 목록으로 교체한다.
-    public ActivityPackage updateItems(Long packageId, List<Long> activityIds) {
-        // 수정 대상 패키지를 먼저 조회한다.
-        ActivityPackage activityPackage = findById(packageId);
-        // 기존 활동 항목 연결을 모두 제거한다.
-        activityPackage.getItems().clear();
-        // 새 활동 ID 목록을 item 엔티티로 바꿔 다시 채운다.
-        activityPackage.getItems().addAll(activityIds.stream()
-                // 각 활동 ID를 item 엔티티로 변환한다.
-                .map(ActivityPackageItem::of)
-                // 변환된 item 엔티티들을 리스트로 모은다.
-                .toList());
-        // 변경 감지 대상 엔티티를 그대로 반환한다.
-        return activityPackage;
-    }
-
-    // 패키지 기본 정보와 viewer/item 목록을 한 번에 수정한다.
+    // 패키지 기본 정보와 viewer/item 목록을 한 번의 조회로 모두 수정한다.
     public ActivityPackage updateAll(Long packageId, ActivityPackageUpdateRequest request) {
         // 전체 수정 대상 패키지를 먼저 조회한다.
         ActivityPackage activityPackage = findById(packageId);

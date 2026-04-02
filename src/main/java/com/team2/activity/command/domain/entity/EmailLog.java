@@ -116,4 +116,12 @@ public class EmailLog {
         // 새 메일 상태 값으로 필드를 교체한다.
         this.emailStatus = emailStatus;
     }
+
+    // 이메일 발송 성공 시 상태를 SENT로 바꾸고 발송 시각을 기록한다.
+    public void markAsSent() {
+        // 발송 성공 상태로 전환한다.
+        this.emailStatus = MailStatus.SENT;
+        // 발송 완료 시각을 현재 시각으로 기록한다.
+        this.emailSentAt = LocalDateTime.now();
+    }
 }

@@ -1,21 +1,14 @@
 package com.team2.activity.integration;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team2.activity.command.domain.repository.ActivityRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.transaction.annotation.Transactional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -25,21 +18,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 // Activity API가 컨트롤러부터 DB 반영까지 전체 흐름으로 동작하는지 검증한다.
-@SpringBootTest
-@AutoConfigureMockMvc
-@Transactional
-@WithMockUser
-@ActiveProfiles("test")
 @DisplayName("Activity 통합 테스트")
-class ActivityIntegrationTest {
-
-    // 실제 HTTP 요청처럼 API를 호출하는 MockMvc다.
-    @Autowired
-    private MockMvc mockMvc;
-
-    // 응답 JSON에서 식별자를 추출할 ObjectMapper다.
-    @Autowired
-    private ObjectMapper objectMapper;
+class ActivityIntegrationTest extends IntegrationTestSupport {
 
     // 삭제 이후 DB 반영 여부를 직접 확인할 repository다.
     @Autowired
@@ -114,8 +94,10 @@ class ActivityIntegrationTest {
         activityRepository.flush();
 
         // 목록 조회에서도 수정된 제목이 노출되는지 확인한다.
-        mockMvc.perform(get("/api/activities").param("client_id", "1"))
+        mockMvc.perform(get("/api/activities").param("clientId", "1"))
                 .andExpect(status().isOk())
+                // @Transactional 테스트 내 유일한 삽입임을 검증해 [0] 인덱스 가정을 보장한다.
+                .andExpect(jsonPath("$.content", hasSize(1)))
                 // 목록 응답 첫 원소의 activity_id가 수정한 활동 ID와 같은지 확인한다.
                 .andExpect(jsonPath("$.content[0].activity_id").value(activityId))
                 // 목록 응답 첫 원소의 제목이 수정 값으로 바뀌었는지 확인한다.
@@ -130,13 +112,5 @@ class ActivityIntegrationTest {
 
         // 최종적으로 DB에서도 활동이 제거됐는지 확인한다.
         assertThat(activityRepository.findById(activityId)).isEmpty();
-    }
-
-    // JSON 응답 본문에서 지정한 숫자 필드를 추출한다.
-    private long extractLong(MvcResult result, String fieldName) throws Exception {
-        // 응답 본문 문자열을 JSON 트리로 파싱한다.
-        JsonNode jsonNode = objectMapper.readTree(result.getResponse().getContentAsString());
-        // 지정한 필드의 숫자 값을 long으로 꺼낸다.
-        return jsonNode.get(fieldName).asLong();
     }
 }

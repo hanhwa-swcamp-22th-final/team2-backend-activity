@@ -114,6 +114,18 @@ class ContactCommandServiceTest {
     }
 
     @Test
+    @DisplayName("삭제 대상 연락처가 없으면 예외를 던진다")
+    void deleteContact_throwsWhenContactDoesNotExist() {
+        // 조회 결과가 없으면 삭제 요청은 예외여야 한다.
+        when(contactRepository.findById(999L)).thenReturn(Optional.empty());
+
+        // 없는 연락처 삭제 시 IllegalArgumentException이 발생하는지 확인한다.
+        assertThatThrownBy(() -> contactCommandService.deleteContact(999L))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("연락처를 찾을 수 없습니다.");
+    }
+
+    @Test
     @DisplayName("연락처 삭제 시 조회한 엔티티를 삭제한다")
     void deleteContact_deletesLoadedEntity() {
         // 삭제 대상 연락처를 repository가 조회하도록 설정한다.

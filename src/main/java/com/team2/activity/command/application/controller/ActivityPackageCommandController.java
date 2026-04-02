@@ -10,7 +10,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import com.team2.activity.query.dto.ActivityPackageResponse;
 
 // 활동 패키지 쓰기 API를 제공하는 command controller다.
 @RestController
@@ -43,8 +42,8 @@ public class ActivityPackageCommandController {
     public ResponseEntity<ActivityPackageResponse> updatePackage(
             // URL 경로에서 수정 대상 패키지 ID를 받는다.
             @PathVariable Long packageId,
-            // 요청 본문을 수정 DTO로 바인딩한다.
-            @RequestBody ActivityPackageUpdateRequest request) {
+            // 요청 본문을 검증한 뒤 수정 DTO로 바인딩한다.
+            @Valid @RequestBody ActivityPackageUpdateRequest request) {
         // 서비스 계층에서 수정된 엔티티를 받아 온다.
         ActivityPackage updated = activityPackageCommandService.updateAll(packageId, request);
         // 수정된 엔티티를 응답 DTO로 바꿔 200 OK로 반환한다.
