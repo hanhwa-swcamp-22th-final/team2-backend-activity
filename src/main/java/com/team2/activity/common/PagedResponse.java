@@ -13,17 +13,16 @@ public record PagedResponse<T>(
         // 현재 페이지 번호다.
         int currentPage
 ) {
-    // 단순 리스트를 단일 페이지 응답으로 감싸서 반환한다.
     public static <T> PagedResponse<T> of(List<T> items) {
-        return new PagedResponse<>(
-                // 전달된 목록을 현재 페이지의 내용으로 사용한다.
-                items,
-                // 단일 페이지 응답이므로 전체 개수는 목록 크기와 같다.
-                items.size(),
-                // 빈 목록이면 0, 아니면 단일 페이지이므로 1이다.
-                items.isEmpty() ? 0 : 1,
-                // 첫 페이지를 의미하는 0을 현재 페이지로 사용한다.
-                0
-        );
+        return new PagedResponse<>(items, items.size(), items.isEmpty() ? 0 : 1, 0);
+    }
+
+    public static <T> PagedResponse<T> of(List<T> allItems, int page, int size) {
+        int totalElements = allItems.size();
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        int fromIndex = Math.min(page * size, totalElements);
+        int toIndex = Math.min(fromIndex + size, totalElements);
+        List<T> pageContent = allItems.subList(fromIndex, toIndex);
+        return new PagedResponse<>(pageContent, totalElements, totalPages, page);
     }
 }

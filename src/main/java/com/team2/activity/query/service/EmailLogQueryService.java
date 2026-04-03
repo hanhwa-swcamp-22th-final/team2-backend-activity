@@ -9,15 +9,15 @@ import com.team2.activity.command.infrastructure.client.UserResponse;
 import com.team2.activity.query.dto.EmailLogResponse;
 import com.team2.activity.query.mapper.EmailLogQueryMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class EmailLogQueryService {
 
     private final EmailLogQueryMapper emailLogQueryMapper;
@@ -54,6 +54,7 @@ public class EmailLogQueryService {
             UserResponse user = authFeignClient.getUser(userId);
             return user != null ? user.getName() : null;
         } catch (Exception e) {
+            log.warn("발송자 이름 조회 실패 [userId={}]: {}", userId, e.getMessage());
             return null;
         }
     }
@@ -64,6 +65,7 @@ public class EmailLogQueryService {
             ClientResponse client = masterFeignClient.getClient(clientId);
             return client != null ? client.getName() : null;
         } catch (Exception e) {
+            log.warn("거래처명 조회 실패 [clientId={}]: {}", clientId, e.getMessage());
             return null;
         }
     }

@@ -21,6 +21,7 @@ import com.team2.activity.command.infrastructure.client.PurchaseOrderResponse;
 import com.team2.activity.command.infrastructure.client.UserResponse;
 import com.team2.activity.query.dto.ActivityResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.awt.Color;
@@ -33,8 +34,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 // 활동 패키지 데이터를 PDF 보고서로 생성하는 query service다.
+@Slf4j
 @Service
-// final 필드 기반 생성자 주입을 자동 생성한다.
 @RequiredArgsConstructor
 public class ActivityPackagePdfReportService {
 
@@ -86,13 +87,17 @@ public class ActivityPackagePdfReportService {
 
     // 패키지에 포함된 Activity ID 순서대로 상세 데이터를 조회한다.
     private List<ActivityResponse> loadPackageActivities(ActivityPackage activityPackage) {
-        // item 컬렉션을 순회하며 기존 Activity 단건 조회 로직을 재사용한다.
         return activityPackage.getItems().stream()
-                // 각 item의 activityId로 Activity 상세 데이터를 읽는다.
                 .map(ActivityPackageItem::getActivityId)
-                // 기존 상세 조회 로직이 작성자 이름 enrichment까지 수행한다.
-                .map(activityQueryService::getActivity)
-                // 조회한 Activity DTO들을 리스트로 모은다.
+                .map(activityId -> {
+                    try {
+                        return activityQueryService.getActivity(activityId);
+                    } catch (IllegalArgumentException e) {
+                        log.warn("패키지 PDF 생성 중 활동 조회 실패 [activityId={}]: {}", activityId, e.getMessage());
+                        return null;
+                    }
+                })
+                .filter(java.util.Objects::nonNull)
                 .toList();
     }
 

@@ -29,7 +29,7 @@ public class EmailLogCommandController {
         EmailLog emailLog = emailLogCommandService.createEmailLog(request.toEntity(userId));
         EntityModel<EmailLogResponse> model = EntityModel.of(EmailLogResponse.from(emailLog),
                 linkTo(methodOn(EmailLogQueryController.class).getEmailLog(emailLog.getEmailLogId())).withSelfRel(),
-                linkTo(methodOn(EmailLogQueryController.class).getEmailLogs(null, null, null, null, null, null, null)).withRel("email-logs"));
+                linkTo(methodOn(EmailLogQueryController.class).getEmailLogs(null, null, null, null, null, null, null, 0, 20)).withRel("email-logs"));
         URI location = linkTo(methodOn(EmailLogQueryController.class).getEmailLog(emailLog.getEmailLogId())).toUri();
         return ResponseEntity.created(location).body(model);
     }
@@ -39,6 +39,6 @@ public class EmailLogCommandController {
         EmailLogResponse response = EmailLogResponse.from(emailLogCommandService.resend(emailLogId));
         return ResponseEntity.ok(EntityModel.of(response,
                 linkTo(methodOn(EmailLogQueryController.class).getEmailLog(emailLogId)).withSelfRel(),
-                linkTo(methodOn(EmailLogQueryController.class).getEmailLogs(null, null, null, null, null, null, null)).withRel("email-logs")));
+                linkTo(methodOn(EmailLogQueryController.class).getEmailLogs(null, null, null, null, null, null, null, 0, 20)).withRel("email-logs")));
     }
 }

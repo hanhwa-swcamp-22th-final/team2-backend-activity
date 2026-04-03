@@ -28,12 +28,14 @@ public class EmailLogQueryController {
             @RequestParam(required = false) Long emailSenderId,
             @RequestParam(required = false) String keyword,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
         LocalDateTime dateTimeFrom = dateFrom != null ? dateFrom.atStartOfDay() : null;
         LocalDateTime dateTimeTo = dateTo != null ? dateTo.atTime(23, 59, 59) : null;
         List<EmailLogResponse> responses = emailLogQueryService.getEmailLogsWithFilters(
                 clientId, poId, emailStatus, emailSenderId, keyword, dateTimeFrom, dateTimeTo);
-        return ResponseEntity.ok(PagedResponse.of(responses));
+        return ResponseEntity.ok(PagedResponse.of(responses, page, size));
     }
 
     @GetMapping("/{emailLogId}")

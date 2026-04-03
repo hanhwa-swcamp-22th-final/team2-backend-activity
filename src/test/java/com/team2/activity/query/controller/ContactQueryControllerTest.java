@@ -48,13 +48,14 @@ class ContactQueryControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/contacts → 200 OK, HATEOAS CollectionModel 구조로 목록 반환")
+    @DisplayName("GET /api/contacts → 200 OK, PagedResponse 구조로 목록 반환")
     void getContacts_returns200() throws Exception {
         when(contactQueryService.getAllContacts()).thenReturn(List.of(buildContact()));
 
         mockMvc.perform(get("/api/contacts"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$._embedded.contact_response_list").exists());
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content[0].contact_id").exists());
     }
 
     @Test
@@ -64,16 +65,16 @@ class ContactQueryControllerTest {
 
         mockMvc.perform(get("/api/contacts").param("clientId", "1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$._embedded.contact_response_list").exists());
+                .andExpect(jsonPath("$.content").isArray());
     }
 
     @Test
-    @DisplayName("GET /api/clients/{client_id}/contacts → 200 OK, 해당 거래처 연락처 반환")
+    @DisplayName("GET /api/clients/{client_id}/contacts → 200 OK, 해당 거래처 연락처 배열 반환")
     void getContactsByClientId_returns200() throws Exception {
         when(contactQueryService.getContactsByClientId(1L)).thenReturn(List.of(buildContact()));
 
         mockMvc.perform(get("/api/clients/1/contacts"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$._embedded.contact_response_list").exists());
+                .andExpect(jsonPath("$[0].contact_id").exists());
     }
 }

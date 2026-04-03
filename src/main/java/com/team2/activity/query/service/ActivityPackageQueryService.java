@@ -6,14 +6,14 @@ import com.team2.activity.command.infrastructure.client.UserResponse;
 import com.team2.activity.query.dto.ActivityPackageResponse;
 import com.team2.activity.query.mapper.ActivityPackageQueryMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class ActivityPackageQueryService {
 
     private final ActivityPackageQueryMapper activityPackageQueryMapper;
@@ -29,6 +29,11 @@ public class ActivityPackageQueryService {
 
     public List<ActivityPackageResponse> getPackagesByViewerUserId(Long userId, Long creatorId, String poId) {
         List<ActivityPackage> packages = activityPackageQueryMapper.findAllByViewerUserId(userId, creatorId, poId);
+        return packages.stream().map(this::enrichPackage).toList();
+    }
+
+    public List<ActivityPackageResponse> getPackagesWithFilters(Long creatorId, String poId) {
+        List<ActivityPackage> packages = activityPackageQueryMapper.findAllWithFilters(creatorId, poId);
         return packages.stream().map(this::enrichPackage).toList();
     }
 
@@ -51,6 +56,7 @@ public class ActivityPackageQueryService {
             UserResponse user = authFeignClient.getUser(userId);
             return user != null ? user.getName() : null;
         } catch (Exception e) {
+            log.warn("사용자 이름 조회 실패 [userId={}]: {}", userId, e.getMessage());
             return null;
         }
     }

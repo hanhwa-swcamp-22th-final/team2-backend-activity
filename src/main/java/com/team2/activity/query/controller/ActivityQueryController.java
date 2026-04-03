@@ -27,10 +27,12 @@ public class ActivityQueryController {
             @RequestParam(required = false) Long activityAuthorId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate activityDateFrom,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate activityDateTo,
-            @RequestParam(required = false) String keyword) {
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
         List<ActivityResponse> responses = activityQueryService.getActivitiesWithFilters(
                 clientId, poId, activityType, activityAuthorId, activityDateFrom, activityDateTo, keyword);
-        return ResponseEntity.ok(PagedResponse.of(responses));
+        return ResponseEntity.ok(PagedResponse.of(responses, page, size));
     }
 
     @GetMapping("/{activityId}")

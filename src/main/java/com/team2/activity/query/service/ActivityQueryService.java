@@ -9,15 +9,16 @@ import com.team2.activity.command.infrastructure.client.UserResponse;
 import com.team2.activity.query.dto.ActivityResponse;
 import com.team2.activity.query.mapper.ActivityQueryMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class ActivityQueryService {
 
     private final ActivityQueryMapper activityQueryMapper;
@@ -54,6 +55,7 @@ public class ActivityQueryService {
             UserResponse user = authFeignClient.getUser(userId);
             return user != null ? user.getName() : null;
         } catch (Exception e) {
+            log.warn("사용자 이름 조회 실패 [userId={}]: {}", userId, e.getMessage());
             return null;
         }
     }
@@ -64,6 +66,7 @@ public class ActivityQueryService {
             ClientResponse client = masterFeignClient.getClient(clientId);
             return client != null ? client.getName() : null;
         } catch (Exception e) {
+            log.warn("거래처명 조회 실패 [clientId={}]: {}", clientId, e.getMessage());
             return null;
         }
     }

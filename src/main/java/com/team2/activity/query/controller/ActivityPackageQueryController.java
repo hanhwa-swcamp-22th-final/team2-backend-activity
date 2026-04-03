@@ -32,12 +32,7 @@ public class ActivityPackageQueryController {
         if (userId != null) {
             responses = activityPackageQueryService.getPackagesByViewerUserId(userId, creatorId, poId);
         } else {
-            List<ActivityPackage> packages = creatorId != null
-                    ? activityPackageQueryService.getPackagesByCreatorId(creatorId)
-                    : activityPackageQueryService.getAllPackages();
-            responses = packages.stream()
-                    .map(activityPackageQueryService::enrichPackage)
-                    .toList();
+            responses = activityPackageQueryService.getPackagesWithFilters(creatorId, poId);
         }
         return ResponseEntity.ok(PagedResponse.of(responses));
     }

@@ -30,7 +30,7 @@ public class ActivityCommandController {
         Activity activity = activityCommandService.createActivity(request.toEntity(userId));
         EntityModel<ActivityResponse> model = EntityModel.of(ActivityResponse.from(activity),
                 linkTo(methodOn(ActivityQueryController.class).getActivity(activity.getActivityId())).withSelfRel(),
-                linkTo(methodOn(ActivityQueryController.class).getActivities(null, null, null, null, null, null, null)).withRel("activities"));
+                linkTo(methodOn(ActivityQueryController.class).getActivities(null, null, null, null, null, null, null, 0, 20)).withRel("activities"));
         URI location = linkTo(methodOn(ActivityQueryController.class).getActivity(activity.getActivityId())).toUri();
         return ResponseEntity.created(location).body(model);
     }
@@ -43,7 +43,7 @@ public class ActivityCommandController {
         Activity activity = activityCommandService.updateActivity(activityId, request, userId);
         return ResponseEntity.ok(EntityModel.of(ActivityResponse.from(activity),
                 linkTo(methodOn(ActivityQueryController.class).getActivity(activityId)).withSelfRel(),
-                linkTo(methodOn(ActivityQueryController.class).getActivities(null, null, null, null, null, null, null)).withRel("activities")));
+                linkTo(methodOn(ActivityQueryController.class).getActivities(null, null, null, null, null, null, null, 0, 20)).withRel("activities")));
     }
 
     @DeleteMapping("/{activityId}")

@@ -5,6 +5,7 @@ import com.team2.activity.command.infrastructure.client.DocumentsFeignClient;
 import com.team2.activity.command.infrastructure.client.MasterFeignClient;
 import com.team2.activity.command.infrastructure.client.PurchaseOrderResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
@@ -26,6 +28,7 @@ public class ProxyController {
         try {
             return ResponseEntity.ok(masterFeignClient.getClients(keyword));
         } catch (Exception e) {
+            log.warn("거래처 목록 프록시 조회 실패 [keyword={}]: {}", keyword, e.getMessage());
             return ResponseEntity.ok(List.of());
         }
     }
@@ -42,6 +45,7 @@ public class ProxyController {
             String to = dateTo != null ? dateTo.toString() : null;
             return ResponseEntity.ok(documentsFeignClient.getPurchaseOrders(clientId, from, to));
         } catch (Exception e) {
+            log.warn("PO 목록 프록시 조회 실패 [clientId={}]: {}", clientId, e.getMessage());
             return ResponseEntity.ok(List.of());
         }
     }

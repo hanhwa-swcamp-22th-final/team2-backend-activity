@@ -16,9 +16,9 @@
         <result property="emailSentAt" column="email_sent_at"/>
         <result property="createdAt" column="created_at"/>
         <collection property="docTypes" ofType="EmailLogType"
-                    select="selectDocTypesByEmailLogId" column="email_log_id"/>
+                    resultMap="docTypeResultMap" columnPrefix="dt_"/>
         <collection property="attachments" ofType="EmailLogAttachment"
-                    select="selectAttachmentsByEmailLogId" column="email_log_id"/>
+                    resultMap="attachmentResultMap" columnPrefix="at_"/>
     </resultMap>
 
     <resultMap id="docTypeResultMap" type="EmailLogType">
@@ -32,52 +32,48 @@
         <result property="emailAttachmentFilename" column="email_attachment_filename"/>
     </resultMap>
 
-    <select id="selectDocTypesByEmailLogId" resultMap="docTypeResultMap">
-        SELECT email_log_type_id, email_doc_type
-        FROM email_log_types
-        WHERE email_log_id = #{emailLogId}
-    </select>
+    <sql id="emailLogColumns">
+        e.email_log_id, e.client_id, e.po_id, e.email_title, e.email_recipient_name,
+        e.email_recipient_email, e.email_sender_id, e.email_status, e.email_sent_at, e.created_at,
+        dt.email_log_type_id AS dt_email_log_type_id, dt.email_doc_type AS dt_email_doc_type,
+        at.email_log_attachment_id AS at_email_log_attachment_id, at.email_attachment_filename AS at_email_attachment_filename
+    </sql>
 
-    <select id="selectAttachmentsByEmailLogId" resultMap="attachmentResultMap">
-        SELECT email_log_attachment_id, email_attachment_filename
-        FROM email_log_attachments
-        WHERE email_log_id = #{emailLogId}
-    </select>
+    <sql id="emailLogJoins">
+        FROM email_logs e
+        LEFT JOIN email_log_types dt ON e.email_log_id = dt.email_log_id
+        LEFT JOIN email_log_attachments at ON e.email_log_id = at.email_log_id
+    </sql>
 
     <select id="findById" resultMap="emailLogResultMap">
-        SELECT email_log_id, client_id, po_id, email_title, email_recipient_name,
-               email_recipient_email, email_sender_id, email_status, email_sent_at, created_at
-        FROM email_logs
-        WHERE email_log_id = #{emailLogId}
+        SELECT <include refid="emailLogColumns"/>
+        <include refid="emailLogJoins"/>
+        WHERE e.email_log_id = #{emailLogId}
     </select>
 
     <select id="findAll" resultMap="emailLogResultMap">
-        SELECT email_log_id, client_id, po_id, email_title, email_recipient_name,
-               email_recipient_email, email_sender_id, email_status, email_sent_at, created_at
-        FROM email_logs
-        ORDER BY created_at DESC
+        SELECT <include refid="emailLogColumns"/>
+        <include refid="emailLogJoins"/>
+        ORDER BY e.created_at DESC
     </select>
 
     <select id="findByClientId" resultMap="emailLogResultMap">
-        SELECT email_log_id, client_id, po_id, email_title, email_recipient_name,
-               email_recipient_email, email_sender_id, email_status, email_sent_at, created_at
-        FROM email_logs
-        WHERE client_id = #{clientId}
-        ORDER BY created_at DESC
+        SELECT <include refid="emailLogColumns"/>
+        <include refid="emailLogJoins"/>
+        WHERE e.client_id = #{clientId}
+        ORDER BY e.created_at DESC
     </select>
 
     <select id="findByEmailStatus" resultMap="emailLogResultMap">
-        SELECT email_log_id, client_id, po_id, email_title, email_recipient_name,
-               email_recipient_email, email_sender_id, email_status, email_sent_at, created_at
-        FROM email_logs
-        WHERE email_status = #{emailStatus}
-        ORDER BY created_at DESC
+        SELECT <include refid="emailLogColumns"/>
+        <include refid="emailLogJoins"/>
+        WHERE e.email_status = #{emailStatus}
+        ORDER BY e.created_at DESC
     </select>
 
     <select id="findWithFilters" resultMap="emailLogResultMap">
-        SELECT email_log_id, client_id, po_id, email_title, email_recipient_name,
-               email_recipient_email, email_sender_id, email_status, email_sent_at, created_at
-        FROM email_logs
+        SELECT <include refid="emailLogColumns"/>
+        <include refid="emailLogJoins"/>
         <where>
             <if test="clientId != null">
                 AND client_id = #{clientId}

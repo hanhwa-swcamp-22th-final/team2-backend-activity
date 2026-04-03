@@ -50,7 +50,10 @@ public class EmailLogCommandService {
         }
         // 실제 이메일 발송을 시도하고 성공 시 상태를 SENT로 갱신한다.
         sendMail(emailLog);
-        // 재전송 결과가 반영된 엔티티를 그대로 반환한다.
+        // 발송 후에도 여전히 FAILED 상태면 재전송 실패를 알린다.
+        if (emailLog.getEmailStatus() == MailStatus.FAILED) {
+            throw new IllegalStateException("이메일 재전송에 실패했습니다.");
+        }
         return emailLog;
     }
 

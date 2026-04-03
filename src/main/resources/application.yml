@@ -60,6 +60,13 @@ report:
   pdf:
     font-path: ${REPORT_PDF_FONT_PATH:}
 
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 5000
+        readTimeout: 10000
+
 management:
   endpoints:
     web:

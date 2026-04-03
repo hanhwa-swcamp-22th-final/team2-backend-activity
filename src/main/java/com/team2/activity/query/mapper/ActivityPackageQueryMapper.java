@@ -18,4 +18,7 @@ public interface ActivityPackageQueryMapper {
     List<ActivityPackage> findAllByViewerUserId(@Param("userId") Long userId,
                                                  @Param("creatorId") Long creatorId,
                                                  @Param("poId") String poId);
+
+    List<ActivityPackage> findAllWithFilters(@Param("creatorId") Long creatorId,
+                                              @Param("poId") String poId);
 }
