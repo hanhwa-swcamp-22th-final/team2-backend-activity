@@ -11,7 +11,7 @@ spring:
   datasource:
     url: ${DB_URL:jdbc:mariadb://localhost:3306/team2_activity}
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:}
+    password: ${DB_PASSWORD:team2root}
     driver-class-name: org.mariadb.jdbc.Driver
 
   jpa:
@@ -49,12 +49,12 @@ documents:
 # 인증 서비스 URL (사용자 이름 조회에 사용한다)
 auth:
   service:
-    url: ${AUTH_SERVICE_URL:http://localhost:8081}
+    url: ${AUTH_SERVICE_URL:http://localhost:8011}
 
 # 거래처 마스터 서비스 URL (거래처명 조회에 사용한다)
 master:
   service:
-    url: ${MASTER_SERVICE_URL:http://localhost:8082}
+    url: ${MASTER_SERVICE_URL:http://localhost:8012}
 
 report:
   pdf:

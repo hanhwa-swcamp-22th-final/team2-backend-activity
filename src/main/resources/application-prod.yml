@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+
+auth:
+  service:
+    url: ${AUTH_SERVICE_URL}
+
+master:
+  service:
+    url: ${MASTER_SERVICE_URL}
+
+documents:
+  service:
+    url: ${DOCUMENTS_SERVICE_URL}
