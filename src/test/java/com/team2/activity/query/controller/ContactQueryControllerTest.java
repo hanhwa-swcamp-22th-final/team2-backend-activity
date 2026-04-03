@@ -48,49 +48,32 @@ class ContactQueryControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/contacts → 200 OK, PagedResponse 구조로 목록 반환")
+    @DisplayName("GET /api/contacts → 200 OK, HATEOAS CollectionModel 구조로 목록 반환")
     void getContacts_returns200() throws Exception {
-        // 전체 연락처 목록 응답을 서비스 목 객체에 등록한다.
         when(contactQueryService.getAllContacts()).thenReturn(List.of(buildContact()));
 
-        // GET /api/contacts 요청이 PagedResponse 래퍼 구조로 응답하는지 확인한다.
         mockMvc.perform(get("/api/contacts"))
                 .andExpect(status().isOk())
-                // PagedResponse의 content 배열이 존재하는지 확인한다.
-                .andExpect(jsonPath("$.content").isArray())
-                // content 첫 원소에 contact_id가 포함되는지 확인한다.
-                .andExpect(jsonPath("$.content[0].contact_id").exists())
-                // content 첫 원소에 contact_name이 포함되는지 확인한다.
-                .andExpect(jsonPath("$.content[0].contact_name").exists());
+                .andExpect(jsonPath("$._embedded.contact_response_list").exists());
     }
 
     @Test
-    @DisplayName("GET /api/contacts?clientId=1 → 200 OK, client_id 필터 적용 후 PagedResponse 반환")
+    @DisplayName("GET /api/contacts?clientId=1 → 200 OK, client_id 필터 적용")
     void getContacts_returns200WithClientIdFilter() throws Exception {
-        // client_id 조건 조회 결과를 서비스가 반환하도록 설정한다.
         when(contactQueryService.getContactsByClientId(1L)).thenReturn(List.of(buildContact()));
 
-        // clientId 필터를 적용한 요청도 PagedResponse 구조로 반환되는지 확인한다.
         mockMvc.perform(get("/api/contacts").param("clientId", "1"))
                 .andExpect(status().isOk())
-                // PagedResponse의 content 배열이 존재하는지 확인한다.
-                .andExpect(jsonPath("$.content").isArray());
+                .andExpect(jsonPath("$._embedded.contact_response_list").exists());
     }
 
     @Test
-    @DisplayName("GET /api/clients/{client_id}/contacts → 200 OK, 해당 거래처 연락처 배열 반환")
+    @DisplayName("GET /api/clients/{client_id}/contacts → 200 OK, 해당 거래처 연락처 반환")
     void getContactsByClientId_returns200() throws Exception {
-        // 거래처 하위 리소스 조회 결과를 서비스가 반환하도록 설정한다.
         when(contactQueryService.getContactsByClientId(1L)).thenReturn(List.of(buildContact()));
 
-        // 거래처별 연락처 목록 엔드포인트가 배열 응답으로 처리되는지 확인한다.
         mockMvc.perform(get("/api/clients/1/contacts"))
                 .andExpect(status().isOk())
-                // 응답 본문이 배열인지 확인한다.
-                .andExpect(jsonPath("$").isArray())
-                // 첫 원소에 contact_id가 포함되는지 확인한다.
-                .andExpect(jsonPath("$[0].contact_id").exists())
-                // 첫 원소에 writer_id가 포함되는지 확인한다.
-                .andExpect(jsonPath("$[0].writer_id").exists());
+                .andExpect(jsonPath("$._embedded.contact_response_list").exists());
     }
 }

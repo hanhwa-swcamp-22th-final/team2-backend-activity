@@ -63,10 +63,8 @@ class ContactIntegrationTest extends IntegrationTestSupport {
         // 생성된 연락처가 거래처별 목록 조회에 노출되는지 확인한다.
         mockMvc.perform(get("/api/clients/{clientId}/contacts", 1L))
                 .andExpect(status().isOk())
-                // 목록 첫 원소의 contact_id가 생성한 ID와 같은지 확인한다.
-                .andExpect(jsonPath("$[0].contact_id").value(contactId))
-                // 목록 첫 원소의 이름이 생성 값과 같은지 확인한다.
-                .andExpect(jsonPath("$[0].contact_name").value("김철수"));
+                .andExpect(jsonPath("$._embedded.contact_response_list[0].contact_id").value(contactId))
+                .andExpect(jsonPath("$._embedded.contact_response_list[0].contact_name").value("김철수"));
 
         // 수정 요청을 통해 연락처 정보가 갱신되는지 확인한다.
         mockMvc.perform(put("/api/contacts/{contactId}", contactId)
@@ -96,10 +94,8 @@ class ContactIntegrationTest extends IntegrationTestSupport {
         // 공통 목록 API에서도 수정된 이메일이 보이는지 확인한다.
         mockMvc.perform(get("/api/contacts").param("clientId", "1"))
                 .andExpect(status().isOk())
-                // PagedResponse 구조의 content 배열에서 첫 원소를 확인한다.
-                .andExpect(jsonPath("$.content[0].contact_id").value(contactId))
-                // 목록 첫 원소의 이메일이 수정 값으로 바뀌었는지 확인한다.
-                .andExpect(jsonPath("$.content[0].contact_email").value("park@example.com"));
+                .andExpect(jsonPath("$._embedded.contact_response_list[0].contact_id").value(contactId))
+                .andExpect(jsonPath("$._embedded.contact_response_list[0].contact_email").value("park@example.com"));
 
         // 삭제 요청이 정상 처리되는지 확인한다.
         mockMvc.perform(delete("/api/contacts/{contactId}", contactId).with(csrf()))
