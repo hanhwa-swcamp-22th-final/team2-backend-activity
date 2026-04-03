@@ -1,7 +1,6 @@
 package com.team2.activity.query.controller;
 
 import com.team2.activity.command.infrastructure.client.ClientResponse;
-import com.team2.activity.command.infrastructure.client.DocumentsFeignClient;
 import com.team2.activity.command.infrastructure.client.MasterFeignClient;
 import com.team2.activity.command.infrastructure.client.PurchaseOrderResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,13 +19,20 @@ import java.util.List;
 public class ProxyController {
 
     private final MasterFeignClient masterFeignClient;
-    private final DocumentsFeignClient documentsFeignClient;
 
     @GetMapping("/clients")
     public ResponseEntity<List<ClientResponse>> getClients(
             @RequestParam(required = false) String keyword) {
         try {
-            return ResponseEntity.ok(masterFeignClient.getClients(keyword));
+            List<ClientResponse> clients = masterFeignClient.getClients();
+            if (keyword != null && !keyword.isBlank()) {
+                String lowerKeyword = keyword.toLowerCase();
+                clients = clients.stream()
+                        .filter(c -> (c.getClientName() != null && c.getClientName().toLowerCase().contains(lowerKeyword))
+                                || (c.getClientNameKr() != null && c.getClientNameKr().contains(keyword)))
+                        .toList();
+            }
+            return ResponseEntity.ok(clients);
         } catch (Exception e) {
             log.warn("거래처 목록 프록시 조회 실패 [keyword={}]: {}", keyword, e.getMessage());
             return ResponseEntity.ok(List.of());
@@ -40,13 +46,8 @@ public class ProxyController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
             @RequestParam(value = "date_to", required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo) {
-        try {
-            String from = dateFrom != null ? dateFrom.toString() : null;
-            String to = dateTo != null ? dateTo.toString() : null;
-            return ResponseEntity.ok(documentsFeignClient.getPurchaseOrders(clientId, from, to));
-        } catch (Exception e) {
-            log.warn("PO 목록 프록시 조회 실패 [clientId={}]: {}", clientId, e.getMessage());
-            return ResponseEntity.ok(List.of());
-        }
+        // documents 서비스 PO 목록 API 미구현 상태 — 서비스 구현 후 Feign 연동 예정
+        log.info("PO 목록 프록시 요청 [clientId={}, dateFrom={}, dateTo={}] — documents 서비스 미구현", clientId, dateFrom, dateTo);
+        return ResponseEntity.ok(List.of());
     }
 }

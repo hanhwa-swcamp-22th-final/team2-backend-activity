@@ -193,10 +193,10 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                 .willReturn(new PurchaseOrderResponse("PO-REPORT-001", "PO12345", "APPROVED"));
         // 패키지 작성자 이름 조회용 목 응답을 설정한다.
         given(authFeignClient.getUser(7L))
-                .willReturn(new UserResponse(7L, "패키지 작성자", "package@example.com"));
+                .willReturn(new UserResponse(7, "패키지 작성자", "package@example.com"));
         // 활동 작성자 이름 조회용 목 응답을 설정한다.
         given(authFeignClient.getUser(10L))
-                .willReturn(new UserResponse(10L, "활동 작성자", "activity@example.com"));
+                .willReturn(new UserResponse(10, "활동 작성자", "activity@example.com"));
 
         // 패키지에 포함할 첫 번째 활동을 생성한다.
         MvcResult meetingResult = mockMvc.perform(post("/api/activities")

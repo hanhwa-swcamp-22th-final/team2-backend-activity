@@ -3,7 +3,6 @@ package com.team2.activity.command.infrastructure.client;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
@@ -14,5 +13,5 @@ public interface MasterFeignClient {
     ClientResponse getClient(@PathVariable("clientId") Long clientId);
 
     @GetMapping("/api/clients")
-    List<ClientResponse> getClients(@RequestParam(value = "keyword", required = false) String keyword);
+    List<ClientResponse> getClients();
 }
