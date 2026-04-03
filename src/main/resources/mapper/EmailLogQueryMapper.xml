@@ -74,4 +74,34 @@
         ORDER BY created_at DESC
     </select>
 
+    <select id="findWithFilters" resultMap="emailLogResultMap">
+        SELECT email_log_id, client_id, po_id, email_title, email_recipient_name,
+               email_recipient_email, email_sender_id, email_status, email_sent_at, created_at
+        FROM email_logs
+        <where>
+            <if test="clientId != null">
+                AND client_id = #{clientId}
+            </if>
+            <if test="poId != null and poId != ''">
+                AND po_id = #{poId}
+            </if>
+            <if test="emailStatus != null">
+                AND email_status = #{emailStatus}
+            </if>
+            <if test="emailSenderId != null">
+                AND email_sender_id = #{emailSenderId}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (email_title LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+            <if test="dateFrom != null">
+                AND email_sent_at &gt;= #{dateFrom}
+            </if>
+            <if test="dateTo != null">
+                AND email_sent_at &lt;= #{dateTo}
+            </if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
 </mapper>

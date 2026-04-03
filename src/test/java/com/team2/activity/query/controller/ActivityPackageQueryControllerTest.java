@@ -1,6 +1,7 @@
 package com.team2.activity.query.controller;
 
 import com.team2.activity.command.domain.entity.ActivityPackage;
+import com.team2.activity.query.dto.ActivityPackageResponse;
 import com.team2.activity.query.service.ActivityPackagePdfReportService;
 import com.team2.activity.query.service.ActivityPackageQueryService;
 import org.junit.jupiter.api.DisplayName;
@@ -54,54 +55,45 @@ class ActivityPackageQueryControllerTest {
     @Test
     @DisplayName("GET /api/activity-packages → 200 OK, 페이징 응답 구조 포함")
     void getPackages_returns200WithPagedResult() throws Exception {
-        // 전체 패키지 목록 응답을 서비스 목 객체에 등록한다.
-        when(activityPackageQueryService.getAllPackages()).thenReturn(List.of(buildPackage()));
+        ActivityPackage pkg = buildPackage();
+        when(activityPackageQueryService.getAllPackages()).thenReturn(List.of(pkg));
+        when(activityPackageQueryService.enrichPackage(any(ActivityPackage.class)))
+                .thenReturn(ActivityPackageResponse.from(pkg));
 
-        // 목록 조회 응답이 페이징 구조를 유지하는지 확인한다.
-        // 응답 상태가 200 OK인지 확인한다.
         mockMvc.perform(get("/api/activity-packages"))
                 .andExpect(status().isOk())
-                // content 필드가 배열인지 확인한다.
                 .andExpect(jsonPath("$.content").isArray())
-                // total_elements 필드가 존재하는지 확인한다.
                 .andExpect(jsonPath("$.total_elements").exists())
-                // total_pages 필드가 존재하는지 확인한다.
                 .andExpect(jsonPath("$.total_pages").exists())
-                // current_page 필드가 존재하는지 확인한다.
                 .andExpect(jsonPath("$.current_page").exists());
     }
 
     @Test
     @DisplayName("GET /api/activity-packages?creator_id=10 → 200 OK, creator_id 필터 적용")
     void getPackages_returns200WithCreatorIdFilter() throws Exception {
-        // creator_id 조건 조회 결과를 서비스가 반환하도록 설정한다.
-        when(activityPackageQueryService.getPackagesByCreatorId(10L)).thenReturn(List.of(buildPackage()));
+        ActivityPackage pkg = buildPackage();
+        when(activityPackageQueryService.getPackagesByCreatorId(10L)).thenReturn(List.of(pkg));
+        when(activityPackageQueryService.enrichPackage(any(ActivityPackage.class)))
+                .thenReturn(ActivityPackageResponse.from(pkg));
 
-        // 생성자 필터 요청이 정상 응답으로 처리되는지 확인한다.
-        // 응답 상태가 200 OK인지 확인한다.
         mockMvc.perform(get("/api/activity-packages").param("creatorId", "10"))
                 .andExpect(status().isOk())
-                // content 필드가 배열인지 확인한다.
                 .andExpect(jsonPath("$.content").isArray());
     }
 
     @Test
     @DisplayName("GET /api/activity-packages/{package_id} → 200 OK, 상세 필드 포함")
     void getPackage_returns200WithDetail() throws Exception {
-        // 단건 패키지 조회 결과를 준비한다.
-        when(activityPackageQueryService.getPackage(1L)).thenReturn(buildPackage());
+        ActivityPackage pkg = buildPackage();
+        when(activityPackageQueryService.getPackage(1L)).thenReturn(pkg);
+        when(activityPackageQueryService.enrichPackage(any(ActivityPackage.class)))
+                .thenReturn(ActivityPackageResponse.from(pkg));
 
-        // 상세 응답에 컬렉션 필드까지 포함되는지 확인한다.
-        // 응답 상태가 200 OK인지 확인한다.
         mockMvc.perform(get("/api/activity-packages/1"))
                 .andExpect(status().isOk())
-                // 상세 응답에 package_id가 포함되는지 확인한다.
                 .andExpect(jsonPath("$.package_id").exists())
-                // 상세 응답에 package_title이 포함되는지 확인한다.
                 .andExpect(jsonPath("$.package_title").exists())
-                // 상세 응답에 activity_ids 배열이 포함되는지 확인한다.
                 .andExpect(jsonPath("$.activity_ids").isArray())
-                // 상세 응답에 viewer_ids 배열이 포함되는지 확인한다.
                 .andExpect(jsonPath("$.viewer_ids").isArray());
     }
 

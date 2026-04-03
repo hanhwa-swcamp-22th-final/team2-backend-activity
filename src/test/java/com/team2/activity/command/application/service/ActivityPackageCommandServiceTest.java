@@ -78,7 +78,7 @@ class ActivityPackageCommandServiceTest {
 
         // 단일 요청으로 본문, 열람자, 항목이 모두 교체되는지 확인한다.
         ActivityPackageUpdateRequest request = new ActivityPackageUpdateRequest(
-                "월간 패키지", "월간 활동 묶음", "PO-2025-002", List.of(200L, 300L), List.of(30L, 40L));
+                "월간 패키지", "월간 활동 묶음", "PO-2025-002", null, null, List.of(200L, 300L), List.of(30L, 40L));
         ActivityPackage result = activityPackageCommandService.updateAll(10L, request);
 
         // 반환 결과가 조회한 기존 엔티티와 같은 객체인지 확인한다.
@@ -106,7 +106,7 @@ class ActivityPackageCommandServiceTest {
 
         // viewerIds를 null로 전달해 viewer 교체가 건너뛰어지는지 확인한다.
         ActivityPackageUpdateRequest request = new ActivityPackageUpdateRequest(
-                "월간 패키지", "월간 활동 묶음", "PO-002", List.of(200L), null);
+                "월간 패키지", "월간 활동 묶음", "PO-002", null, null, List.of(200L), null);
         ActivityPackage result = activityPackageCommandService.updateAll(10L, request);
 
         // 반환 결과가 조회한 기존 엔티티와 같은 객체인지 확인한다.
@@ -122,21 +122,22 @@ class ActivityPackageCommandServiceTest {
     }
 
     @Test
-    @DisplayName("패키지 전체 수정 시 activityIds가 null이면 빈 목록으로 처리한다")
-    void updateAll_treatsNullActivityIdsAsEmpty() {
-        // activityIds null 요청 시 item 목록이 비워지는지 확인한다.
+    @DisplayName("패키지 전체 수정 시 activityIds가 null이면 기존 항목을 유지한다")
+    void updateAll_keepsItemsWhenActivityIdsNull() {
+        // activityIds null 요청 시 기존 item 목록이 유지되는지 확인한다.
         ActivityPackage activityPackage = buildPackage(List.of(1L), List.of(100L, 101L));
         when(activityPackageRepository.findById(10L)).thenReturn(Optional.of(activityPackage));
 
-        // activityIds를 null로 전달해 item 목록이 빈 목록으로 처리되는지 확인한다.
+        // activityIds를 null로 전달해 item 교체가 건너뛰어지는지 확인한다.
         ActivityPackageUpdateRequest request = new ActivityPackageUpdateRequest(
-                "월간 패키지", "월간 활동 묶음", "PO-002", null, List.of(30L));
+                "월간 패키지", "월간 활동 묶음", "PO-002", null, null, null, List.of(30L));
         ActivityPackage result = activityPackageCommandService.updateAll(10L, request);
 
-        // 반환 결과가 조회한 기존 엔티티와 같은 객체인지 확인한다.
         assertThat(result).isSameAs(activityPackage);
-        // item 목록이 비워졌는지 확인한다.
-        assertThat(activityPackage.getItems()).isEmpty();
+        // item 목록이 기존 값 그대로 유지됐는지 확인한다.
+        assertThat(activityPackage.getItems())
+                .extracting(ActivityPackageItem::getActivityId)
+                .containsExactly(100L, 101L);
         // viewer 목록은 새 값으로 교체됐는지 확인한다.
         assertThat(activityPackage.getViewers())
                 .extracting(ActivityPackageViewer::getUserId)
@@ -151,7 +152,7 @@ class ActivityPackageCommandServiceTest {
 
         // 없는 패키지 전체 수정 시 IllegalArgumentException이 발생하는지 확인한다.
         ActivityPackageUpdateRequest request = new ActivityPackageUpdateRequest(
-                "제목", "설명", "PO-999", List.of(1L), List.of(1L));
+                "제목", "설명", "PO-999", null, null, List.of(1L), List.of(1L));
         assertThatThrownBy(() -> activityPackageCommandService.updateAll(999L, request))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage("활동 패키지를 찾을 수 없습니다.");

@@ -5,6 +5,7 @@ import com.team2.activity.command.domain.entity.ActivityPackageItem;
 import com.team2.activity.command.domain.entity.enums.ActivityType;
 import com.team2.activity.command.infrastructure.client.AuthFeignClient;
 import com.team2.activity.command.infrastructure.client.DocumentsFeignClient;
+import com.team2.activity.command.infrastructure.client.PurchaseOrderResponse;
 import com.team2.activity.command.infrastructure.client.UserResponse;
 import com.team2.activity.query.dto.ActivityResponse;
 import org.junit.jupiter.api.DisplayName;

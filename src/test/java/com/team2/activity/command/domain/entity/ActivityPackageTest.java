@@ -117,7 +117,8 @@ class ActivityPackageTest {
         pkg.update(
                 "수정된 패키지 제목",
                 "수정된 설명",
-                "PO-2025-999"
+                "PO-2025-999",
+                null, null
         );
 
         // 수정 가능한 본문 필드가 모두 갱신되는지 확인한다.
@@ -132,7 +133,7 @@ class ActivityPackageTest {
         // 선택 필드를 null로 덮어써서 값이 제거되는지 확인한다.
         ActivityPackage pkg = buildBasicPackage();
 
-        pkg.update("2025 Q1 영업 활동 패키지", null, null);
+        pkg.update("2025 Q1 영업 활동 패키지", null, null, null, null);
 
         assertThat(pkg.getPackageDescription()).isNull();
         assertThat(pkg.getPoId()).isNull();
@@ -144,7 +145,7 @@ class ActivityPackageTest {
         // 수정 호출 이후에도 creatorId는 바뀌지 않아야 한다.
         ActivityPackage pkg = buildBasicPackage();
 
-        pkg.update("수정된 제목", null, null);
+        pkg.update("수정된 제목", null, null, null, null);
 
         assertThat(pkg.getCreatorId()).isEqualTo(1L);
     }
@@ -188,7 +189,7 @@ class ActivityPackageTest {
         ActivityPackage pkg = buildBasicPackage();
         ActivityPackage saved = em.persistAndFlush(pkg);
 
-        saved.update("수정된 패키지 제목", "수정된 설명", "PO-2025-999");
+        saved.update("수정된 패키지 제목", "수정된 설명", "PO-2025-999", null, null);
         em.flush();
         em.clear();
 

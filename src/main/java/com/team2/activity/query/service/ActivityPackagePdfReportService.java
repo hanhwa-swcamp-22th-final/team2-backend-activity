@@ -11,6 +11,7 @@ import com.lowagie.text.pdf.BaseFont;
 import com.lowagie.text.pdf.PdfPCell;
 import com.lowagie.text.pdf.PdfPTable;
 import com.lowagie.text.pdf.PdfWriter;
+import com.team2.activity.common.PdfGenerationException;
 import com.team2.activity.command.domain.entity.ActivityPackage;
 import com.team2.activity.command.domain.entity.ActivityPackageItem;
 import com.team2.activity.command.domain.entity.enums.ActivityType;
@@ -22,8 +23,6 @@ import com.team2.activity.query.dto.ActivityResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -37,8 +36,6 @@ import java.util.List;
 @Service
 // final 필드 기반 생성자 주입을 자동 생성한다.
 @RequiredArgsConstructor
-// 읽기 전용 트랜잭션으로 조회 성격을 명확히 한다.
-@Transactional(readOnly = true)
 public class ActivityPackagePdfReportService {
 
     // PDF 본문 날짜 표시에 사용할 포맷터다.
@@ -259,7 +256,7 @@ public class ActivityPackagePdfReportService {
                 document.close();
             }
             // 예외 원인을 포함해 PDF 생성 실패 예외를 던진다.
-            throw new IllegalStateException("활동 패키지 PDF 보고서를 생성할 수 없습니다.", e);
+            throw new PdfGenerationException("활동 패키지 PDF 보고서를 생성할 수 없습니다.", e);
         }
     }
 
@@ -421,6 +418,6 @@ public class ActivityPackagePdfReportService {
             return LINUX_NOTO_FONT_PATH;
         }
         // 사용할 수 있는 한글 폰트가 없으면 명시적 예외를 던진다.
-        throw new IllegalStateException("PDF 생성에 사용할 한글 폰트를 찾을 수 없습니다. (검사 경로: macOS, Windows, Linux 기본 경로)");
+        throw new PdfGenerationException("PDF 생성에 사용할 한글 폰트를 찾을 수 없습니다. (검사 경로: macOS, Windows, Linux 기본 경로)", null);
     }
 }

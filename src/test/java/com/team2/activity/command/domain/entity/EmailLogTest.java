@@ -60,7 +60,7 @@ class EmailLogTest {
     }
 
     @Test
-    @DisplayName("status null 전달 시 기본값 SENT 적용")
+    @DisplayName("status null 전달 시 기본값 FAILED 적용")
     void createEmailLog_defaultStatus_whenNull() {
         EmailLog mail = EmailLog.builder()
                 .clientId(1L)
@@ -70,7 +70,7 @@ class EmailLogTest {
                 .emailSentAt(LocalDateTime.now())
                 .build();
 
-        assertThat(mail.getEmailStatus()).isEqualTo(MailStatus.SENT);
+        assertThat(mail.getEmailStatus()).isEqualTo(MailStatus.FAILED);
     }
 
     @Test

@@ -84,4 +84,35 @@
         ORDER BY created_at DESC
     </select>
 
+    <select id="findWithFilters" resultMap="activityResultMap">
+        SELECT activity_id, client_id, po_id, activity_author_id, activity_date,
+               activity_type, activity_title, activity_content, activity_priority,
+               activity_schedule_from, activity_schedule_to, created_at, updated_at
+        FROM activities
+        <where>
+            <if test="clientId != null">
+                AND client_id = #{clientId}
+            </if>
+            <if test="poId != null and poId != ''">
+                AND po_id = #{poId}
+            </if>
+            <if test="activityType != null">
+                AND activity_type = #{activityType}
+            </if>
+            <if test="activityAuthorId != null">
+                AND activity_author_id = #{activityAuthorId}
+            </if>
+            <if test="activityDateFrom != null">
+                AND activity_date &gt;= #{activityDateFrom}
+            </if>
+            <if test="activityDateTo != null">
+                AND activity_date &lt;= #{activityDateTo}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (activity_title LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY created_at DESC
+    </select>
+
 </mapper>

@@ -4,6 +4,7 @@ import com.team2.activity.command.domain.entity.EmailLog;
 import com.team2.activity.command.domain.entity.enums.MailStatus;
 import com.team2.activity.command.domain.repository.EmailLogRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 // 이메일 로그 쓰기 유스케이스를 담당하는 command service다.
+@Slf4j
 @Service
 // final 필드 기반 생성자 주입을 자동 생성한다.
 @RequiredArgsConstructor
@@ -79,6 +81,7 @@ public class EmailLogCommandService {
             emailLog.markAsSent();
         } catch (Exception e) {
             // 발송 실패 시 상태를 변경하지 않고 FAILED 상태를 유지한다.
+            log.error("이메일 발송 실패 [emailLogId={}, to={}]: {}", emailLog.getEmailLogId(), emailLog.getEmailRecipientEmail(), e.getMessage(), e);
         }
     }
 

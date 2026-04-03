@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +43,14 @@ public class ActivityPackage {
     @Column(name = "creator_id", nullable = false)
     private Long creatorId;
 
+    // 패키지 기간 시작일이다.
+    @Column(name = "date_from")
+    private LocalDate dateFrom;
+
+    // 패키지 기간 종료일이다.
+    @Column(name = "date_to")
+    private LocalDate dateTo;
+
     // 생성 시각이다.
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
@@ -63,21 +72,16 @@ public class ActivityPackage {
     // 빌더 기반 생성 로직을 제공한다.
     @Builder
     private ActivityPackage(Long packageId, String packageTitle, String packageDescription, String poId,
-                             Long creatorId, List<ActivityPackageViewer> viewers,
-                             List<ActivityPackageItem> items) {
-        // 빌더에서 받은 패키지 ID를 엔티티 기본키 필드에 저장한다.
+                             Long creatorId, LocalDate dateFrom, LocalDate dateTo,
+                             List<ActivityPackageViewer> viewers, List<ActivityPackageItem> items) {
         this.packageId = packageId;
-        // 빌더에서 받은 제목을 저장한다.
         this.packageTitle = packageTitle;
-        // 빌더에서 받은 설명을 저장한다.
         this.packageDescription = packageDescription;
-        // 빌더에서 받은 PO ID를 저장한다.
         this.poId = poId;
-        // 빌더에서 받은 생성자 ID를 저장한다.
         this.creatorId = creatorId;
-        // null이 아니면 새 ArrayList로 복사해 viewers 컬렉션을 초기화한다.
+        this.dateFrom = dateFrom;
+        this.dateTo = dateTo;
         this.viewers = viewers != null ? new ArrayList<>(viewers) : new ArrayList<>();
-        // null이 아니면 새 ArrayList로 복사해 items 컬렉션을 초기화한다.
         this.items = items != null ? new ArrayList<>(items) : new ArrayList<>();
     }
 
@@ -98,12 +102,12 @@ public class ActivityPackage {
     }
 
     // 수정 가능한 기본 정보를 한 번에 갱신한다.
-    public void update(String packageTitle, String packageDescription, String poId) {
-        // 새 제목으로 값을 교체한다.
+    public void update(String packageTitle, String packageDescription, String poId,
+                       LocalDate dateFrom, LocalDate dateTo) {
         this.packageTitle = packageTitle;
-        // 새 설명으로 값을 교체한다.
         this.packageDescription = packageDescription;
-        // 새 PO ID로 값을 교체한다.
         this.poId = poId;
+        this.dateFrom = dateFrom;
+        this.dateTo = dateTo;
     }
 }

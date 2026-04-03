@@ -45,9 +45,8 @@ class EmailLogQueryEntityTest {
     }
 
     @Test
-    @DisplayName("조회용 EmailLog는 상태 미지정 시 SENT 기본값을 가진다")
+    @DisplayName("조회용 EmailLog는 상태 미지정 시 FAILED 기본값을 가진다")
     void createReadEmailLog_defaultStatus() {
-        // 상태를 지정하지 않은 이메일 로그를 생성한다.
         EmailLog emailLog = EmailLog.builder()
                 .clientId(1L)
                 .emailTitle("기본 상태 메일")
@@ -55,7 +54,6 @@ class EmailLogQueryEntityTest {
                 .emailSenderId(10L)
                 .build();
 
-        // 기본 메일 상태가 SENT로 초기화되는지 확인한다.
-        assertThat(emailLog.getEmailStatus()).isEqualTo(MailStatus.SENT);
+        assertThat(emailLog.getEmailStatus()).isEqualTo(MailStatus.FAILED);
     }
 }

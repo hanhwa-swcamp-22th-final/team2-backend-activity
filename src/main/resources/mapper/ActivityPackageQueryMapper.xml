@@ -9,12 +9,14 @@
         <result property="packageDescription" column="package_description"/>
         <result property="poId" column="po_id"/>
         <result property="creatorId" column="creator_id"/>
+        <result property="dateFrom" column="date_from"/>
+        <result property="dateTo" column="date_to"/>
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
         <collection property="viewers" ofType="ActivityPackageViewer"
-                    select="selectViewersByPackageId" column="package_id"/>
+                    resultMap="viewerResultMap" columnPrefix="v_"/>
         <collection property="items" ofType="ActivityPackageItem"
-                    select="selectItemsByPackageId" column="package_id"/>
+                    resultMap="itemResultMap" columnPrefix="i_"/>
     </resultMap>
 
     <resultMap id="viewerResultMap" type="ActivityPackageViewer">
@@ -27,40 +29,52 @@
         <result property="activityId" column="activity_id"/>
     </resultMap>
 
-    <select id="selectViewersByPackageId" resultMap="viewerResultMap">
-        SELECT package_viewer_id, user_id
-        FROM activity_package_viewers
-        WHERE package_id = #{packageId}
-        ORDER BY package_viewer_id ASC
-    </select>
+    <sql id="packageColumns">
+        p.package_id, p.package_title, p.package_description,
+        p.po_id, p.creator_id, p.date_from, p.date_to,
+        p.created_at, p.updated_at,
+        v.package_viewer_id AS v_package_viewer_id, v.user_id AS v_user_id,
+        i.package_item_id AS i_package_item_id, i.activity_id AS i_activity_id
+    </sql>
 
-    <select id="selectItemsByPackageId" resultMap="itemResultMap">
-        SELECT package_item_id, activity_id
-        FROM activity_package_items
-        WHERE package_id = #{packageId}
-        ORDER BY package_item_id ASC
-    </select>
+    <sql id="packageJoins">
+        FROM activity_packages p
+        LEFT JOIN activity_package_viewers v ON p.package_id = v.package_id
+        LEFT JOIN activity_package_items i ON p.package_id = i.package_id
+    </sql>
 
     <select id="findById" resultMap="activityPackageResultMap">
-        SELECT package_id, package_title, package_description,
-               po_id, creator_id, created_at, updated_at
-        FROM activity_packages
-        WHERE package_id = #{packageId}
+        SELECT <include refid="packageColumns"/>
+        <include refid="packageJoins"/>
+        WHERE p.package_id = #{packageId}
     </select>
 
     <select id="findAll" resultMap="activityPackageResultMap">
-        SELECT package_id, package_title, package_description,
-               po_id, creator_id, created_at, updated_at
-        FROM activity_packages
-        ORDER BY created_at DESC
+        SELECT <include refid="packageColumns"/>
+        <include refid="packageJoins"/>
+        ORDER BY p.created_at DESC
     </select>
 
     <select id="findAllByCreatorId" resultMap="activityPackageResultMap">
-        SELECT package_id, package_title, package_description,
-               po_id, creator_id, created_at, updated_at
-        FROM activity_packages
-        WHERE creator_id = #{creatorId}
-        ORDER BY created_at DESC
+        SELECT <include refid="packageColumns"/>
+        <include refid="packageJoins"/>
+        WHERE p.creator_id = #{creatorId}
+        ORDER BY p.created_at DESC
+    </select>
+
+    <select id="findAllByViewerUserId" resultMap="activityPackageResultMap">
+        SELECT <include refid="packageColumns"/>
+        <include refid="packageJoins"/>
+        WHERE p.package_id IN (
+            SELECT pv.package_id FROM activity_package_viewers pv WHERE pv.user_id = #{userId}
+        )
+        <if test="creatorId != null">
+            AND p.creator_id = #{creatorId}
+        </if>
+        <if test="poId != null and poId != ''">
+            AND p.po_id = #{poId}
+        </if>
+        ORDER BY p.created_at DESC
     </select>
 
 </mapper>

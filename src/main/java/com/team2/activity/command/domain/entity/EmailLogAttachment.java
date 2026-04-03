@@ -4,7 +4,6 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 // 이메일 첨부파일 메타데이터를 저장하는 보조 엔티티다.
 @Entity
@@ -12,8 +11,6 @@ import lombok.Setter;
 @Table(name = "email_log_attachments")
 // 필드 조회용 getter를 생성한다.
 @Getter
-// 테스트나 매핑 편의를 위한 setter를 허용한다.
-@Setter
 // JPA 기본 생성자를 보호 수준으로 제공한다.
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EmailLogAttachment {

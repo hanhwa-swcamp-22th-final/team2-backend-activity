@@ -66,6 +66,8 @@ CREATE TABLE activity_packages (
     package_description CLOB,
     po_id VARCHAR(30),
     creator_id BIGINT NOT NULL,
+    date_from DATE,
+    date_to DATE,
     created_at TIMESTAMP NOT NULL,
     updated_at TIMESTAMP NOT NULL
 );

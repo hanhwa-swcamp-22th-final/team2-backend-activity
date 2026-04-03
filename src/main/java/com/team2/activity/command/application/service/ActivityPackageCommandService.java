@@ -32,28 +32,23 @@ public class ActivityPackageCommandService {
     public ActivityPackage updateAll(Long packageId, ActivityPackageUpdateRequest request) {
         // 전체 수정 대상 패키지를 먼저 조회한다.
         ActivityPackage activityPackage = findById(packageId);
-        // 제목, 설명, PO ID를 요청 값으로 갱신한다.
-        activityPackage.update(request.packageTitle(), request.packageDescription(), request.poId());
+        // 제목, 설명, PO ID, 기간을 요청 값으로 갱신한다.
+        activityPackage.update(request.packageTitle(), request.packageDescription(), request.poId(),
+                request.dateFrom(), request.dateTo());
         // viewer ID가 전달되면 기존 viewer 목록을 새 목록으로 교체한다.
         if (request.viewerIds() != null) {
-            // 기존 viewer 연결을 모두 제거한다.
             activityPackage.getViewers().clear();
-            // 새 viewer ID 목록을 viewer 엔티티 목록으로 바꿔 채운다.
             activityPackage.getViewers().addAll(request.viewerIds().stream()
-                    // 각 사용자 ID를 viewer 엔티티로 변환한다.
                     .map(ActivityPackageViewer::of)
-                    // 변환된 viewer 엔티티들을 리스트로 모은다.
                     .toList());
         }
-        // null 활동 ID 목록은 빈 목록으로 처리한다.
-        List<Long> activityIds = request.activityIds() != null ? request.activityIds() : List.of();
-        // item 목록은 항상 요청 기준으로 다시 구성한다.
-        activityPackage.getItems().clear();
-        activityPackage.getItems().addAll(activityIds.stream()
-                // 각 활동 ID를 item 엔티티로 변환한다.
-                .map(ActivityPackageItem::of)
-                // 변환된 item 엔티티들을 리스트로 모은다.
-                .toList());
+        // activity ID가 전달되면 기존 item 목록을 새 목록으로 교체한다.
+        if (request.activityIds() != null) {
+            activityPackage.getItems().clear();
+            activityPackage.getItems().addAll(request.activityIds().stream()
+                    .map(ActivityPackageItem::of)
+                    .toList());
+        }
         // 변경 감지 대상 엔티티를 그대로 반환한다.
         return activityPackage;
     }
