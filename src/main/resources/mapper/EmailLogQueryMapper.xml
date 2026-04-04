@@ -71,33 +71,46 @@
         ORDER BY e.created_at DESC
     </select>
 
+    <sql id="emailFilterConditions">
+        <if test="clientId != null">
+            AND e.client_id = #{clientId}
+        </if>
+        <if test="poId != null and poId != ''">
+            AND e.po_id = #{poId}
+        </if>
+        <if test="emailStatus != null">
+            AND e.email_status = #{emailStatus}
+        </if>
+        <if test="emailSenderId != null">
+            AND e.email_sender_id = #{emailSenderId}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (e.email_title LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+        <if test="dateFrom != null">
+            AND e.email_sent_at &gt;= #{dateFrom}
+        </if>
+        <if test="dateTo != null">
+            AND e.email_sent_at &lt;= #{dateTo}
+        </if>
+    </sql>
+
     <select id="findWithFilters" resultMap="emailLogResultMap">
         SELECT <include refid="emailLogColumns"/>
         <include refid="emailLogJoins"/>
         <where>
-            <if test="clientId != null">
-                AND client_id = #{clientId}
-            </if>
-            <if test="poId != null and poId != ''">
-                AND po_id = #{poId}
-            </if>
-            <if test="emailStatus != null">
-                AND email_status = #{emailStatus}
-            </if>
-            <if test="emailSenderId != null">
-                AND email_sender_id = #{emailSenderId}
-            </if>
-            <if test="keyword != null and keyword != ''">
-                AND (email_title LIKE CONCAT('%', #{keyword}, '%'))
-            </if>
-            <if test="dateFrom != null">
-                AND email_sent_at &gt;= #{dateFrom}
-            </if>
-            <if test="dateTo != null">
-                AND email_sent_at &lt;= #{dateTo}
-            </if>
+            <include refid="emailFilterConditions"/>
         </where>
-        ORDER BY created_at DESC
+        ORDER BY e.created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countWithFilters" resultType="long">
+        SELECT COUNT(*)
+        FROM email_logs e
+        <where>
+            <include refid="emailFilterConditions"/>
+        </where>
     </select>
 
 </mapper>

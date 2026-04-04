@@ -18,11 +18,16 @@ public record PagedResponse<T>(
     }
 
     public static <T> PagedResponse<T> of(List<T> allItems, int page, int size) {
-        int totalElements = allItems.size();
-        int totalPages = (int) Math.ceil((double) totalElements / size);
-        int fromIndex = Math.min(page * size, totalElements);
-        int toIndex = Math.min(fromIndex + size, totalElements);
+        int total = allItems.size();
+        int totalPages = (int) Math.ceil((double) total / size);
+        int fromIndex = Math.min(page * size, total);
+        int toIndex = Math.min(fromIndex + size, total);
         List<T> pageContent = allItems.subList(fromIndex, toIndex);
-        return new PagedResponse<>(pageContent, totalElements, totalPages, page);
+        return new PagedResponse<>(pageContent, total, totalPages, page);
+    }
+
+    public static <T> PagedResponse<T> of(List<T> content, long totalElements, int page, int size) {
+        int totalPages = (int) Math.ceil((double) totalElements / size);
+        return new PagedResponse<>(content, totalElements, totalPages, page);
     }
 }

@@ -27,6 +27,7 @@ public class EmailLogCommandController {
             @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody EmailLogCreateRequest request) {
         EmailLog emailLog = emailLogCommandService.createEmailLog(request.toEntity(userId));
+        emailLogCommandService.attemptSend(emailLog);
         EntityModel<EmailLogResponse> model = EntityModel.of(EmailLogResponse.from(emailLog),
                 linkTo(methodOn(EmailLogQueryController.class).getEmailLog(emailLog.getEmailLogId())).withSelfRel(),
                 linkTo(methodOn(EmailLogQueryController.class).getEmailLogs(null, null, null, null, null, null, null, 0, 20)).withRel("email-logs"));

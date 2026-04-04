@@ -34,8 +34,10 @@ public class EmailLogQueryController {
         LocalDateTime dateTimeFrom = dateFrom != null ? dateFrom.atStartOfDay() : null;
         LocalDateTime dateTimeTo = dateTo != null ? dateTo.atTime(23, 59, 59) : null;
         List<EmailLogResponse> responses = emailLogQueryService.getEmailLogsWithFilters(
+                clientId, poId, emailStatus, emailSenderId, keyword, dateTimeFrom, dateTimeTo, page, size);
+        long totalElements = emailLogQueryService.countWithFilters(
                 clientId, poId, emailStatus, emailSenderId, keyword, dateTimeFrom, dateTimeTo);
-        return ResponseEntity.ok(PagedResponse.of(responses, page, size));
+        return ResponseEntity.ok(PagedResponse.of(responses, totalElements, page, size));
     }
 
     @GetMapping("/{emailLogId}")

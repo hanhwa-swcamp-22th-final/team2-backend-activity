@@ -31,8 +31,10 @@ public class ActivityQueryController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
         List<ActivityResponse> responses = activityQueryService.getActivitiesWithFilters(
+                clientId, poId, activityType, activityAuthorId, activityDateFrom, activityDateTo, keyword, page, size);
+        long totalElements = activityQueryService.countWithFilters(
                 clientId, poId, activityType, activityAuthorId, activityDateFrom, activityDateTo, keyword);
-        return ResponseEntity.ok(PagedResponse.of(responses, page, size));
+        return ResponseEntity.ok(PagedResponse.of(responses, totalElements, page, size));
     }
 
     @GetMapping("/{activityId}")

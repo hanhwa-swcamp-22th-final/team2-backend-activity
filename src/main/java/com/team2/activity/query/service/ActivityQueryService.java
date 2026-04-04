@@ -14,7 +14,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -37,16 +42,34 @@ public class ActivityQueryService {
 
     public List<ActivityResponse> getActivitiesWithFilters(Long clientId, String poId, ActivityType activityType,
                                                             Long activityAuthorId, LocalDate activityDateFrom,
-                                                            LocalDate activityDateTo, String keyword) {
+                                                            LocalDate activityDateTo, String keyword,
+                                                            int page, int size) {
+        int offset = page * size;
         List<Activity> activities = activityQueryMapper.findWithFilters(
-                clientId, poId, activityType, activityAuthorId, activityDateFrom, activityDateTo, keyword);
-        return activities.stream().map(this::enrichActivity).toList();
+                clientId, poId, activityType, activityAuthorId, activityDateFrom, activityDateTo, keyword, size, offset);
+        return enrichActivities(activities);
     }
 
-    private ActivityResponse enrichActivity(Activity activity) {
-        String authorName = fetchUserName(activity.getActivityAuthorId());
-        String clientName = fetchClientName(activity.getClientId());
-        return ActivityResponse.from(activity, authorName, clientName);
+    public long countWithFilters(Long clientId, String poId, ActivityType activityType,
+                                  Long activityAuthorId, LocalDate activityDateFrom,
+                                  LocalDate activityDateTo, String keyword) {
+        return activityQueryMapper.countWithFilters(clientId, poId, activityType, activityAuthorId, activityDateFrom, activityDateTo, keyword);
+    }
+
+    private List<ActivityResponse> enrichActivities(List<Activity> activities) {
+        Set<Long> authorIds = activities.stream().map(Activity::getActivityAuthorId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Set<Long> clientIds = activities.stream().map(Activity::getClientId).filter(Objects::nonNull).collect(Collectors.toSet());
+
+        Map<Long, String> authorNames = new HashMap<>();
+        authorIds.forEach(id -> authorNames.put(id, fetchUserName(id)));
+
+        Map<Long, String> clientNames = new HashMap<>();
+        clientIds.forEach(id -> clientNames.put(id, fetchClientName(id)));
+
+        return activities.stream().map(a -> ActivityResponse.from(a,
+                authorNames.get(a.getActivityAuthorId()),
+                clientNames.get(a.getClientId())
+        )).toList();
     }
 
     public String fetchUserName(Long userId) {

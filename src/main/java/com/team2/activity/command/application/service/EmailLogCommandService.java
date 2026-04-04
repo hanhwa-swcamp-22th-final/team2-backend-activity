@@ -14,54 +14,43 @@ import org.springframework.transaction.annotation.Transactional;
 // 이메일 로그 쓰기 유스케이스를 담당하는 command service다.
 @Slf4j
 @Service
-// final 필드 기반 생성자 주입을 자동 생성한다.
 @RequiredArgsConstructor
-// 쓰기 작업이 하나의 트랜잭션으로 처리되도록 보장한다.
-@Transactional
 public class EmailLogCommandService {
 
-    // 이메일 로그 저장소 접근을 담당한다.
     private final EmailLogRepository emailLogRepository;
-
-    // 실제 이메일을 발송하는 JavaMail 구현체를 주입한다.
     private final JavaMailSender mailSender;
 
-    // 발송자 이메일 주소를 환경 설정에서 읽어 온다. 미설정 시 빈 문자열을 사용한다.
     @Value("${spring.mail.username:}")
     private String senderEmail;
 
-    // 새 이메일 로그를 저장하고 실제 메일 발송을 시도한다.
+    @Transactional
     public EmailLog createEmailLog(EmailLog emailLog) {
-        // 초기 상태(FAILED)인 이메일 로그를 저장소에 먼저 저장한다.
-        EmailLog saved = emailLogRepository.save(emailLog);
-        // 저장 후 실제 이메일 발송을 시도하고 성공 시 상태를 갱신한다.
-        sendMail(saved);
-        // 발송 결과가 반영된 엔티티를 반환한다.
-        return saved;
+        return emailLogRepository.save(emailLog);
     }
 
-    // 실패 상태의 이메일 로그를 재전송해 상태를 SENT로 되돌린다.
+    public void attemptSend(EmailLog emailLog) {
+        sendMail(emailLog);
+        if (emailLog.getEmailStatus() == MailStatus.SENT) {
+            emailLogRepository.save(emailLog);
+        }
+    }
+
     public EmailLog resend(Long emailLogId) {
-        // 재전송 대상 이메일 로그를 먼저 조회한다.
         EmailLog emailLog = findById(emailLogId);
-        // 이미 발송 성공 상태면 중복 재전송을 막는다.
         if (emailLog.getEmailStatus() == MailStatus.SENT) {
             throw new IllegalStateException("이미 발송된 이메일입니다.");
         }
-        // 실제 이메일 발송을 시도하고 성공 시 상태를 SENT로 갱신한다.
         sendMail(emailLog);
-        // 발송 후에도 여전히 FAILED 상태면 재전송 실패를 알린다.
         if (emailLog.getEmailStatus() == MailStatus.FAILED) {
             throw new IllegalStateException("이메일 재전송에 실패했습니다.");
         }
+        emailLogRepository.save(emailLog);
         return emailLog;
     }
 
-    // 이메일 로그를 조회한 뒤 삭제한다.
+    @Transactional
     public void deleteEmailLog(Long emailLogId) {
-        // 삭제 대상 이메일 로그를 먼저 조회한다.
         EmailLog emailLog = findById(emailLogId);
-        // 조회한 이메일 로그를 저장소에서 삭제한다.
         emailLogRepository.delete(emailLog);
     }
 

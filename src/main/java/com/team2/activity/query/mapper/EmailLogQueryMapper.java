@@ -25,5 +25,15 @@ public interface EmailLogQueryMapper {
                                     @Param("emailSenderId") Long emailSenderId,
                                     @Param("keyword") String keyword,
                                     @Param("dateFrom") LocalDateTime dateFrom,
-                                    @Param("dateTo") LocalDateTime dateTo);
+                                    @Param("dateTo") LocalDateTime dateTo,
+                                    @Param("limit") int limit,
+                                    @Param("offset") int offset);
+
+    long countWithFilters(@Param("clientId") Long clientId,
+                           @Param("poId") String poId,
+                           @Param("emailStatus") MailStatus emailStatus,
+                           @Param("emailSenderId") Long emailSenderId,
+                           @Param("keyword") String keyword,
+                           @Param("dateFrom") LocalDateTime dateFrom,
+                           @Param("dateTo") LocalDateTime dateTo);
 }

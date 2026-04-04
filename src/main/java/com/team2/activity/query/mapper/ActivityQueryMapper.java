@@ -32,5 +32,15 @@ public interface ActivityQueryMapper {
                                     @Param("activityAuthorId") Long activityAuthorId,
                                     @Param("activityDateFrom") LocalDate activityDateFrom,
                                     @Param("activityDateTo") LocalDate activityDateTo,
-                                    @Param("keyword") String keyword);
+                                    @Param("keyword") String keyword,
+                                    @Param("limit") int limit,
+                                    @Param("offset") int offset);
+
+    long countWithFilters(@Param("clientId") Long clientId,
+                           @Param("poId") String poId,
+                           @Param("activityType") ActivityType activityType,
+                           @Param("activityAuthorId") Long activityAuthorId,
+                           @Param("activityDateFrom") LocalDate activityDateFrom,
+                           @Param("activityDateTo") LocalDate activityDateTo,
+                           @Param("keyword") String keyword);
 }

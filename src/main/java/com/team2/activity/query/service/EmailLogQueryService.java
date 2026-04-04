@@ -13,7 +13,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -36,16 +41,34 @@ public class EmailLogQueryService {
 
     public List<EmailLogResponse> getEmailLogsWithFilters(Long clientId, String poId, MailStatus emailStatus,
                                                            Long emailSenderId, String keyword,
-                                                           LocalDateTime dateFrom, LocalDateTime dateTo) {
+                                                           LocalDateTime dateFrom, LocalDateTime dateTo,
+                                                           int page, int size) {
+        int offset = page * size;
         List<EmailLog> logs = emailLogQueryMapper.findWithFilters(
-                clientId, poId, emailStatus, emailSenderId, keyword, dateFrom, dateTo);
-        return logs.stream().map(this::enrichEmailLog).toList();
+                clientId, poId, emailStatus, emailSenderId, keyword, dateFrom, dateTo, size, offset);
+        return enrichEmailLogs(logs);
     }
 
-    private EmailLogResponse enrichEmailLog(EmailLog emailLog) {
-        String senderName = fetchUserName(emailLog.getEmailSenderId());
-        String clientName = fetchClientName(emailLog.getClientId());
-        return EmailLogResponse.from(emailLog, senderName, clientName);
+    public long countWithFilters(Long clientId, String poId, MailStatus emailStatus,
+                                  Long emailSenderId, String keyword,
+                                  LocalDateTime dateFrom, LocalDateTime dateTo) {
+        return emailLogQueryMapper.countWithFilters(clientId, poId, emailStatus, emailSenderId, keyword, dateFrom, dateTo);
+    }
+
+    private List<EmailLogResponse> enrichEmailLogs(List<EmailLog> logs) {
+        Set<Long> senderIds = logs.stream().map(EmailLog::getEmailSenderId).filter(Objects::nonNull).collect(Collectors.toSet());
+        Set<Long> clientIds = logs.stream().map(EmailLog::getClientId).filter(Objects::nonNull).collect(Collectors.toSet());
+
+        Map<Long, String> senderNames = new HashMap<>();
+        senderIds.forEach(id -> senderNames.put(id, fetchUserName(id)));
+
+        Map<Long, String> clientNames = new HashMap<>();
+        clientIds.forEach(id -> clientNames.put(id, fetchClientName(id)));
+
+        return logs.stream().map(e -> EmailLogResponse.from(e,
+                senderNames.get(e.getEmailSenderId()),
+                clientNames.get(e.getClientId())
+        )).toList();
     }
 
     private String fetchUserName(Long userId) {
