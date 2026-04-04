@@ -73,36 +73,43 @@
 
     <sql id="emailFilterConditions">
         <if test="clientId != null">
-            AND e.client_id = #{clientId}
+            AND client_id = #{clientId}
         </if>
         <if test="poId != null and poId != ''">
-            AND e.po_id = #{poId}
+            AND po_id = #{poId}
         </if>
         <if test="emailStatus != null">
-            AND e.email_status = #{emailStatus}
+            AND email_status = #{emailStatus}
         </if>
         <if test="emailSenderId != null">
-            AND e.email_sender_id = #{emailSenderId}
+            AND email_sender_id = #{emailSenderId}
         </if>
         <if test="keyword != null and keyword != ''">
-            AND (e.email_title LIKE CONCAT('%', #{keyword}, '%'))
+            AND (email_title LIKE CONCAT('%', #{keyword}, '%'))
         </if>
         <if test="dateFrom != null">
-            AND e.email_sent_at &gt;= #{dateFrom}
+            AND email_sent_at &gt;= #{dateFrom}
         </if>
         <if test="dateTo != null">
-            AND e.email_sent_at &lt;= #{dateTo}
+            AND email_sent_at &lt;= #{dateTo}
         </if>
     </sql>
 
     <select id="findWithFilters" resultMap="emailLogResultMap">
-        SELECT <include refid="emailLogColumns"/>
-        <include refid="emailLogJoins"/>
-        <where>
-            <include refid="emailFilterConditions"/>
-        </where>
-        ORDER BY e.created_at DESC
-        LIMIT #{limit} OFFSET #{offset}
+        SELECT e.email_log_id, e.client_id, e.po_id, e.email_title, e.email_recipient_name,
+               e.email_recipient_email, e.email_sender_id, e.email_status, e.email_sent_at, e.created_at,
+               dt.email_log_type_id AS dt_email_log_type_id, dt.email_doc_type AS dt_email_doc_type,
+               at.email_log_attachment_id AS at_email_log_attachment_id, at.email_attachment_filename AS at_email_attachment_filename
+        FROM (
+            SELECT * FROM email_logs
+            <where>
+                <include refid="emailFilterConditions"/>
+            </where>
+            ORDER BY created_at DESC
+            LIMIT #{limit} OFFSET #{offset}
+        ) e
+        LEFT JOIN email_log_types dt ON e.email_log_id = dt.email_log_id
+        LEFT JOIN email_log_attachments at ON e.email_log_id = at.email_log_id
     </select>
 
     <select id="countWithFilters" resultType="long">

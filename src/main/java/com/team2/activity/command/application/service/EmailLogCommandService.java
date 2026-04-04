@@ -31,7 +31,11 @@ public class EmailLogCommandService {
     public void attemptSend(EmailLog emailLog) {
         sendMail(emailLog);
         if (emailLog.getEmailStatus() == MailStatus.SENT) {
-            emailLogRepository.save(emailLog);
+            try {
+                emailLogRepository.save(emailLog);
+            } catch (Exception e) {
+                log.error("메일 발송 성공했으나 DB 상태 업데이트 실패 [emailLogId={}]: {}", emailLog.getEmailLogId(), e.getMessage(), e);
+            }
         }
     }
 
@@ -44,7 +48,11 @@ public class EmailLogCommandService {
         if (emailLog.getEmailStatus() == MailStatus.FAILED) {
             throw new IllegalStateException("이메일 재전송에 실패했습니다.");
         }
-        emailLogRepository.save(emailLog);
+        try {
+            emailLogRepository.save(emailLog);
+        } catch (Exception e) {
+            log.error("메일 재전송 성공했으나 DB 상태 업데이트 실패 [emailLogId={}]: {}", emailLog.getEmailLogId(), e.getMessage(), e);
+        }
         return emailLog;
     }
 
