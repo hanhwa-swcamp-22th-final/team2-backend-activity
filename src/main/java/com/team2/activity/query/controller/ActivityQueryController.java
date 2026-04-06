@@ -30,7 +30,7 @@ public class ActivityQueryController {
             @ApiResponse(responseCode = "200", description = "조회 성공")
     })
     @GetMapping
-    public ResponseEntity<PagedResponse<ActivityResponse>> getActivities(
+    public ResponseEntity<List<ActivityResponse>> getActivities(
             @Parameter(description = "거래처 ID") @RequestParam(required = false) Long clientId,
             @Parameter(description = "PO ID") @RequestParam(required = false) String poId,
             @Parameter(description = "활동 유형") @RequestParam(required = false) ActivityType activityType,
@@ -40,11 +40,8 @@ public class ActivityQueryController {
             @Parameter(description = "검색 키워드") @RequestParam(required = false) String keyword,
             @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "20") int size) {
-        List<ActivityResponse> responses = activityQueryService.getActivitiesWithFilters(
-                clientId, poId, activityType, activityAuthorId, activityDateFrom, activityDateTo, keyword, page, size);
-        long totalElements = activityQueryService.countWithFilters(
-                clientId, poId, activityType, activityAuthorId, activityDateFrom, activityDateTo, keyword);
-        return ResponseEntity.ok(PagedResponse.of(responses, totalElements, page, size));
+        return ResponseEntity.ok(activityQueryService.getActivitiesWithFilters(
+                clientId, poId, activityType, activityAuthorId, activityDateFrom, activityDateTo, keyword, page, size));
     }
 
     @Operation(summary = "활동 상세 조회", description = "활동 ID로 활동 상세 정보를 조회한다")

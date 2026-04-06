@@ -34,7 +34,7 @@ public class ActivityPackageQueryController {
             @ApiResponse(responseCode = "200", description = "조회 성공")
     })
     @GetMapping
-    public ResponseEntity<PagedResponse<ActivityPackageResponse>> getPackages(
+    public ResponseEntity<List<ActivityPackageResponse>> getPackages(
             @Parameter(description = "요청 사용자 ID (뷰어 필터링용)") @RequestHeader(value = "X-User-Id", required = false) Long userId,
             @Parameter(description = "생성자 ID") @RequestParam(required = false) Long creatorId,
             @Parameter(description = "PO ID") @RequestParam(required = false) String poId) {
@@ -44,7 +44,7 @@ public class ActivityPackageQueryController {
         } else {
             responses = activityPackageQueryService.getPackagesWithFilters(creatorId, poId);
         }
-        return ResponseEntity.ok(PagedResponse.of(responses));
+        return ResponseEntity.ok(responses);
     }
 
     @Operation(summary = "활동 패키지 상세 조회", description = "패키지 ID로 활동 패키지 상세 정보를 조회한다")
