@@ -15,7 +15,7 @@ public interface DocumentsFeignClient {
     PurchaseOrderResponse getPurchaseOrder(@PathVariable("poId") String poId);
 
     // document 서비스에 메일 발송을 요청한다. 재전송 시 사용한다.
-    @PostMapping("/emails/send")
+    @PostMapping("/api/emails/send")
     EmailSendResponse sendEmail(
             @RequestHeader("X-User-Id") Long userId,
             @RequestBody EmailSendRequest request);

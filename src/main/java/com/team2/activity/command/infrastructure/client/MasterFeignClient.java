@@ -12,6 +12,6 @@ public interface MasterFeignClient {
     @GetMapping("/api/clients/{clientId}")
     ClientResponse getClient(@PathVariable("clientId") Long clientId);
 
-    @GetMapping("/api/clients")
+    @GetMapping("/api/clients/all")
     List<ClientResponse> getClients();
 }
