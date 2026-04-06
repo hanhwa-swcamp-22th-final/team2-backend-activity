@@ -115,6 +115,24 @@ class EmailLogCommandServiceTest {
     }
 
     @Test
+    @DisplayName("PENDING 상태 이메일을 재전송하면 예외를 던진다")
+    void resend_throwsWhenPending() {
+        // 아직 발송 시도 전(PENDING) 상태의 이메일은 재전송 대상이 아니다.
+        EmailLog emailLog = EmailLog.builder()
+                .clientId(1L).poId("PO-001").emailTitle("견적서 발송")
+                .emailRecipientName("김고객").emailRecipientEmail("client@example.com")
+                // PENDING 상태로 설정해 발송 시도 전 상황을 시뮬레이션한다.
+                .emailSenderId(10L).emailStatus(MailStatus.PENDING)
+                .build();
+        when(emailLogRepository.findById(1L)).thenReturn(Optional.of(emailLog));
+
+        // PENDING 메일 재전송 시 IllegalStateException이 발생하는지 확인한다.
+        assertThatThrownBy(() -> emailLogCommandService.resend(1L))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessage("아직 발송 시도 전인 이메일입니다.");
+    }
+
+    @Test
     @DisplayName("재전송 대상 이메일 로그가 없으면 예외를 던진다")
     void resend_throwsWhenEmailLogDoesNotExist() {
         // 조회 결과가 없으면 재전송도 예외여야 한다.

@@ -154,9 +154,9 @@ class EmailLogRepositoryTest {
                 .containsExactlyInAnyOrder("PI001.pdf", "CI001.pdf");
     }
 
-    // ── 테스트 3: status 기본값 FAILED 확인 ───────────────────────
+    // ── 테스트 3: status 기본값 PENDING 확인 ───────────────────────
     @Test
-    @DisplayName("status 미설정 시 기본값 FAILED 저장")
+    @DisplayName("status 미설정 시 기본값 PENDING 저장")
     // 테스트 메서드
     void save_defaultStatusSent() {
         // 상태를 미설정한 이메일 로그 생성
@@ -178,8 +178,8 @@ class EmailLogRepositoryTest {
         // 이메일 로그 저장
         EmailLog saved = emailLogRepository.save(emailLog);
 
-        // 저장된 상태가 FAILED(기본값)인지 확인
-        assertThat(saved.getEmailStatus()).isEqualTo(MailStatus.FAILED);
+        // 저장된 상태가 PENDING(기본값)인지 확인
+        assertThat(saved.getEmailStatus()).isEqualTo(MailStatus.PENDING);
     }
 
     // ── 테스트 4: clientId 필터 페이징 조회 ─────────────────────

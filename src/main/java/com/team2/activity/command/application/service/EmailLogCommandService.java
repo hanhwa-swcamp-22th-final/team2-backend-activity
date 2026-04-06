@@ -44,6 +44,9 @@ public class EmailLogCommandService {
         if (emailLog.getEmailStatus() == MailStatus.SENT) {
             throw new IllegalStateException("이미 발송된 이메일입니다.");
         }
+        if (emailLog.getEmailStatus() == MailStatus.PENDING) {
+            throw new IllegalStateException("아직 발송 시도 전인 이메일입니다.");
+        }
         sendMail(emailLog);
         if (emailLog.getEmailStatus() == MailStatus.FAILED) {
             throw new IllegalStateException("이메일 재전송에 실패했습니다.");
@@ -80,7 +83,8 @@ public class EmailLogCommandService {
             // 발송 성공 시 상태를 SENT로 바꾸고 발송 시각을 기록한다.
             emailLog.markAsSent();
         } catch (Exception e) {
-            // 발송 실패 시 상태를 변경하지 않고 FAILED 상태를 유지한다.
+            // 발송 실패 시 상태를 FAILED로 명시적으로 전환한다.
+            emailLog.markAsFailed();
             log.error("이메일 발송 실패 [emailLogId={}, to={}]: {}", emailLog.getEmailLogId(), emailLog.getEmailRecipientEmail(), e.getMessage(), e);
         }
     }

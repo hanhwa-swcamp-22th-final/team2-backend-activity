@@ -94,8 +94,8 @@ public class EmailLog {
         this.emailRecipientEmail = emailRecipientEmail;
         // 빌더에서 받은 발송자 ID를 저장한다.
         this.emailSenderId = emailSenderId;
-        // 상태가 비어 있으면 기본값을 FAILED로 보정한다.
-        this.emailStatus = emailStatus != null ? emailStatus : MailStatus.FAILED;
+        // 상태가 비어 있으면 기본값을 PENDING으로 보정한다.
+        this.emailStatus = emailStatus != null ? emailStatus : MailStatus.PENDING;
         // 빌더에서 받은 발송 시각을 저장한다.
         this.emailSentAt = emailSentAt;
         // null 컬렉션을 빈 리스트로 보정해 NPE를 막는다.
@@ -123,5 +123,11 @@ public class EmailLog {
         this.emailStatus = MailStatus.SENT;
         // 발송 완료 시각을 현재 시각으로 기록한다.
         this.emailSentAt = LocalDateTime.now();
+    }
+
+    // 이메일 발송 실패 시 상태를 FAILED로 바꾼다.
+    public void markAsFailed() {
+        // 발송 실패 상태로 전환한다.
+        this.emailStatus = MailStatus.FAILED;
     }
 }

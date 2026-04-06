@@ -60,7 +60,7 @@ class EmailLogTest {
     }
 
     @Test
-    @DisplayName("status null 전달 시 기본값 FAILED 적용")
+    @DisplayName("status null 전달 시 기본값 PENDING 적용")
     void createEmailLog_defaultStatus_whenNull() {
         EmailLog mail = EmailLog.builder()
                 .clientId(1L)
@@ -70,7 +70,7 @@ class EmailLogTest {
                 .emailSentAt(LocalDateTime.now())
                 .build();
 
-        assertThat(mail.getEmailStatus()).isEqualTo(MailStatus.FAILED);
+        assertThat(mail.getEmailStatus()).isEqualTo(MailStatus.PENDING);
     }
 
     @Test
@@ -196,6 +196,7 @@ class EmailLogTest {
     void mailStatus_values() {
         assertThat(MailStatus.values())
                 .containsExactlyInAnyOrder(
+                        MailStatus.PENDING,
                         MailStatus.SENT,
                         MailStatus.FAILED
                 );
@@ -204,15 +205,17 @@ class EmailLogTest {
     @Test
     @DisplayName("MailStatus JSON 직렬화 - 영문 displayName 반환")
     void mailStatus_displayName() {
-        assertThat(MailStatus.SENT.getDisplayName()).isEqualTo("SENT");     // 구: 발송
-        assertThat(MailStatus.FAILED.getDisplayName()).isEqualTo("FAILED"); // 구: 실패
+        assertThat(MailStatus.PENDING.getDisplayName()).isEqualTo("PENDING"); // 발송 전 초기 상태
+        assertThat(MailStatus.SENT.getDisplayName()).isEqualTo("SENT");      // 발송 성공
+        assertThat(MailStatus.FAILED.getDisplayName()).isEqualTo("FAILED");  // 발송 실패
     }
 
     @Test
     @DisplayName("MailStatus JSON 역직렬화 - 영문 문자열로 생성")
     void mailStatus_fromDisplayName() {
-        assertThat(MailStatus.from("SENT")).isEqualTo(MailStatus.SENT);     // 구: 발송
-        assertThat(MailStatus.from("FAILED")).isEqualTo(MailStatus.FAILED); // 구: 실패
+        assertThat(MailStatus.from("PENDING")).isEqualTo(MailStatus.PENDING); // 발송 전 초기 상태
+        assertThat(MailStatus.from("SENT")).isEqualTo(MailStatus.SENT);      // 발송 성공
+        assertThat(MailStatus.from("FAILED")).isEqualTo(MailStatus.FAILED);  // 발송 실패
     }
 
     @Test

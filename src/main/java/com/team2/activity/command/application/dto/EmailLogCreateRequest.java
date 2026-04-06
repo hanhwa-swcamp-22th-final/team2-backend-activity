@@ -46,8 +46,8 @@ public record EmailLogCreateRequest(
                 .emailRecipientEmail(emailRecipientEmail)
                 // 요청 헤더 사용자 ID를 발송자로 저장한다.
                 .emailSenderId(userId)
-                // 발송 전 초기 상태를 FAILED로 설정한다. 발송 성공 후 서비스가 SENT로 전환한다.
-                .emailStatus(MailStatus.FAILED)
+                // 발송 전 초기 상태를 PENDING으로 설정한다. 발송 성공 시 SENT, 실패 시 FAILED로 전환한다.
+                .emailStatus(MailStatus.PENDING)
                 // 문서 유형 목록을 엔티티에 연결한다.
                 .docTypes(docTypeList)
                 // 모든 필드 복사가 끝난 EmailLog 엔티티 생성을 마무리한다.

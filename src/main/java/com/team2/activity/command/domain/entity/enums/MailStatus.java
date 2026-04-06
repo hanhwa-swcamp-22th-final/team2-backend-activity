@@ -3,10 +3,11 @@ package com.team2.activity.command.domain.entity.enums;
 import com.fasterxml.jackson.annotation.JsonCreator; // JSON 역직렬화 시 사용할 팩토리 메서드 지정
 import com.fasterxml.jackson.annotation.JsonValue;   // JSON 직렬화 시 반환할 값 지정
 
-// 메일 발송 상태 열거형 (DB: 'SENT','FAILED') - 기본값: SENT
+// 메일 발송 상태 열거형 (DB: 'PENDING','SENT','FAILED') - 기본값: PENDING
 public enum MailStatus implements DisplayNameEnum {
-    SENT("SENT"),   // 메일 발송 성공 상태 (기본값) (구: 발송)
-    FAILED("FAILED"); // 메일 발송 실패 상태 (구: 실패)
+    PENDING("PENDING"), // 발송 시도 전 초기 대기 상태
+    SENT("SENT"),       // 메일 발송 성공 상태
+    FAILED("FAILED");   // 메일 발송 실패 상태
 
     private final String displayName; // 프론트엔드 및 DB에서 사용하는 영문 표시값
 

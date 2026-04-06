@@ -188,19 +188,26 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
     @Test
     @DisplayName("패키지 PDF 보고서 다운로드 시 application/pdf 응답을 반환한다")
     void downloadPackageReport_returnsPdf() throws Exception {
-        // 문서 서비스가 PO 번호를 반환하도록 목 응답을 설정한다.
+        // ── Feign mock 사전 설정 ──────────────────────────────────────────────
+        // document 서비스가 "PO-REPORT-001" 조회 시 PO 상세 정보를 반환하도록 설정한다.
+        // PDF 파일명 생성 시 PO 번호를 가져오기 위해 이 mock이 필요하다.
         given(documentsFeignClient.getPurchaseOrder("PO-REPORT-001"))
                 .willReturn(new PurchaseOrderResponse("PO-REPORT-001", "PO12345", "APPROVED"));
-        // 패키지 작성자 이름 조회용 목 응답을 설정한다.
+        // userId 7(패키지 작성자)로 auth 서비스를 호출하면 이름을 반환하도록 설정한다.
+        // PDF 보고서 내 "작성자" 항목에 출력될 이름이다.
         given(authFeignClient.getUser(7L))
                 .willReturn(new UserResponse(7, "패키지 작성자", "package@example.com"));
-        // 활동 작성자 이름 조회용 목 응답을 설정한다.
+        // userId 10(활동 작성자)으로 auth 서비스를 호출하면 이름을 반환하도록 설정한다.
+        // 각 활동 행의 작성자 이름 enrichment에 사용된다.
         given(authFeignClient.getUser(10L))
                 .willReturn(new UserResponse(10, "활동 작성자", "activity@example.com"));
 
-        // 패키지에 포함할 첫 번째 활동을 생성한다.
+        // ── 테스트 데이터 준비: 활동 생성 ────────────────────────────────────
+        // PDF에 포함될 첫 번째 활동(MEETING 유형)을 실제 API를 통해 생성한다.
         MvcResult meetingResult = mockMvc.perform(post("/api/activities")
+                        // CSRF 토큰을 함께 전송해 Security 필터를 통과한다.
                         .with(csrf())
+                        // X-User-Id 헤더로 활동 작성자 ID를 전달한다.
                         .header("X-User-Id", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -211,17 +218,20 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                                   "activity_title": "보고용 미팅"
                                 }
                                 """))
-                // 활동 생성이 성공하는지 확인한다.
+                // 활동 생성 요청이 201 Created로 응답하는지 확인한다.
                 .andExpect(status().isCreated())
-                // 응답 본문에 activity_id가 포함되는지 확인한다.
+                // 생성된 활동의 ID가 응답 본문에 포함되는지 확인한다.
                 .andExpect(jsonPath("$.activity_id").exists())
                 .andReturn();
-        // 첫 번째 활동 ID를 응답에서 추출한다.
+        // 이후 패키지 생성 요청에 사용할 첫 번째 활동 ID를 응답에서 추출한다.
         long meetingActivityId = extractLong(meetingResult, "activity_id");
 
-        // 패키지에 포함할 두 번째 활동을 일정 유형으로 생성한다.
+        // PDF에 포함될 두 번째 활동(SCHEDULE 유형)을 실제 API를 통해 생성한다.
+        // SCHEDULE 유형은 시작일·종료일이 있어 PDF에서 별도 행으로 출력된다.
         MvcResult scheduleResult = mockMvc.perform(post("/api/activities")
+                        // CSRF 토큰을 함께 전송해 Security 필터를 통과한다.
                         .with(csrf())
+                        // X-User-Id 헤더로 활동 작성자 ID를 전달한다.
                         .header("X-User-Id", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -232,17 +242,20 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                                   "activity_title": "보고용 일정"
                                 }
                                 """))
-                // 활동 생성이 성공하는지 확인한다.
+                // 활동 생성 요청이 201 Created로 응답하는지 확인한다.
                 .andExpect(status().isCreated())
-                // 응답 본문에 activity_id가 포함되는지 확인한다.
+                // 생성된 활동의 ID가 응답 본문에 포함되는지 확인한다.
                 .andExpect(jsonPath("$.activity_id").exists())
                 .andReturn();
-        // 두 번째 활동 ID를 응답에서 추출한다.
+        // 이후 패키지 생성 요청에 사용할 두 번째 활동 ID를 응답에서 추출한다.
         long scheduleActivityId = extractLong(scheduleResult, "activity_id");
 
-        // 일정 활동에 시작일과 종료일을 채워 보고서 표시 데이터를 완성한다.
+        // 일정 활동에 시작일·종료일과 PO ID를 추가해 PDF 출력 데이터를 완성한다.
+        // 생성 시점에 이 정보를 넣지 않았으므로 수정 API로 보완한다.
         mockMvc.perform(put("/api/activities/{activityId}", scheduleActivityId)
+                        // CSRF 토큰을 함께 전송한다.
                         .with(csrf())
+                        // 수정 요청자 ID를 헤더로 전달한다.
                         .header("X-User-Id", "10")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
@@ -257,14 +270,18 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                                   "activity_schedule_to": "2025-04-11"
                                 }
                                 """))
-                // 일정 업데이트가 성공하는지 확인한다.
+                // 활동 수정 요청이 200 OK로 응답하는지 확인한다.
                 .andExpect(status().isOk());
 
-        // PDF 대상으로 사용할 패키지를 생성한다.
+        // ── 테스트 데이터 준비: 패키지 생성 ─────────────────────────────────
+        // 위에서 만든 두 활동을 포함하는 패키지를 실제 API를 통해 생성한다.
         MvcResult packageResult = mockMvc.perform(post("/api/activity-packages")
+                        // CSRF 토큰을 함께 전송한다.
                         .with(csrf())
+                        // X-User-Id 헤더로 패키지 작성자 ID를 전달한다.
                         .header("X-User-Id", "7")
                         .contentType(MediaType.APPLICATION_JSON)
+                        // activity_ids에 앞서 생성한 두 활동 ID를 동적으로 채운다.
                         .content("""
                                 {
                                   "package_title": "PDF 보고서 패키지",
@@ -274,37 +291,38 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                                   "viewer_ids": [2, 3]
                                 }
                                 """.formatted(meetingActivityId, scheduleActivityId)))
-                // 패키지 생성이 성공하는지 확인한다.
+                // 패키지 생성 요청이 201 Created로 응답하는지 확인한다.
                 .andExpect(status().isCreated())
-                // 응답 본문에 package_id가 포함되는지 확인한다.
+                // 생성된 패키지의 ID가 응답 본문에 포함되는지 확인한다.
                 .andExpect(jsonPath("$.package_id").exists())
                 .andReturn();
-        // PDF 다운로드에 사용할 package_id를 응답에서 추출한다.
+        // PDF 다운로드 요청 URL에 사용할 package_id를 응답에서 추출한다.
         long packageId = extractLong(packageResult, "package_id");
 
-        // 생성한 패키지에 대한 PDF 다운로드 요청을 수행한다.
+        // ── 핵심 검증: PDF 다운로드 요청 ────────────────────────────────────
+        // 생성한 패키지 ID로 PDF 보고서 다운로드 API를 호출한다.
         MvcResult reportResult = mockMvc.perform(get("/api/activity-packages/{packageId}/report", packageId))
-                // 응답 상태가 200 OK인지 확인한다.
+                // HTTP 응답 상태가 200 OK인지 확인한다.
                 .andExpect(status().isOk())
-                // 응답 MIME 타입이 application/pdf인지 확인한다.
+                // 응답 Content-Type이 application/pdf인지 확인한다.
                 .andExpect(content().contentType(MediaType.APPLICATION_PDF))
-                // 다운로드용 attachment 헤더가 포함되는지 확인한다.
+                // Content-Disposition 헤더에 "attachment"가 포함돼 브라우저가 파일로 다운로드하는지 확인한다.
                 .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("attachment")))
                 .andReturn();
 
-        // 응답 본문의 PDF 바이트 배열을 꺼낸다.
+        // 응답 바디에서 PDF 바이트 배열을 꺼낸다.
         byte[] pdfBytes = reportResult.getResponse().getContentAsByteArray();
-        // 다운로드 파일명 검증을 위해 Content-Disposition 헤더를 읽는다.
+        // 파일명 검증을 위해 Content-Disposition 헤더 문자열을 읽는다.
         String contentDisposition = reportResult.getResponse().getHeader("Content-Disposition");
-        // 다운로드 헤더를 파싱 가능한 ContentDisposition 객체로 변환한다.
+        // 헤더 문자열을 Spring의 ContentDisposition 객체로 파싱해 파일명을 추출한다.
         ContentDisposition parsedContentDisposition = ContentDisposition.parse(contentDisposition);
-        // PDF 바이트 배열이 비어 있지 않은지 확인한다.
+        // PDF 바이트 배열이 비어 있지 않아야 한다(빈 파일 방지).
         assertThat(pdfBytes).isNotEmpty();
-        // 다운로드 파일명이 패키지 제목 기반으로 생성됐는지 확인한다.
+        // 다운로드 파일명이 패키지 제목 "PDF 보고서 패키지.pdf"와 일치하는지 확인한다.
         assertThat(parsedContentDisposition.getFilename()).isEqualTo("PDF 보고서 패키지.pdf");
-        // PDF 시그니처 검증을 위해 앞 5바이트를 ASCII 문자열로 변환한다.
+        // PDF 파일은 반드시 앞 5바이트가 "%PDF-"로 시작해야 한다(유효한 PDF 파일 검증).
         String pdfSignature = new String(pdfBytes, 0, 5, StandardCharsets.US_ASCII);
-        // 생성된 응답이 실제 PDF 파일 시그니처를 가지는지 확인한다.
+        // 실제 PDF 시그니처와 일치하는지 최종 확인한다.
         assertThat(pdfSignature).isEqualTo("%PDF-");
     }
 }

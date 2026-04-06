@@ -45,7 +45,7 @@ class EmailLogQueryEntityTest {
     }
 
     @Test
-    @DisplayName("조회용 EmailLog는 상태 미지정 시 FAILED 기본값을 가진다")
+    @DisplayName("조회용 EmailLog는 상태 미지정 시 PENDING 기본값을 가진다")
     void createReadEmailLog_defaultStatus() {
         EmailLog emailLog = EmailLog.builder()
                 .clientId(1L)
@@ -54,6 +54,6 @@ class EmailLogQueryEntityTest {
                 .emailSenderId(10L)
                 .build();
 
-        assertThat(emailLog.getEmailStatus()).isEqualTo(MailStatus.FAILED);
+        assertThat(emailLog.getEmailStatus()).isEqualTo(MailStatus.PENDING);
     }
 }
