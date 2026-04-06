@@ -1,15 +1,26 @@
 package com.team2.activity.command.application.service;
 
+import com.team2.activity.command.application.dto.EmailLogInternalRequest;
 import com.team2.activity.command.domain.entity.EmailLog;
+import com.team2.activity.command.domain.entity.EmailLogAttachment;
+import com.team2.activity.command.domain.entity.EmailLogType;
+import com.team2.activity.command.domain.entity.enums.DocumentType;
 import com.team2.activity.command.domain.entity.enums.MailStatus;
 import com.team2.activity.command.domain.repository.EmailLogRepository;
+import com.team2.activity.command.infrastructure.client.DocumentsFeignClient;
+import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.List;
 
 // 이메일 로그 쓰기 유스케이스를 담당하는 command service다.
 @Slf4j
@@ -19,6 +30,7 @@ public class EmailLogCommandService {
 
     private final EmailLogRepository emailLogRepository;
     private final JavaMailSender mailSender;
+    private final DocumentsFeignClient documentsFeignClient;
 
     @Value("${spring.mail.username:}")
     private String senderEmail;
@@ -47,7 +59,7 @@ public class EmailLogCommandService {
         if (emailLog.getEmailStatus() == MailStatus.PENDING) {
             throw new IllegalStateException("아직 발송 시도 전인 이메일입니다.");
         }
-        sendMail(emailLog);
+        sendMailWithAttachments(emailLog);
         if (emailLog.getEmailStatus() == MailStatus.FAILED) {
             throw new IllegalStateException("이메일 재전송에 실패했습니다.");
         }
@@ -63,6 +75,85 @@ public class EmailLogCommandService {
     public void deleteEmailLog(Long emailLogId) {
         EmailLog emailLog = findById(emailLogId);
         emailLogRepository.delete(emailLog);
+    }
+
+    // Documents 서비스에서 호출하여 이메일 로그를 내부적으로 생성한다.
+    @Transactional
+    public void createEmailLogFromInternal(EmailLogInternalRequest request) {
+        // 문서 유형 목록을 변환한다.
+        List<EmailLogType> docTypeList = request.docTypes() != null
+                ? request.docTypes().stream()
+                    .map(dt -> EmailLogType.of(DocumentType.from(dt)))
+                    .toList()
+                : List.of();
+
+        // S3 키를 포함한 첨부파일 목록을 구성한다.
+        List<EmailLogAttachment> attachments = new ArrayList<>();
+        if (request.attachmentFilenames() != null && request.s3Keys() != null) {
+            for (int i = 0; i < request.attachmentFilenames().size(); i++) {
+                String filename = request.attachmentFilenames().get(i);
+                String s3Key = i < request.s3Keys().size() ? request.s3Keys().get(i) : null;
+                attachments.add(EmailLogAttachment.of(filename, s3Key));
+            }
+        }
+
+        // 발송 상태를 결정한다.
+        MailStatus status = "SENT".equals(request.emailStatus()) ? MailStatus.SENT : MailStatus.FAILED;
+
+        EmailLog emailLog = EmailLog.builder()
+                .clientId(request.clientId())
+                .poId(request.poId())
+                .emailTitle(request.emailTitle())
+                .emailRecipientName(request.emailRecipientName())
+                .emailRecipientEmail(request.emailRecipientEmail())
+                .emailSenderId(request.emailSenderId())
+                .emailStatus(status)
+                .docTypes(docTypeList)
+                .attachments(attachments)
+                .build();
+
+        if (status == MailStatus.SENT) {
+            emailLog.markAsSent();
+        }
+
+        emailLogRepository.save(emailLog);
+    }
+
+    // 첨부파일을 포함한 MimeMessage로 이메일을 발송한다.
+    private void sendMailWithAttachments(EmailLog emailLog) {
+        try {
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            helper.setFrom(senderEmail);
+            helper.setTo(emailLog.getEmailRecipientEmail());
+            helper.setSubject(emailLog.getEmailTitle());
+            helper.setText(emailLog.getEmailRecipientName() + " 님께 보내는 메일입니다.");
+
+            // 첨부파일을 Documents 서비스에서 다운로드하여 첨부한다.
+            if (emailLog.getAttachments() != null) {
+                for (EmailLogAttachment attachment : emailLog.getAttachments()) {
+                    if (attachment.getS3Key() != null) {
+                        try {
+                            byte[] pdfBytes = documentsFeignClient.downloadPdf(attachment.getS3Key());
+                            helper.addAttachment(
+                                    attachment.getEmailAttachmentFilename(),
+                                    new ByteArrayResource(pdfBytes),
+                                    "application/pdf"
+                            );
+                        } catch (Exception e) {
+                            log.error("첨부파일 다운로드 실패 [s3Key={}]: {}", attachment.getS3Key(), e.getMessage());
+                        }
+                    }
+                }
+            }
+
+            mailSender.send(mimeMessage);
+            emailLog.markAsSent();
+        } catch (Exception e) {
+            emailLog.markAsFailed();
+            log.error("이메일 발송 실패 [emailLogId={}, to={}]: {}",
+                    emailLog.getEmailLogId(), emailLog.getEmailRecipientEmail(), e.getMessage(), e);
+        }
     }
 
     // 이메일을 실제로 발송하고 성공 시 엔티티 상태를 SENT로 갱신한다.

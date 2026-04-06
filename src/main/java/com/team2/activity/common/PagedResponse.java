@@ -1,17 +1,16 @@
 package com.team2.activity.common;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 import java.util.List;
 
 // 목록 API에서 공통으로 사용하는 단순 페이징 응답 래퍼다.
+@Schema(description = "페이징 응답 래퍼")
 public record PagedResponse<T>(
-        // 현재 페이지의 데이터 목록이다.
-        List<T> content,
-        // 전체 데이터 개수다.
-        long totalElements,
-        // 전체 페이지 수다.
-        int totalPages,
-        // 현재 페이지 번호다.
-        int currentPage
+        @Schema(description = "현재 페이지 데이터 목록") List<T> content,
+        @Schema(description = "전체 데이터 개수") long totalElements,
+        @Schema(description = "전체 페이지 수") int totalPages,
+        @Schema(description = "현재 페이지 번호") int currentPage
 ) {
     public static <T> PagedResponse<T> of(List<T> items) {
         return new PagedResponse<>(items, items.size(), items.isEmpty() ? 0 : 1, 0);

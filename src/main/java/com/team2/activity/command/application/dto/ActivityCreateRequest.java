@@ -2,20 +2,26 @@ package com.team2.activity.command.application.dto;
 
 import com.team2.activity.command.domain.entity.Activity;
 import com.team2.activity.command.domain.entity.enums.ActivityType;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
 // 활동 생성 요청 본문을 받는 DTO다.
+@Schema(description = "활동 생성 요청")
 public record ActivityCreateRequest(
         // 활동이 속한 거래처 ID다.
+        @Schema(description = "거래처 ID", example = "1")
         @NotNull Long clientId,
         // 활동이 발생한 날짜다.
+        @Schema(description = "활동 날짜", example = "2026-04-06")
         @NotNull LocalDate activityDate,
         // 활동 분류 값이다.
+        @Schema(description = "활동 유형")
         @NotNull ActivityType activityType,
         // 활동 제목이다.
+        @Schema(description = "활동 제목", example = "고객 미팅")
         @NotBlank String activityTitle
 ) {
     // 요청 DTO를 저장 가능한 Activity 엔티티로 변환한다.

@@ -2,24 +2,26 @@ package com.team2.activity.query.dto;
 
 import com.team2.activity.command.domain.entity.EmailLog;
 import com.team2.activity.command.domain.entity.enums.MailStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Schema(description = "이메일 로그 응답")
 public record EmailLogResponse(
-        Long emailLogId,
-        Long clientId,
-        String clientName,
-        String poId,
-        String emailTitle,
-        String emailRecipientName,
-        String emailRecipientEmail,
-        Long emailSenderId,
-        MailStatus emailStatus,
-        LocalDateTime emailSentAt,
-        LocalDateTime createdAt,
-        List<EmailLogTypeResponse> docTypes,
-        String senderName
+        @Schema(description = "이메일 로그 ID") Long emailLogId,
+        @Schema(description = "거래처 ID") Long clientId,
+        @Schema(description = "거래처명") String clientName,
+        @Schema(description = "PO ID") String poId,
+        @Schema(description = "이메일 제목") String emailTitle,
+        @Schema(description = "수신자 이름") String emailRecipientName,
+        @Schema(description = "수신자 이메일") String emailRecipientEmail,
+        @Schema(description = "발송자 ID") Long emailSenderId,
+        @Schema(description = "메일 발송 상태") MailStatus emailStatus,
+        @Schema(description = "발송 시각") LocalDateTime emailSentAt,
+        @Schema(description = "생성 시각") LocalDateTime createdAt,
+        @Schema(description = "첨부 문서 유형 목록") List<EmailLogTypeResponse> docTypes,
+        @Schema(description = "발송자 이름") String senderName
 ) {
     public static EmailLogResponse from(EmailLog emailLog) {
         return from(emailLog, null, null);

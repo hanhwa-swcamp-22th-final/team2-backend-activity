@@ -4,24 +4,26 @@ import com.team2.activity.command.domain.entity.EmailLog;
 import com.team2.activity.command.domain.entity.EmailLogType;
 import com.team2.activity.command.domain.entity.enums.DocumentType;
 import com.team2.activity.command.domain.entity.enums.MailStatus;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.util.List;
 
 // 이메일 로그 생성 요청 본문을 받는 DTO다.
+@Schema(description = "이메일 로그 생성 요청")
 public record EmailLogCreateRequest(
-        // 이메일이 속한 거래처 ID다.
+        @Schema(description = "거래처 ID", example = "1")
         @NotNull Long clientId,
-        // 관련 PO ID다.
+        @Schema(description = "PO ID", example = "PO-001")
         String poId,
-        // 이메일 제목이다.
+        @Schema(description = "이메일 제목", example = "견적서 송부")
         @NotBlank String emailTitle,
-        // 수신자 이름이다.
+        @Schema(description = "수신자 이름", example = "김철수")
         String emailRecipientName,
-        // 수신자 이메일 주소다.
+        @Schema(description = "수신자 이메일", example = "kim@example.com")
         @NotBlank String emailRecipientEmail,
-        // 첨부 문서 유형 목록이다.
+        @Schema(description = "첨부 문서 유형 목록")
         List<DocumentType> docTypes
 ) {
     // 요청 DTO를 EmailLog 엔티티로 변환한다.

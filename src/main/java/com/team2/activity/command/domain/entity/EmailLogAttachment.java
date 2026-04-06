@@ -25,15 +25,30 @@ public class EmailLogAttachment {
     @Column(name = "email_attachment_filename", nullable = false, length = 255)
     private String emailAttachmentFilename;
 
+    // 첨부파일의 S3 오브젝트 키다.
+    @Column(name = "email_attachment_s3_key", length = 500)
+    private String s3Key;
+
     // 정적 팩터리 사용을 강제하기 위한 private 생성자다.
     private EmailLogAttachment(String emailAttachmentFilename) {
         // 전달받은 파일명을 엔티티 필드에 저장한다.
         this.emailAttachmentFilename = emailAttachmentFilename;
     }
 
+    // S3 키를 포함한 정적 팩터리용 private 생성자다.
+    private EmailLogAttachment(String emailAttachmentFilename, String s3Key) {
+        this.emailAttachmentFilename = emailAttachmentFilename;
+        this.s3Key = s3Key;
+    }
+
     // 파일명만으로 첨부파일 엔티티를 생성한다.
     public static EmailLogAttachment of(String filename) {
         // private 생성자를 호출해 새 첨부파일 엔티티를 만든다.
         return new EmailLogAttachment(filename);
+    }
+
+    // 파일명과 S3 키로 첨부파일 엔티티를 생성한다.
+    public static EmailLogAttachment of(String filename, String s3Key) {
+        return new EmailLogAttachment(filename, s3Key);
     }
 }

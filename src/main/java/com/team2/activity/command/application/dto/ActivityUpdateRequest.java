@@ -2,27 +2,29 @@ package com.team2.activity.command.application.dto;
 
 import com.team2.activity.command.domain.entity.enums.ActivityType;
 import com.team2.activity.command.domain.entity.enums.Priority;
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDate;
 
 // 활동 수정 요청 본문을 받는 DTO다.
+@Schema(description = "활동 수정 요청")
 public record ActivityUpdateRequest(
-        // 수정할 활동 날짜다.
+        @Schema(description = "활동 날짜", example = "2026-04-06")
         @NotNull LocalDate activityDate,
-        // 수정할 활동 타입이다.
+        @Schema(description = "활동 유형")
         @NotNull ActivityType activityType,
-        // 수정할 활동 제목이다.
+        @Schema(description = "활동 제목", example = "고객 미팅 수정")
         @NotBlank String activityTitle,
-        // 수정할 활동 본문이다.
+        @Schema(description = "활동 상세 내용")
         String activityContent,
-        // 수정할 PO ID다.
+        @Schema(description = "PO ID", example = "PO-001")
         String poId,
-        // 이슈 타입일 때 사용할 우선순위다.
+        @Schema(description = "우선순위 (이슈 타입 전용)")
         Priority activityPriority,
-        // 일정 타입일 때 사용할 시작일이다.
+        @Schema(description = "일정 시작일", example = "2026-04-06")
         LocalDate activityScheduleFrom,
-        // 일정 타입일 때 사용할 종료일이다.
+        @Schema(description = "일정 종료일", example = "2026-04-10")
         LocalDate activityScheduleTo
 ) {}
