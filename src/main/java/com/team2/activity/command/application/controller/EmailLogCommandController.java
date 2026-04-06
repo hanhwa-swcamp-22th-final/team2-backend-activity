@@ -1,8 +1,8 @@
 package com.team2.activity.command.application.controller;
 
-import com.team2.activity.command.application.service.EmailLogCommandService;
 import com.team2.activity.command.application.dto.EmailLogCreateRequest;
 import com.team2.activity.command.application.dto.EmailLogInternalRequest;
+import com.team2.activity.command.application.service.EmailLogCommandService;
 import com.team2.activity.command.domain.entity.EmailLog;
 import com.team2.activity.query.controller.EmailLogQueryController;
 import com.team2.activity.query.dto.EmailLogResponse;
@@ -14,7 +14,6 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -30,7 +29,7 @@ public class EmailLogCommandController {
 
     private final EmailLogCommandService emailLogCommandService;
 
-    @Operation(summary = "이메일 로그 생성", description = "새로운 이메일 로그를 생성하고 발송을 시도한다")
+    @Operation(summary = "이메일 로그 생성", description = "새로운 이메일 로그를 생성한다. 실제 발송은 document 서비스가 담당한다")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "이메일 로그 생성 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터")
@@ -40,7 +39,6 @@ public class EmailLogCommandController {
             @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody EmailLogCreateRequest request) {
         EmailLog emailLog = emailLogCommandService.createEmailLog(request.toEntity(userId));
-        emailLogCommandService.attemptSend(emailLog);
         EntityModel<EmailLogResponse> model = EntityModel.of(EmailLogResponse.from(emailLog),
                 linkTo(methodOn(EmailLogQueryController.class).getEmailLog(emailLog.getEmailLogId())).withSelfRel(),
                 linkTo(methodOn(EmailLogQueryController.class).getEmailLogs(null, null, null, null, null, null, null, 0, 20)).withRel("email-logs"));
@@ -48,26 +46,31 @@ public class EmailLogCommandController {
         return ResponseEntity.created(location).body(model);
     }
 
-    @PostMapping("/internal")
-    @Operation(summary = "내부 이메일 로그 생성", description = "Documents 서비스에서 이메일 발송 후 이력을 저장합니다")
+    // document 서비스가 메일 발송 후 결과를 activity 서비스에 기록하는 내부 전용 엔드포인트다.
+    @Operation(summary = "내부 이메일 로그 생성", description = "Documents 서비스에서 이메일 발송 후 이력을 저장한다")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "이메일 로그 생성 성공"),
+            @ApiResponse(responseCode = "200", description = "이메일 로그 저장 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터")
     })
-    public ResponseEntity<Void> createEmailLogInternal(@Valid @RequestBody EmailLogInternalRequest request) {
-        emailLogCommandService.createEmailLogFromInternal(request);
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+    @PostMapping("/internal")
+    public ResponseEntity<Void> createEmailLogInternal(
+            @RequestBody EmailLogInternalRequest request) {
+        emailLogCommandService.createEmailLogInternal(request);
+        return ResponseEntity.ok().build();
     }
 
+    // FAILED 상태의 이메일을 document 서비스를 통해 재전송한다.
     @Operation(summary = "이메일 재발송", description = "실패한 이메일을 재발송한다")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "재발송 성공"),
-            @ApiResponse(responseCode = "404", description = "이메일 로그를 찾을 수 없음")
+            @ApiResponse(responseCode = "404", description = "이메일 로그를 찾을 수 없음"),
+            @ApiResponse(responseCode = "409", description = "이미 발송된 이메일")
     })
     @PostMapping("/{emailLogId}/resend")
     public ResponseEntity<EntityModel<EmailLogResponse>> resend(
-            @Parameter(description = "이메일 로그 ID", required = true) @PathVariable Long emailLogId) {
-        EmailLogResponse response = EmailLogResponse.from(emailLogCommandService.resend(emailLogId));
+            @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId,
+            @PathVariable Long emailLogId) {
+        EmailLogResponse response = EmailLogResponse.from(emailLogCommandService.resend(emailLogId, userId));
         return ResponseEntity.ok(EntityModel.of(response,
                 linkTo(methodOn(EmailLogQueryController.class).getEmailLog(emailLogId)).withSelfRel(),
                 linkTo(methodOn(EmailLogQueryController.class).getEmailLogs(null, null, null, null, null, null, null, 0, 20)).withRel("email-logs")));

@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.mail.javamail.JavaMailSender;
+
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
@@ -27,10 +27,6 @@ import org.springframework.transaction.annotation.Transactional;
 // test 프로파일을 활성화해 H2 인메모리 DB 환경을 사용하도록 한다.
 @ActiveProfiles("test")
 public abstract class IntegrationTestSupport {
-
-    // SMTP 연결 없이 메일 발송 로직을 시뮬레이션할 목 빈을 등록한다.
-    @MockBean
-    protected JavaMailSender mailSender;
 
     // 외부 문서 서비스 호출 없이 발주 정보 조회를 시뮬레이션할 목 빈을 등록한다.
     @MockBean

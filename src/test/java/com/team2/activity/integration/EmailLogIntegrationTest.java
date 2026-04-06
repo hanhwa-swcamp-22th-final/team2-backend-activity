@@ -11,7 +11,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MvcResult;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -53,8 +58,8 @@ class EmailLogIntegrationTest extends IntegrationTestSupport {
                 .andExpect(jsonPath("$.email_log_id").exists())
                 // 생성 응답에 email_sender_id가 헤더 값으로 반영됐는지 확인한다.
                 .andExpect(jsonPath("$.email_sender_id").value(10))
-                // 목 메일 발송 성공으로 SENT 상태가 되는지 확인한다.
-                .andExpect(jsonPath("$.email_status").value("SENT"))
+                // document 서비스가 발송을 담당하므로 생성 직후 상태는 PENDING이다.
+                .andExpect(jsonPath("$.email_status").value("PENDING"))
                 // 생성 응답의 첫 문서 유형이 PI인지 확인한다.
                 .andExpect(jsonPath("$.doc_types[0].email_doc_type").value("PI"))
                 .andReturn();
@@ -76,12 +81,12 @@ class EmailLogIntegrationTest extends IntegrationTestSupport {
         emailLogRepository.flush();
 
         // 상태 필터 목록 조회에서 생성된 메일이 노출되는지 확인한다.
-        mockMvc.perform(get("/api/email-logs").param("emailStatus", "SENT"))
+        mockMvc.perform(get("/api/email-logs").param("emailStatus", "PENDING"))
                 .andExpect(status().isOk())
                 // 목록 첫 원소의 email_log_id가 생성한 ID와 같은지 확인한다.
                 .andExpect(jsonPath("$.content[0].email_log_id").value(emailLogId))
-                // 목록 첫 원소의 상태가 SENT인지 확인한다.
-                .andExpect(jsonPath("$.content[0].email_status").value("SENT"));
+                // 목록 첫 원소의 상태가 PENDING인지 확인한다.
+                .andExpect(jsonPath("$.content[0].email_status").value("PENDING"));
     }
 
     @Test
@@ -106,8 +111,15 @@ class EmailLogIntegrationTest extends IntegrationTestSupport {
                 // FAILED 상태 EmailLog 저장용 픽스처 생성을 마무리한다.
                 .build());
 
+        // document 서비스가 재전송 성공 응답을 반환하도록 mock을 설정한다.
+        given(documentsFeignClient.sendEmail(eq(10L), any()))
+                .willReturn(new com.team2.activity.command.infrastructure.client.EmailSendResponse(
+                        "SENT", "Email sent successfully", List.of()));
+
         // 실패 로그 재전송 시 상태가 SENT로 바뀌는지 확인한다.
-        mockMvc.perform(post("/api/email-logs/{emailLogId}/resend", failedLog.getEmailLogId()).with(csrf()))
+        mockMvc.perform(post("/api/email-logs/{emailLogId}/resend", failedLog.getEmailLogId())
+                        .header("X-User-Id", "10")
+                        .with(csrf()))
                 .andExpect(status().isOk())
                 // 재전송 응답의 email_log_id가 실패 로그 ID와 같은지 확인한다.
                 .andExpect(jsonPath("$.email_log_id").value(failedLog.getEmailLogId()))
@@ -147,7 +159,9 @@ class EmailLogIntegrationTest extends IntegrationTestSupport {
                 .build());
 
         // 이미 발송된 메일 재전송 요청은 409 충돌 응답이어야 한다.
-        mockMvc.perform(post("/api/email-logs/{emailLogId}/resend", sentLog.getEmailLogId()).with(csrf()))
+        mockMvc.perform(post("/api/email-logs/{emailLogId}/resend", sentLog.getEmailLogId())
+                        .header("X-User-Id", "11")
+                        .with(csrf()))
                 .andExpect(status().isConflict())
                 // 충돌 응답 메시지가 기대값과 같은지 확인한다.
                 .andExpect(jsonPath("$.message").value("이미 발송된 이메일입니다."));
@@ -190,7 +204,9 @@ class EmailLogIntegrationTest extends IntegrationTestSupport {
     @DisplayName("존재하지 않는 이메일 로그 재전송 시 404를 반환한다")
     void resend_returns404WhenNotFound() throws Exception {
         // 존재하지 않는 ID로 재전송 시도 시 IllegalArgumentException → 404여야 한다.
-        mockMvc.perform(post("/api/email-logs/{emailLogId}/resend", 99999L).with(csrf()))
+        mockMvc.perform(post("/api/email-logs/{emailLogId}/resend", 99999L)
+                        .header("X-User-Id", "10")
+                        .with(csrf()))
                 // 이메일 로그 없음 예외가 404로 변환되는지 확인한다.
                 .andExpect(status().isNotFound())
                 // 응답 본문의 메시지가 정확한지 확인한다.

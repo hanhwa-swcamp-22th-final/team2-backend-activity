@@ -107,11 +107,12 @@ class EmailLogCommandControllerTest {
     @DisplayName("POST /api/email-logs/{email_log_id}/resend - FAILED 상태 → 200 OK")
     void resendEmailLog_returns200WhenFailed() throws Exception {
         // 재전송 성공 시 SENT 상태 응답을 반환하도록 설정한다.
-        when(emailLogCommandService.resend(1L)).thenReturn(buildEmailLog(MailStatus.SENT));
+        when(emailLogCommandService.resend(1L, 7L)).thenReturn(buildEmailLog(MailStatus.SENT));
 
         // FAILED 상태 재전송 요청이 200 응답을 반환하는지 확인한다.
         // 응답 상태가 200 OK인지 확인한다.
         mockMvc.perform(post("/api/email-logs/1/resend")
+                        .header("X-User-Id", "7")
                         .with(csrf()))
                 .andExpect(status().isOk())
                 // 응답 본문에 email_log_id가 포함되는지 확인한다.
@@ -124,11 +125,12 @@ class EmailLogCommandControllerTest {
     @DisplayName("POST /api/email-logs/{email_log_id}/resend - 이미 SENT 상태 → 409 Conflict")
     void resendEmailLog_returns409WhenAlreadySent() throws Exception {
         // 이미 발송된 메일 재전송 요청은 상태 충돌 예외를 반환한다.
-        when(emailLogCommandService.resend(1L))
+        when(emailLogCommandService.resend(1L, 7L))
                 .thenThrow(new IllegalStateException("이미 발송된 이메일입니다."));
 
         // 응답 상태가 409 Conflict인지 확인한다.
         mockMvc.perform(post("/api/email-logs/1/resend")
+                        .header("X-User-Id", "7")
                         .with(csrf()))
                 .andExpect(status().isConflict());
     }
@@ -137,11 +139,12 @@ class EmailLogCommandControllerTest {
     @DisplayName("POST /api/email-logs/{email_log_id}/resend - 존재하지 않는 ID → 404 Not Found")
     void resendEmailLog_returns404WhenNotFound() throws Exception {
         // 존재하지 않는 메일 재전송 요청은 404 응답으로 변환돼야 한다.
-        when(emailLogCommandService.resend(999L))
+        when(emailLogCommandService.resend(999L, 7L))
                 .thenThrow(new IllegalArgumentException("이메일 로그를 찾을 수 없습니다."));
 
         // 응답 상태가 404 Not Found인지 확인한다.
         mockMvc.perform(post("/api/email-logs/999/resend")
+                        .header("X-User-Id", "7")
                         .with(csrf()))
                 .andExpect(status().isNotFound());
     }
