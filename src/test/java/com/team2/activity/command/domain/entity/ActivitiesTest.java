@@ -75,10 +75,10 @@ class ActivitiesTest {
                 .activityType(ActivityType.ISSUE)
                 .activityTitle("일반 이슈")
                 .activityDate(LocalDate.now())
-                .activityPriority(Priority.MEDIUM)
+                .activityPriority(Priority.NORMAL)
                 .build();
 
-        assertThat(record.getActivityPriority()).isEqualTo(Priority.MEDIUM);
+        assertThat(record.getActivityPriority()).isEqualTo(Priority.NORMAL);
     }
 
     @Test
@@ -207,19 +207,19 @@ class ActivitiesTest {
     @Test
     @DisplayName("ActivityType JSON 직렬화 - 영문 displayName 반환")
     void recordType_displayName() {
-        assertThat(ActivityType.MEETING.getDisplayName()).isEqualTo("MEETING");   // 구: 미팅/협의
-        assertThat(ActivityType.ISSUE.getDisplayName()).isEqualTo("ISSUE");       // 구: 이슈
-        assertThat(ActivityType.MEMO.getDisplayName()).isEqualTo("MEMO");         // 구: 메모/노트
-        assertThat(ActivityType.SCHEDULE.getDisplayName()).isEqualTo("SCHEDULE"); // 구: 일정
+        assertThat(ActivityType.MEETING.getDisplayName()).isEqualTo("meeting");
+        assertThat(ActivityType.ISSUE.getDisplayName()).isEqualTo("issue");
+        assertThat(ActivityType.MEMO.getDisplayName()).isEqualTo("memo");
+        assertThat(ActivityType.SCHEDULE.getDisplayName()).isEqualTo("schedule");
     }
 
     @Test
     @DisplayName("ActivityType JSON 역직렬화 - 영문 문자열로 생성")
     void recordType_fromDisplayName() {
-        assertThat(ActivityType.from("MEETING")).isEqualTo(ActivityType.MEETING);   // 구: 미팅/협의
-        assertThat(ActivityType.from("ISSUE")).isEqualTo(ActivityType.ISSUE);       // 구: 이슈
-        assertThat(ActivityType.from("MEMO")).isEqualTo(ActivityType.MEMO);         // 구: 메모/노트
-        assertThat(ActivityType.from("SCHEDULE")).isEqualTo(ActivityType.SCHEDULE); // 구: 일정
+        assertThat(ActivityType.from("meeting")).isEqualTo(ActivityType.MEETING);
+        assertThat(ActivityType.from("issue")).isEqualTo(ActivityType.ISSUE);
+        assertThat(ActivityType.from("memo")).isEqualTo(ActivityType.MEMO);
+        assertThat(ActivityType.from("schedule")).isEqualTo(ActivityType.SCHEDULE);
     }
 
     @Test
@@ -227,7 +227,7 @@ class ActivitiesTest {
     void priority_values() {
         assertThat(Priority.values())
                 .containsExactlyInAnyOrder(
-                        Priority.MEDIUM,
+                        Priority.NORMAL,
                         Priority.HIGH
                 );
     }
@@ -235,15 +235,15 @@ class ActivitiesTest {
     @Test
     @DisplayName("Priority JSON 직렬화 - 영문 displayName 반환")
     void priority_displayName() {
-        assertThat(Priority.MEDIUM.getDisplayName()).isEqualTo("MEDIUM"); // 구: 보통
-        assertThat(Priority.HIGH.getDisplayName()).isEqualTo("HIGH");     // 구: 높음
+        assertThat(Priority.NORMAL.getDisplayName()).isEqualTo("normal");
+        assertThat(Priority.HIGH.getDisplayName()).isEqualTo("high");
     }
 
     @Test
     @DisplayName("Priority JSON 역직렬화 - 영문 문자열로 생성")
     void priority_fromDisplayName() {
-        assertThat(Priority.from("MEDIUM")).isEqualTo(Priority.MEDIUM); // 구: 보통
-        assertThat(Priority.from("HIGH")).isEqualTo(Priority.HIGH);     // 구: 높음
+        assertThat(Priority.from("normal")).isEqualTo(Priority.NORMAL);
+        assertThat(Priority.from("high")).isEqualTo(Priority.HIGH);
     }
 
     @Test

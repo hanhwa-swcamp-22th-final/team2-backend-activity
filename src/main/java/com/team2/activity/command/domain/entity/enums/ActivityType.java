@@ -3,12 +3,12 @@ package com.team2.activity.command.domain.entity.enums;
 import com.fasterxml.jackson.annotation.JsonCreator; // JSON 역직렬화 시 사용할 팩토리 메서드 지정
 import com.fasterxml.jackson.annotation.JsonValue;   // JSON 직렬화 시 반환할 값 지정
 
-// 활동 기록 유형 열거형 (DB: 'MEETING','ISSUE','MEMO','SCHEDULE')
+// 활동 기록 유형 열거형 (DB: 'meeting','issue','memo','schedule')
 public enum ActivityType implements DisplayNameEnum {
-    MEETING("MEETING"),  // 거래처와의 미팅 또는 협의 기록 (구: 미팅/협의)
-    ISSUE("ISSUE"),      // 문제 또는 이슈 기록, 우선순위 설정 가능 (구: 이슈)
-    MEMO("MEMO"),        // 자유 형식의 메모 또는 노트 (구: 메모/노트)
-    SCHEDULE("SCHEDULE"); // 일정 기록, 시작일/종료일 필수 (구: 일정)
+    MEETING("meeting"),   // 거래처와의 미팅 또는 협의 기록
+    ISSUE("issue"),       // 문제 또는 이슈 기록, 우선순위 설정 가능
+    MEMO("memo"),         // 자유 형식의 메모 또는 노트
+    SCHEDULE("schedule"); // 일정 기록, 시작일/종료일 필수
 
     private final String displayName; // 프론트엔드 및 DB에서 사용하는 영문 표시값
 

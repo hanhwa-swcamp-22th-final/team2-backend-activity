@@ -3,13 +3,13 @@ package com.team2.activity.command.domain.entity.enums;
 import com.fasterxml.jackson.annotation.JsonCreator; // JSON 역직렬화 시 사용할 팩토리 메서드 지정
 import com.fasterxml.jackson.annotation.JsonValue;   // JSON 직렬화 시 반환할 값 지정
 
-// 메일 첨부 문서 유형 열거형 (DB: 'PI','CI','PL','PRODUCTION_ORDER','SHIPPING_ORDER')
+// 메일 첨부 문서 유형 열거형 (DB: 'PI','CI','PL','production_order','shipment_order')
 public enum DocumentType implements DisplayNameEnum {
     PI("PI"),                                    // 선적전검사의뢰서 (Pre-shipment Inspection)
     CI("CI"),                                    // 상업송장 (Commercial Invoice)
     PL("PL"),                                    // 포장명세서 (Packing List)
-    PRODUCTION_ORDER("PRODUCTION_ORDER"),        // 공장에 생산을 지시하는 내부 문서 (구: 생산지시서)
-    SHIPPING_ORDER("SHIPPING_ORDER");            // 물품 출하를 지시하는 내부 문서 (구: 출하지시서)
+    PRODUCTION_ORDER("production_order"),         // 공장에 생산을 지시하는 내부 문서 (생산지시서)
+    SHIPMENT_ORDER("shipment_order");             // 물품 출하를 지시하는 내부 문서 (출하지시서)
 
     private final String displayName; // 프론트엔드 및 DB에서 사용하는 영문 표시값
 

@@ -173,7 +173,7 @@ class EmailLogTest {
     }
 
     @Test
-    @DisplayName("영문 문서 유형(PRODUCTION_ORDER, SHIPPING_ORDER) 저장")
+    @DisplayName("영문 문서 유형(PRODUCTION_ORDER, SHIPMENT_ORDER) 저장")
     void createEmailLog_koreanDocTypes() {
         EmailLog mail = EmailLog.builder()
                 .clientId(1L)
@@ -183,12 +183,12 @@ class EmailLogTest {
                 .emailSentAt(LocalDateTime.now())
                 .docTypes(List.of(
                         EmailLogType.of(DocumentType.PRODUCTION_ORDER),
-                        EmailLogType.of(DocumentType.SHIPPING_ORDER)))
+                        EmailLogType.of(DocumentType.SHIPMENT_ORDER)))
                 .build();
 
         assertThat(mail.getDocTypes())
                 .extracting(EmailLogType::getEmailDocType)
-                .containsExactlyInAnyOrder(DocumentType.PRODUCTION_ORDER, DocumentType.SHIPPING_ORDER);
+                .containsExactlyInAnyOrder(DocumentType.PRODUCTION_ORDER, DocumentType.SHIPMENT_ORDER);
     }
 
     @Test
@@ -205,17 +205,17 @@ class EmailLogTest {
     @Test
     @DisplayName("MailStatus JSON 직렬화 - 영문 displayName 반환")
     void mailStatus_displayName() {
-        assertThat(MailStatus.PENDING.getDisplayName()).isEqualTo("PENDING"); // 발송 전 초기 상태
-        assertThat(MailStatus.SENT.getDisplayName()).isEqualTo("SENT");      // 발송 성공
-        assertThat(MailStatus.FAILED.getDisplayName()).isEqualTo("FAILED");  // 발송 실패
+        assertThat(MailStatus.PENDING.getDisplayName()).isEqualTo("pending"); // 발송 전 초기 상태
+        assertThat(MailStatus.SENT.getDisplayName()).isEqualTo("sent");      // 발송 성공
+        assertThat(MailStatus.FAILED.getDisplayName()).isEqualTo("failed");  // 발송 실패
     }
 
     @Test
     @DisplayName("MailStatus JSON 역직렬화 - 영문 문자열로 생성")
     void mailStatus_fromDisplayName() {
-        assertThat(MailStatus.from("PENDING")).isEqualTo(MailStatus.PENDING); // 발송 전 초기 상태
-        assertThat(MailStatus.from("SENT")).isEqualTo(MailStatus.SENT);      // 발송 성공
-        assertThat(MailStatus.from("FAILED")).isEqualTo(MailStatus.FAILED);  // 발송 실패
+        assertThat(MailStatus.from("pending")).isEqualTo(MailStatus.PENDING); // 발송 전 초기 상태
+        assertThat(MailStatus.from("sent")).isEqualTo(MailStatus.SENT);      // 발송 성공
+        assertThat(MailStatus.from("failed")).isEqualTo(MailStatus.FAILED);  // 발송 실패
     }
 
     @Test
@@ -227,7 +227,7 @@ class EmailLogTest {
                         DocumentType.CI,
                         DocumentType.PL,
                         DocumentType.PRODUCTION_ORDER,
-                        DocumentType.SHIPPING_ORDER
+                        DocumentType.SHIPMENT_ORDER
                 );
     }
 
@@ -237,8 +237,8 @@ class EmailLogTest {
         assertThat(DocumentType.PI.getDisplayName()).isEqualTo("PI");
         assertThat(DocumentType.CI.getDisplayName()).isEqualTo("CI");
         assertThat(DocumentType.PL.getDisplayName()).isEqualTo("PL");
-        assertThat(DocumentType.PRODUCTION_ORDER.getDisplayName()).isEqualTo("PRODUCTION_ORDER"); // 구: 생산지시서
-        assertThat(DocumentType.SHIPPING_ORDER.getDisplayName()).isEqualTo("SHIPPING_ORDER");     // 구: 출하지시서
+        assertThat(DocumentType.PRODUCTION_ORDER.getDisplayName()).isEqualTo("production_order");
+        assertThat(DocumentType.SHIPMENT_ORDER.getDisplayName()).isEqualTo("shipment_order");
     }
 
     @Test
@@ -247,8 +247,8 @@ class EmailLogTest {
         assertThat(DocumentType.from("PI")).isEqualTo(DocumentType.PI);
         assertThat(DocumentType.from("CI")).isEqualTo(DocumentType.CI);
         assertThat(DocumentType.from("PL")).isEqualTo(DocumentType.PL);
-        assertThat(DocumentType.from("PRODUCTION_ORDER")).isEqualTo(DocumentType.PRODUCTION_ORDER); // 구: 생산지시서
-        assertThat(DocumentType.from("SHIPPING_ORDER")).isEqualTo(DocumentType.SHIPPING_ORDER);     // 구: 출하지시서
+        assertThat(DocumentType.from("production_order")).isEqualTo(DocumentType.PRODUCTION_ORDER);
+        assertThat(DocumentType.from("shipment_order")).isEqualTo(DocumentType.SHIPMENT_ORDER);
     }
 
     @Test

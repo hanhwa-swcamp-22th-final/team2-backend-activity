@@ -14,6 +14,6 @@ public record EmailSendRequest(
         String emailRecipientName,
         // 수신자 이메일 주소다.
         String emailRecipientEmail,
-        // 첨부할 문서 유형 목록이다 (PI, CI, PL, SHIPPING_ORDER, PRODUCTION_ORDER).
+        // 첨부할 문서 유형 목록이다 (PI, CI, PL, SHIPMENT_ORDER, PRODUCTION_ORDER).
         List<String> docTypes
 ) {}

@@ -3,10 +3,10 @@ package com.team2.activity.command.domain.entity.enums;
 import com.fasterxml.jackson.annotation.JsonCreator; // JSON 역직렬화 시 사용할 팩토리 메서드 지정
 import com.fasterxml.jackson.annotation.JsonValue;   // JSON 직렬화 시 반환할 값 지정
 
-// 활동 우선순위 열거형 (DB: 'HIGH','MEDIUM') - 이슈 타입에서만 사용
+// 활동 우선순위 열거형 (DB: 'high','normal') - 이슈 타입에서만 사용
 public enum Priority implements DisplayNameEnum {
-    HIGH("HIGH"),   // 높은 우선순위 - 긴급하게 처리해야 할 이슈 (구: 높음)
-    MEDIUM("MEDIUM"); // 보통 우선순위 - 일반적인 이슈 (구: 보통)
+    HIGH("high"),     // 높은 우선순위 - 긴급하게 처리해야 할 이슈
+    NORMAL("normal"); // 보통 우선순위 - 일반적인 이슈
 
     private final String displayName; // 프론트엔드 및 DB에서 사용하는 영문 표시값
 

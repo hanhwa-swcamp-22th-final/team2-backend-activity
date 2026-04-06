@@ -94,7 +94,7 @@ class PdfSampleGeneratorTest {
                 ActivityType.SCHEDULE,
                 "제품 납기 관리 일정",
                 "생산 라인 점검 및 선적 일정 조율",
-                Priority.MEDIUM,
+                Priority.NORMAL,
                 LocalDate.of(2025, 3, 12),
                 LocalDate.of(2025, 3, 25),
                 null, null,
