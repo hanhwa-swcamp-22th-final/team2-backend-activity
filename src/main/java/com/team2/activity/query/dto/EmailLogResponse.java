@@ -1,5 +1,6 @@
 package com.team2.activity.query.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.team2.activity.command.domain.entity.EmailLog;
 import com.team2.activity.command.domain.entity.enums.MailStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -50,4 +51,28 @@ public record EmailLogResponse(
                 senderName
         );
     }
+
+    @JsonProperty("id")
+    public Long id() { return emailLogId; }
+
+    @JsonProperty("title")
+    public String title() { return emailTitle; }
+
+    @JsonProperty("email")
+    public String email() { return emailRecipientEmail; }
+
+    @JsonProperty("recipient")
+    public String recipient() { return emailRecipientName; }
+
+    @JsonProperty("sender")
+    public String sender() { return senderName; }
+
+    @JsonProperty("types")
+    public List<EmailLogTypeResponse> types() { return docTypes; }
+
+    @JsonProperty("status")
+    public MailStatus status() { return emailStatus; }
+
+    @JsonProperty("sentAt")
+    public LocalDateTime sentAt() { return emailSentAt; }
 }

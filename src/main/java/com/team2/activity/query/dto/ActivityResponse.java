@@ -1,5 +1,6 @@
 package com.team2.activity.query.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.team2.activity.command.domain.entity.Activity;
 import com.team2.activity.command.domain.entity.enums.ActivityType;
 import com.team2.activity.command.domain.entity.enums.Priority;
@@ -69,4 +70,25 @@ public record ActivityResponse(
                 clientName
         );
     }
+
+    @JsonProperty("id")
+    public Long id() { return activityId; }
+
+    @JsonProperty("type")
+    public ActivityType type() { return activityType; }
+
+    @JsonProperty("title")
+    public String title() { return activityTitle; }
+
+    @JsonProperty("date")
+    public LocalDate date() { return activityDate; }
+
+    @JsonProperty("author")
+    public String author() { return authorName; }
+
+    @JsonProperty("content")
+    public String content() { return activityContent; }
+
+    @JsonProperty("priority")
+    public Priority priority() { return activityPriority; }
 }
