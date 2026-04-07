@@ -95,12 +95,16 @@
         ORDER BY created_at DESC
     </select>
 
+    <!-- 작성자 본인 패키지 OR 뷰어로 등록된 패키지를 모두 대시보드에 노출한다 -->
     <select id="findAllByViewerUserId" resultMap="activityPackageListResultMap">
         SELECT package_id, package_title, package_description,
                po_id, creator_id, date_from, date_to, created_at, updated_at
         FROM activity_packages
-        WHERE package_id IN (
-            SELECT pv.package_id FROM activity_package_viewers pv WHERE pv.user_id = #{userId}
+        WHERE (
+            creator_id = #{userId}
+            OR package_id IN (
+                SELECT pv.package_id FROM activity_package_viewers pv WHERE pv.user_id = #{userId}
+            )
         )
         <if test="creatorId != null">
             AND creator_id = #{creatorId}

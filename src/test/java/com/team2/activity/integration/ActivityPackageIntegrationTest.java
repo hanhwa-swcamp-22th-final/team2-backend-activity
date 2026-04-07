@@ -306,8 +306,8 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                 .andExpect(status().isOk())
                 // 응답 Content-Type이 application/pdf인지 확인한다.
                 .andExpect(content().contentType(MediaType.APPLICATION_PDF))
-                // Content-Disposition 헤더에 "attachment"가 포함돼 브라우저가 파일로 다운로드하는지 확인한다.
-                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("attachment")))
+                // Content-Disposition 헤더에 "inline"이 포함돼 브라우저에서 바로 열어 인쇄할 수 있는지 확인한다.
+                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("inline")))
                 .andReturn();
 
         // 응답 바디에서 PDF 바이트 배열을 꺼낸다.

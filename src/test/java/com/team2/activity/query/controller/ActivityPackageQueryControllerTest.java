@@ -110,7 +110,7 @@ class ActivityPackageQueryControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/activity-packages/{package_id}/report → 200 OK, PDF 다운로드 응답")
+    @DisplayName("GET /api/activity-packages/{package_id}/report → 200 OK, PDF inline 응답")
     void downloadPackageReport_returnsPdfAttachment() throws Exception {
         // PDF 다운로드 응답 본문으로 사용할 바이트 배열을 준비한다.
         byte[] pdfBytes = "%PDF-1.7".getBytes();
@@ -131,8 +131,8 @@ class ActivityPackageQueryControllerTest {
                 .andExpect(status().isOk())
                 // 응답 MIME 타입이 application/pdf인지 확인한다.
                 .andExpect(content().contentType("application/pdf"))
-                // Content-Disposition이 attachment 형태인지 확인한다.
-                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("attachment")))
+                // Content-Disposition이 inline 형태인지 확인한다 (브라우저에서 바로 열어 인쇄 가능).
+                .andExpect(header().string("Content-Disposition", org.hamcrest.Matchers.containsString("inline")))
                 // 응답 본문이 PDF 바이트 배열과 같은지 확인한다.
                 .andExpect(content().bytes(pdfBytes))
                 // 응답 헤더 값을 후속 검증을 위해 추출한다.

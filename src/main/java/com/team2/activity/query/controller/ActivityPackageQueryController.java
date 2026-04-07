@@ -73,7 +73,8 @@ public class ActivityPackageQueryController {
         byte[] pdfBytes = activityPackagePdfReportService.generatePackageReport(activityPackage, userId);
         String fileName = activityPackagePdfReportService.getDownloadFileName(activityPackage);
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentDisposition(ContentDisposition.attachment()
+        // inline으로 설정해 브라우저에서 바로 열어 인쇄할 수 있도록 한다.
+        headers.setContentDisposition(ContentDisposition.inline()
                 .filename(fileName, StandardCharsets.UTF_8)
                 .build());
         headers.setContentLength(pdfBytes.length);
