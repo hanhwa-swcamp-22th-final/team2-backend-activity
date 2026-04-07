@@ -41,18 +41,18 @@
         <result property="createdAt" column="created_at"/>
         <result property="updatedAt" column="updated_at"/>
         <collection property="viewers" ofType="ActivityPackageViewer"
-                    select="selectViewersByPackageId" column="package_id"/>
+                    select="selectViewersByActivityPackageId" column="package_id"/>
         <collection property="items" ofType="ActivityPackageItem"
-                    select="selectItemsByPackageId" column="package_id"/>
+                    select="selectItemsByActivityPackageId" column="package_id"/>
     </resultMap>
 
-    <select id="selectViewersByPackageId" resultMap="viewerResultMap">
+    <select id="selectViewersByActivityPackageId" resultMap="viewerResultMap">
         SELECT package_viewer_id, user_id
         FROM activity_package_viewers
         WHERE package_id = #{packageId}
     </select>
 
-    <select id="selectItemsByPackageId" resultMap="itemResultMap">
+    <select id="selectItemsByActivityPackageId" resultMap="itemResultMap">
         SELECT package_item_id, activity_id
         FROM activity_package_items
         WHERE package_id = #{packageId}
@@ -73,21 +73,30 @@
         LEFT JOIN activity_package_items i ON p.package_id = i.package_id
     </sql>
 
-    <select id="findById" resultMap="activityPackageResultMap">
+    <sql id="packageFilterConditions">
+        <if test="creatorId != null">
+            AND creator_id = #{creatorId}
+        </if>
+        <if test="poId != null and poId != ''">
+            AND po_id = #{poId}
+        </if>
+    </sql>
+
+    <select id="findActivityPackageById" resultMap="activityPackageResultMap">
         SELECT <include refid="packageColumns"/>
         <include refid="packageJoins"/>
         WHERE p.package_id = #{packageId}
     </select>
 
     <!-- 목록 조회: nested select (Cartesian Product 방지) -->
-    <select id="findAll" resultMap="activityPackageListResultMap">
+    <select id="findAllActivityPackages" resultMap="activityPackageListResultMap">
         SELECT package_id, package_title, package_description,
                po_id, creator_id, date_from, date_to, created_at, updated_at
         FROM activity_packages
         ORDER BY created_at DESC
     </select>
 
-    <select id="findAllByCreatorId" resultMap="activityPackageListResultMap">
+    <select id="findAllActivityPackagesByCreatorId" resultMap="activityPackageListResultMap">
         SELECT package_id, package_title, package_description,
                po_id, creator_id, date_from, date_to, created_at, updated_at
         FROM activity_packages
@@ -96,7 +105,7 @@
     </select>
 
     <!-- 작성자 본인 패키지 OR 뷰어로 등록된 패키지를 모두 대시보드에 노출한다 -->
-    <select id="findAllByViewerUserId" resultMap="activityPackageListResultMap">
+    <select id="findAllActivityPackagesByViewerUserId" resultMap="activityPackageListResultMap">
         SELECT package_id, package_title, package_description,
                po_id, creator_id, date_from, date_to, created_at, updated_at
         FROM activity_packages
@@ -115,19 +124,33 @@
         ORDER BY created_at DESC
     </select>
 
-    <select id="findAllWithFilters" resultMap="activityPackageListResultMap">
+    <select id="findAllActivityPackagesWithFilters" resultMap="activityPackageListResultMap">
         SELECT package_id, package_title, package_description,
                po_id, creator_id, date_from, date_to, created_at, updated_at
         FROM activity_packages
         <where>
-            <if test="creatorId != null">
-                AND creator_id = #{creatorId}
-            </if>
-            <if test="poId != null and poId != ''">
-                AND po_id = #{poId}
-            </if>
+            <include refid="packageFilterConditions"/>
         </where>
         ORDER BY created_at DESC
+    </select>
+
+    <select id="findActivityPackagesWithFilters" resultMap="activityPackageListResultMap">
+        SELECT package_id, package_title, package_description,
+               po_id, creator_id, date_from, date_to, created_at, updated_at
+        FROM activity_packages
+        <where>
+            <include refid="packageFilterConditions"/>
+        </where>
+        ORDER BY created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countActivityPackagesWithFilters" resultType="long">
+        SELECT COUNT(*)
+        FROM activity_packages
+        <where>
+            <include refid="packageFilterConditions"/>
+        </where>
     </select>
 
 </mapper>

@@ -60,7 +60,7 @@ class EmailLogQueryServiceTest {
         // mapper가 반환할 이메일 로그를 준비한다.
         EmailLog emailLog = buildEmailLog(1L, MailStatus.SENT);
         // mapper findById 호출 시 같은 엔티티를 반환하도록 설정한다.
-        when(emailLogQueryMapper.findById(1L)).thenReturn(emailLog);
+        when(emailLogQueryMapper.findEmailLogById(1L)).thenReturn(emailLog);
 
         // 서비스가 mapper 결과를 응답 DTO로 변환해 반환하는지 확인한다.
         EmailLogResponse result = emailLogQueryService.getEmailLog(1L);
@@ -74,14 +74,14 @@ class EmailLogQueryServiceTest {
         // 반환 DTO의 메일 상태가 mapper 결과와 같은지 확인한다.
         assertThat(result.emailStatus()).isEqualTo(emailLog.getEmailStatus());
         // findById가 정확히 한 번 호출됐는지 검증한다.
-        verify(emailLogQueryMapper).findById(1L);
+        verify(emailLogQueryMapper).findEmailLogById(1L);
     }
 
     @Test
     @DisplayName("단건 조회 결과가 없으면 예외를 던진다")
     void getEmailLog_throwsWhenEmailLogDoesNotExist() {
         // 조회 결과가 없으면 서비스가 예외를 던져야 한다.
-        when(emailLogQueryMapper.findById(999L)).thenReturn(null);
+        when(emailLogQueryMapper.findEmailLogById(999L)).thenReturn(null);
 
         // 없는 이메일 로그 조회 시 IllegalArgumentException이 발생하는지 확인한다.
         assertThatThrownBy(() -> emailLogQueryService.getEmailLog(999L))
@@ -98,7 +98,7 @@ class EmailLogQueryServiceTest {
                 buildEmailLog(2L, MailStatus.FAILED)
         );
         // mapper findAll 호출 시 준비한 목록을 반환하도록 설정한다.
-        when(emailLogQueryMapper.findAll()).thenReturn(emailLogs);
+        when(emailLogQueryMapper.findAllEmailLogs()).thenReturn(emailLogs);
 
         // 서비스가 전체 조회 결과를 그대로 전달하는지 확인한다.
         List<EmailLog> result = emailLogQueryService.getAllEmailLogs();
@@ -106,7 +106,7 @@ class EmailLogQueryServiceTest {
         // 반환 결과가 mapper가 돌려준 목록과 같은지 확인한다.
         assertThat(result).isEqualTo(emailLogs);
         // findAll이 정확히 한 번 호출됐는지 검증한다.
-        verify(emailLogQueryMapper).findAll();
+        verify(emailLogQueryMapper).findAllEmailLogs();
     }
 
     @Test
@@ -115,7 +115,7 @@ class EmailLogQueryServiceTest {
         // 거래처 기준 목록을 mapper가 반환하도록 설정한다.
         List<EmailLog> emailLogs = List.of(buildEmailLog(1L, MailStatus.SENT));
         // mapper가 거래처 조건 목록을 반환하도록 설정한다.
-        when(emailLogQueryMapper.findByClientId(1L)).thenReturn(emailLogs);
+        when(emailLogQueryMapper.findEmailLogByClientId(1L)).thenReturn(emailLogs);
 
         // 서비스가 clientId 조건 조회를 mapper에 위임하는지 확인한다.
         List<EmailLog> result = emailLogQueryService.getEmailLogsByClientId(1L);
@@ -123,7 +123,7 @@ class EmailLogQueryServiceTest {
         // 반환 결과가 mapper가 돌려준 목록과 같은지 확인한다.
         assertThat(result).isEqualTo(emailLogs);
         // findByClientId가 정확히 한 번 호출됐는지 검증한다.
-        verify(emailLogQueryMapper).findByClientId(1L);
+        verify(emailLogQueryMapper).findEmailLogByClientId(1L);
     }
 
     @Test
@@ -132,7 +132,7 @@ class EmailLogQueryServiceTest {
         // 상태 기준 목록을 mapper가 반환하도록 설정한다.
         List<EmailLog> emailLogs = List.of(buildEmailLog(1L, MailStatus.FAILED));
         // mapper가 상태 조건 목록을 반환하도록 설정한다.
-        when(emailLogQueryMapper.findByEmailStatus(MailStatus.FAILED)).thenReturn(emailLogs);
+        when(emailLogQueryMapper.findEmailLogByEmailStatus(MailStatus.FAILED)).thenReturn(emailLogs);
 
         // 서비스가 상태 조건 조회를 mapper에 위임하는지 확인한다.
         List<EmailLog> result = emailLogQueryService.getEmailLogsByStatus(MailStatus.FAILED);
@@ -140,6 +140,6 @@ class EmailLogQueryServiceTest {
         // 반환 결과가 mapper가 돌려준 목록과 같은지 확인한다.
         assertThat(result).isEqualTo(emailLogs);
         // findByEmailStatus가 정확히 한 번 호출됐는지 검증한다.
-        verify(emailLogQueryMapper).findByEmailStatus(MailStatus.FAILED);
+        verify(emailLogQueryMapper).findEmailLogByEmailStatus(MailStatus.FAILED);
     }
 }

@@ -57,7 +57,7 @@ class ActivityQueryServiceTest {
         // mapper가 반환할 활동 엔티티를 준비한다.
         Activity activity = buildActivity(1L, ActivityType.MEETING, "거래처 미팅");
         // mapper findById 호출 시 같은 엔티티를 반환하도록 설정한다.
-        when(activityQueryMapper.findById(1L)).thenReturn(activity);
+        when(activityQueryMapper.findActivityById(1L)).thenReturn(activity);
 
         // 서비스가 mapper 결과를 응답 DTO로 변환해 반환하는지 확인한다.
         ActivityResponse result = activityQueryService.getActivity(1L);
@@ -71,14 +71,14 @@ class ActivityQueryServiceTest {
         // 반환 DTO의 활동 제목이 mapper 결과와 같은지 확인한다.
         assertThat(result.activityTitle()).isEqualTo(activity.getActivityTitle());
         // findById가 정확히 한 번 호출됐는지 검증한다.
-        verify(activityQueryMapper).findById(1L);
+        verify(activityQueryMapper).findActivityById(1L);
     }
 
     @Test
     @DisplayName("단건 조회 결과가 없으면 예외를 던진다")
     void getActivity_throwsWhenActivityDoesNotExist() {
         // mapper가 null을 반환하면 서비스가 예외로 변환해야 한다.
-        when(activityQueryMapper.findById(999L)).thenReturn(null);
+        when(activityQueryMapper.findActivityById(999L)).thenReturn(null);
 
         // 없는 활동 조회 시 IllegalArgumentException이 발생하는지 확인한다.
         assertThatThrownBy(() -> activityQueryService.getActivity(999L))
@@ -95,7 +95,7 @@ class ActivityQueryServiceTest {
                 buildActivity(2L, ActivityType.ISSUE, "이슈")
         );
         // mapper findAll 호출 시 준비한 목록을 반환하도록 설정한다.
-        when(activityQueryMapper.findAll()).thenReturn(activities);
+        when(activityQueryMapper.findAllActivities()).thenReturn(activities);
 
         // 서비스가 목록을 가공하지 않고 그대로 반환하는지 확인한다.
         List<Activity> result = activityQueryService.getAllActivities();
@@ -103,7 +103,7 @@ class ActivityQueryServiceTest {
         // 반환 결과가 mapper가 돌려준 목록과 같은지 확인한다.
         assertThat(result).isEqualTo(activities);
         // findAll이 정확히 한 번 호출됐는지 검증한다.
-        verify(activityQueryMapper).findAll();
+        verify(activityQueryMapper).findAllActivities();
     }
 
     @Test
@@ -112,7 +112,7 @@ class ActivityQueryServiceTest {
         // 거래처 조건 조회 결과를 mapper가 반환하도록 설정한다.
         List<Activity> activities = List.of(buildActivity(1L, ActivityType.MEMO, "메모"));
         // mapper가 거래처 조건 목록을 반환하도록 설정한다.
-        when(activityQueryMapper.findByClientId(1L)).thenReturn(activities);
+        when(activityQueryMapper.findActivityByClientId(1L)).thenReturn(activities);
 
         // 서비스가 clientId 조건을 mapper로 그대로 전달하는지 확인한다.
         List<Activity> result = activityQueryService.getActivitiesByClientId(1L);
@@ -120,7 +120,7 @@ class ActivityQueryServiceTest {
         // 반환 결과가 mapper가 돌려준 목록과 같은지 확인한다.
         assertThat(result).isEqualTo(activities);
         // findByClientId가 정확히 한 번 호출됐는지 검증한다.
-        verify(activityQueryMapper).findByClientId(1L);
+        verify(activityQueryMapper).findActivityByClientId(1L);
     }
 
     @Test
@@ -129,7 +129,7 @@ class ActivityQueryServiceTest {
         // 활동 타입 필터 결과를 mapper가 반환하도록 설정한다.
         List<Activity> activities = List.of(buildActivity(1L, ActivityType.ISSUE, "이슈"));
         // mapper가 활동 타입 조건 목록을 반환하도록 설정한다.
-        when(activityQueryMapper.findByActivityType(ActivityType.ISSUE)).thenReturn(activities);
+        when(activityQueryMapper.findActivityByActivityType(ActivityType.ISSUE)).thenReturn(activities);
 
         // 서비스가 activityType 조건을 mapper에 위임하는지 확인한다.
         List<Activity> result = activityQueryService.getActivitiesByActivityType(ActivityType.ISSUE);
@@ -137,7 +137,7 @@ class ActivityQueryServiceTest {
         // 반환 결과가 mapper가 돌려준 목록과 같은지 확인한다.
         assertThat(result).isEqualTo(activities);
         // findByActivityType이 정확히 한 번 호출됐는지 검증한다.
-        verify(activityQueryMapper).findByActivityType(ActivityType.ISSUE);
+        verify(activityQueryMapper).findActivityByActivityType(ActivityType.ISSUE);
     }
 
     @Test
@@ -163,7 +163,7 @@ class ActivityQueryServiceTest {
         LocalDate to = LocalDate.of(2025, 4, 30);
         List<Activity> activities = List.of(buildActivity(1L, ActivityType.SCHEDULE, "일정"));
         // mapper가 날짜 범위 조건 목록을 반환하도록 설정한다.
-        when(activityQueryMapper.findByDateRange(from, to)).thenReturn(activities);
+        when(activityQueryMapper.findActivityByDateRange(from, to)).thenReturn(activities);
 
         // 서비스가 from/to를 그대로 mapper에 전달하는지 확인한다.
         List<Activity> result = activityQueryService.getActivitiesByDateRange(from, to);
@@ -171,7 +171,7 @@ class ActivityQueryServiceTest {
         // 반환 결과가 mapper가 돌려준 목록과 같은지 확인한다.
         assertThat(result).isEqualTo(activities);
         // findByDateRange가 정확히 한 번 호출됐는지 검증한다.
-        verify(activityQueryMapper).findByDateRange(from, to);
+        verify(activityQueryMapper).findActivityByDateRange(from, to);
     }
 
     @Test
@@ -180,7 +180,7 @@ class ActivityQueryServiceTest {
         // 작성자 기준 조회 결과를 mapper가 반환하도록 설정한다.
         List<Activity> activities = List.of(buildActivity(1L, ActivityType.MEETING, "담당자 활동"));
         // mapper가 작성자 조건 목록을 반환하도록 설정한다.
-        when(activityQueryMapper.findByAuthorId(10L)).thenReturn(activities);
+        when(activityQueryMapper.findActivityByAuthorId(10L)).thenReturn(activities);
 
         // 서비스가 작성자 조건 조회를 mapper에 위임하는지 확인한다.
         List<Activity> result = activityQueryService.getActivitiesByAuthorId(10L);
@@ -188,7 +188,7 @@ class ActivityQueryServiceTest {
         // 반환 결과가 mapper가 돌려준 목록과 같은지 확인한다.
         assertThat(result).isEqualTo(activities);
         // findByAuthorId가 정확히 한 번 호출됐는지 검증한다.
-        verify(activityQueryMapper).findByAuthorId(10L);
+        verify(activityQueryMapper).findActivityByAuthorId(10L);
     }
 
     @Test
@@ -197,7 +197,7 @@ class ActivityQueryServiceTest {
         // 복합 조건 조회 결과를 mapper가 반환하도록 설정한다.
         List<Activity> activities = List.of(buildActivity(1L, ActivityType.MEETING, "고객사 미팅"));
         // mapper가 복합 조건 목록을 반환하도록 설정한다.
-        when(activityQueryMapper.findByClientIdAndActivityType(1L, ActivityType.MEETING)).thenReturn(activities);
+        when(activityQueryMapper.findActivityByClientIdAndActivityType(1L, ActivityType.MEETING)).thenReturn(activities);
 
         // 서비스가 clientId와 activityType을 함께 mapper에 전달하는지 확인한다.
         List<Activity> result = activityQueryService.getActivitiesByClientIdAndActivityType(1L, ActivityType.MEETING);
@@ -205,6 +205,6 @@ class ActivityQueryServiceTest {
         // 반환 결과가 mapper가 돌려준 목록과 같은지 확인한다.
         assertThat(result).isEqualTo(activities);
         // findByClientIdAndActivityType이 정확히 한 번 호출됐는지 검증한다.
-        verify(activityQueryMapper).findByClientIdAndActivityType(1L, ActivityType.MEETING);
+        verify(activityQueryMapper).findActivityByClientIdAndActivityType(1L, ActivityType.MEETING);
     }
 }

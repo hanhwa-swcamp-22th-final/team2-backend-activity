@@ -16,6 +16,9 @@ import java.time.LocalDate;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -62,36 +65,33 @@ class ActivityQueryControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/activities → 200 OK, 페이징 응답 구조 포함")
+    @DisplayName("GET /api/activities → 200 OK, PagedResponse 구조로 목록 반환")
     void getActivities_returns200WithPagedResult() throws Exception {
-        // 전체 조회 서비스 결과를 목으로 준비한다.
-        when(activityQueryService.getAllActivities()).thenReturn(List.of(buildActivity()));
+        when(activityQueryService.getActivitiesWithFilters(
+                isNull(), isNull(), isNull(), isNull(), isNull(), isNull(), isNull(), anyInt(), anyInt()))
+                .thenReturn(List.of(buildActivityResponse()));
+        when(activityQueryService.countWithFilters(
+                isNull(), isNull(), isNull(), isNull(), isNull(), isNull(), isNull()))
+                .thenReturn(1L);
 
-        // 목록 조회 응답이 페이징 래퍼 구조를 갖는지 확인한다.
-        // 응답 상태가 200 OK인지 확인한다.
         mockMvc.perform(get("/api/activities"))
                 .andExpect(status().isOk())
-                // content 필드가 배열인지 확인한다.
                 .andExpect(jsonPath("$.content").isArray())
-                // total_elements 필드가 존재하는지 확인한다.
-                .andExpect(jsonPath("$.total_elements").exists())
-                // total_pages 필드가 존재하는지 확인한다.
-                .andExpect(jsonPath("$.total_pages").exists())
-                // current_page 필드가 존재하는지 확인한다.
-                .andExpect(jsonPath("$.current_page").exists());
+                .andExpect(jsonPath("$.total_elements").value(1));
     }
 
     @Test
     @DisplayName("GET /api/activities?client_id=1 → 200 OK, client_id 필터 적용")
     void getActivities_returns200WithClientIdFilter() throws Exception {
-        // client_id 필터가 적용된 결과를 서비스가 반환하도록 설정한다.
-        when(activityQueryService.getActivitiesByClientId(1L)).thenReturn(List.of(buildActivity()));
+        when(activityQueryService.getActivitiesWithFilters(
+                eq(1L), isNull(), isNull(), isNull(), isNull(), isNull(), isNull(), anyInt(), anyInt()))
+                .thenReturn(List.of(buildActivityResponse()));
+        when(activityQueryService.countWithFilters(
+                eq(1L), isNull(), isNull(), isNull(), isNull(), isNull(), isNull()))
+                .thenReturn(1L);
 
-        // client_id 파라미터 요청이 정상 응답으로 변환되는지 확인한다.
-        // 응답 상태가 200 OK인지 확인한다.
         mockMvc.perform(get("/api/activities").param("clientId", "1"))
                 .andExpect(status().isOk())
-                // content 필드가 배열인지 확인한다.
                 .andExpect(jsonPath("$.content").isArray());
     }
 

@@ -8,6 +8,6 @@ public record EmailSendResponse(
         String status,
         // 발송 결과 메시지다.
         String message,
-        // S3에 업로드된 첨부 파일 키 목록이다.
-        List<String> s3Keys
+        // 첨부 파일 경로 목록이다.
+        List<String> filePaths
 ) {}

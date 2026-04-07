@@ -60,14 +60,14 @@ class ActivityFilterQueryTest {
     @Test
     @DisplayName("조건 없이 조회하면 전체 결과를 페이지 크기만큼 반환한다")
     void findWithFilters_noCondition_returnsAll() {
-        List<Activity> result = activityQueryMapper.findWithFilters(null, null, null, null, null, null, null, 20, 0);
+        List<Activity> result = activityQueryMapper.findActivitiesWithFilters(null, null, null, null, null, null, null, 20, 0);
         assertThat(result).hasSize(5);
     }
 
     @Test
     @DisplayName("clientId 단일 필터로 해당 거래처 활동만 반환한다")
     void findWithFilters_byClientId() {
-        List<Activity> result = activityQueryMapper.findWithFilters(1L, null, null, null, null, null, null, 20, 0);
+        List<Activity> result = activityQueryMapper.findActivitiesWithFilters(1L, null, null, null, null, null, null, 20, 0);
         assertThat(result).hasSize(3);
         assertThat(result).allMatch(a -> a.getClientId().equals(1L));
     }
@@ -75,7 +75,7 @@ class ActivityFilterQueryTest {
     @Test
     @DisplayName("activityType 필터로 해당 유형만 반환한다")
     void findWithFilters_byActivityType() {
-        List<Activity> result = activityQueryMapper.findWithFilters(null, null, ActivityType.MEETING, null, null, null, null, 20, 0);
+        List<Activity> result = activityQueryMapper.findActivitiesWithFilters(null, null, ActivityType.MEETING, null, null, null, null, 20, 0);
         assertThat(result).hasSize(2);
         assertThat(result).allMatch(a -> a.getActivityType() == ActivityType.MEETING);
     }
@@ -83,7 +83,7 @@ class ActivityFilterQueryTest {
     @Test
     @DisplayName("clientId + activityType 복합 필터가 정확히 동작한다")
     void findWithFilters_byClientIdAndType() {
-        List<Activity> result = activityQueryMapper.findWithFilters(1L, null, ActivityType.MEETING, null, null, null, null, 20, 0);
+        List<Activity> result = activityQueryMapper.findActivitiesWithFilters(1L, null, ActivityType.MEETING, null, null, null, null, 20, 0);
         assertThat(result).hasSize(1);
         assertThat(result.get(0).getActivityTitle()).isEqualTo("글로벌 스틸 미팅");
     }
@@ -91,7 +91,7 @@ class ActivityFilterQueryTest {
     @Test
     @DisplayName("날짜 범위 필터가 정확히 동작한다")
     void findWithFilters_byDateRange() {
-        List<Activity> result = activityQueryMapper.findWithFilters(null, null, null, null,
+        List<Activity> result = activityQueryMapper.findActivitiesWithFilters(null, null, null, null,
                 LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31), null, 20, 0);
         assertThat(result).hasSize(2);
     }
@@ -99,14 +99,14 @@ class ActivityFilterQueryTest {
     @Test
     @DisplayName("keyword LIKE 검색이 제목에 대해 동작한다")
     void findWithFilters_byKeyword() {
-        List<Activity> result = activityQueryMapper.findWithFilters(null, null, null, null, null, null, "스틸", 20, 0);
+        List<Activity> result = activityQueryMapper.findActivitiesWithFilters(null, null, null, null, null, null, "스틸", 20, 0);
         assertThat(result).hasSize(2);
     }
 
     @Test
     @DisplayName("clientId + authorId + dateRange 복합 필터가 동작한다")
     void findWithFilters_multipleConditions() {
-        List<Activity> result = activityQueryMapper.findWithFilters(1L, null, null, 10L,
+        List<Activity> result = activityQueryMapper.findActivitiesWithFilters(1L, null, null, 10L,
                 LocalDate.of(2026, 1, 1), LocalDate.of(2026, 12, 31), null, 20, 0);
         assertThat(result).hasSize(2);
     }
@@ -114,9 +114,9 @@ class ActivityFilterQueryTest {
     @Test
     @DisplayName("LIMIT/OFFSET 페이지네이션이 정확히 동작한다")
     void findWithFilters_pagination() {
-        List<Activity> page0 = activityQueryMapper.findWithFilters(null, null, null, null, null, null, null, 2, 0);
-        List<Activity> page1 = activityQueryMapper.findWithFilters(null, null, null, null, null, null, null, 2, 2);
-        List<Activity> page2 = activityQueryMapper.findWithFilters(null, null, null, null, null, null, null, 2, 4);
+        List<Activity> page0 = activityQueryMapper.findActivitiesWithFilters(null, null, null, null, null, null, null, 2, 0);
+        List<Activity> page1 = activityQueryMapper.findActivitiesWithFilters(null, null, null, null, null, null, null, 2, 2);
+        List<Activity> page2 = activityQueryMapper.findActivitiesWithFilters(null, null, null, null, null, null, null, 2, 4);
 
         assertThat(page0).hasSize(2);
         assertThat(page1).hasSize(2);
@@ -126,9 +126,9 @@ class ActivityFilterQueryTest {
     @Test
     @DisplayName("countWithFilters가 필터 조건에 맞는 총 개수를 반환한다")
     void countWithFilters_returnsCorrectCount() {
-        long allCount = activityQueryMapper.countWithFilters(null, null, null, null, null, null, null);
-        long client1Count = activityQueryMapper.countWithFilters(1L, null, null, null, null, null, null);
-        long meetingCount = activityQueryMapper.countWithFilters(null, null, ActivityType.MEETING, null, null, null, null);
+        long allCount = activityQueryMapper.countActivitiesWithFilters(null, null, null, null, null, null, null);
+        long client1Count = activityQueryMapper.countActivitiesWithFilters(1L, null, null, null, null, null, null);
+        long meetingCount = activityQueryMapper.countActivitiesWithFilters(null, null, ActivityType.MEETING, null, null, null, null);
 
         assertThat(allCount).isEqualTo(5);
         assertThat(client1Count).isEqualTo(3);
@@ -138,8 +138,8 @@ class ActivityFilterQueryTest {
     @Test
     @DisplayName("매칭 결과 없으면 빈 리스트와 count 0을 반환한다")
     void findWithFilters_noMatch_returnsEmpty() {
-        List<Activity> result = activityQueryMapper.findWithFilters(999L, null, null, null, null, null, null, 20, 0);
-        long count = activityQueryMapper.countWithFilters(999L, null, null, null, null, null, null);
+        List<Activity> result = activityQueryMapper.findActivitiesWithFilters(999L, null, null, null, null, null, null, 20, 0);
+        long count = activityQueryMapper.countActivitiesWithFilters(999L, null, null, null, null, null, null);
 
         assertThat(result).isEmpty();
         assertThat(count).isZero();

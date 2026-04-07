@@ -54,7 +54,7 @@ class ContactQueryServiceTest {
         // mapper가 반환할 연락처 엔티티를 준비한다.
         Contact contact = buildContact(1L, "hong");
         // mapper findById 호출 시 같은 엔티티를 반환하도록 설정한다.
-        when(contactQueryMapper.findById(1L)).thenReturn(contact);
+        when(contactQueryMapper.findContactById(1L)).thenReturn(contact);
 
         // 서비스가 mapper 결과를 그대로 반환하는지 확인한다.
         Contact result = contactQueryService.getContact(1L);
@@ -62,14 +62,14 @@ class ContactQueryServiceTest {
         // 반환 결과가 mapper가 돌려준 엔티티와 같은 객체인지 확인한다.
         assertThat(result).isSameAs(contact);
         // findById가 정확히 한 번 호출됐는지 검증한다.
-        verify(contactQueryMapper).findById(1L);
+        verify(contactQueryMapper).findContactById(1L);
     }
 
     @Test
     @DisplayName("단건 조회 결과가 없으면 예외를 던진다")
     void getContact_throwsWhenContactDoesNotExist() {
         // mapper가 null을 반환하면 서비스가 조회 실패 예외를 던져야 한다.
-        when(contactQueryMapper.findById(999L)).thenReturn(null);
+        when(contactQueryMapper.findContactById(999L)).thenReturn(null);
 
         // 없는 연락처 조회 시 IllegalArgumentException이 발생하는지 확인한다.
         assertThatThrownBy(() -> contactQueryService.getContact(999L))
@@ -86,7 +86,7 @@ class ContactQueryServiceTest {
                 buildContact(2L, "kim")
         );
         // mapper findAll 호출 시 준비한 목록을 반환하도록 설정한다.
-        when(contactQueryMapper.findAll()).thenReturn(contacts);
+        when(contactQueryMapper.findAllContacts()).thenReturn(contacts);
 
         // 서비스가 조회 결과를 가공 없이 전달하는지 확인한다.
         List<Contact> result = contactQueryService.getAllContacts();
@@ -94,7 +94,7 @@ class ContactQueryServiceTest {
         // 반환 결과가 mapper가 돌려준 목록과 같은지 확인한다.
         assertThat(result).isEqualTo(contacts);
         // findAll이 정확히 한 번 호출됐는지 검증한다.
-        verify(contactQueryMapper).findAll();
+        verify(contactQueryMapper).findAllContacts();
     }
 
     @Test
@@ -103,7 +103,7 @@ class ContactQueryServiceTest {
         // 특정 거래처의 연락처 목록을 mapper가 반환하도록 설정한다.
         List<Contact> contacts = List.of(buildContact(1L, "hong"));
         // mapper가 거래처 조건 목록을 반환하도록 설정한다.
-        when(contactQueryMapper.findAllByClientId(1L)).thenReturn(contacts);
+        when(contactQueryMapper.findAllContactsByClientId(1L)).thenReturn(contacts);
 
         // 서비스가 clientId 조건 조회를 mapper에 위임하는지 확인한다.
         List<Contact> result = contactQueryService.getContactsByClientId(1L);
@@ -111,6 +111,6 @@ class ContactQueryServiceTest {
         // 반환 결과가 mapper가 돌려준 목록과 같은지 확인한다.
         assertThat(result).isEqualTo(contacts);
         // findAllByClientId가 정확히 한 번 호출됐는지 검증한다.
-        verify(contactQueryMapper).findAllByClientId(1L);
+        verify(contactQueryMapper).findAllContactsByClientId(1L);
     }
 }

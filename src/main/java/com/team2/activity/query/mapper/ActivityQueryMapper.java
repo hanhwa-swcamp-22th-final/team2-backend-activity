@@ -11,22 +11,22 @@ import java.util.List;
 @Mapper
 public interface ActivityQueryMapper {
 
-    Activity findById(Long activityId);
+    Activity findActivityById(Long activityId);
 
-    List<Activity> findAll();
+    List<Activity> findAllActivities();
 
-    List<Activity> findByClientId(Long clientId);
+    List<Activity> findActivityByClientId(Long clientId);
 
-    List<Activity> findByActivityType(ActivityType activityType);
+    List<Activity> findActivityByActivityType(ActivityType activityType);
 
-    List<Activity> findByDateRange(@Param("from") LocalDate from, @Param("to") LocalDate to);
+    List<Activity> findActivityByDateRange(@Param("from") LocalDate from, @Param("to") LocalDate to);
 
-    List<Activity> findByAuthorId(Long authorId);
+    List<Activity> findActivityByAuthorId(Long authorId);
 
-    List<Activity> findByClientIdAndActivityType(@Param("clientId") Long clientId,
+    List<Activity> findActivityByClientIdAndActivityType(@Param("clientId") Long clientId,
                                                   @Param("activityType") ActivityType activityType);
 
-    List<Activity> findWithFilters(@Param("clientId") Long clientId,
+    List<Activity> findActivitiesWithFilters(@Param("clientId") Long clientId,
                                     @Param("poId") String poId,
                                     @Param("activityType") ActivityType activityType,
                                     @Param("activityAuthorId") Long activityAuthorId,
@@ -36,7 +36,7 @@ public interface ActivityQueryMapper {
                                     @Param("limit") int limit,
                                     @Param("offset") int offset);
 
-    long countWithFilters(@Param("clientId") Long clientId,
+    long countActivitiesWithFilters(@Param("clientId") Long clientId,
                            @Param("poId") String poId,
                            @Param("activityType") ActivityType activityType,
                            @Param("activityAuthorId") Long activityAuthorId,

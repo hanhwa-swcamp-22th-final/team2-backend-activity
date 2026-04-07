@@ -7,24 +7,30 @@ import com.team2.activity.command.domain.entity.enums.Priority;
 import com.team2.activity.command.infrastructure.client.AuthFeignClient;
 import com.team2.activity.command.infrastructure.client.DocumentsFeignClient;
 import com.team2.activity.command.infrastructure.client.UserResponse;
+import com.team2.activity.query.controller.ActivityPackageQueryController;
 import com.team2.activity.query.dto.ActivityResponse;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.ContentDisposition;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import java.io.FileOutputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-// Spring 컨텍스트 없이 Mockito만으로 PDF 파일을 실제 생성하는 샘플 생성기다.
+// Spring 컨텍스트 없이 실제 PDF를 생성하고 HTTP 응답에 포함되는지 검증한다.
 @ExtendWith(MockitoExtension.class)
 class PdfSampleGeneratorTest {
 
@@ -37,12 +43,25 @@ class PdfSampleGeneratorTest {
     @Mock
     private DocumentsFeignClient documentsFeignClient;
 
+    @Mock
+    private ActivityPackageQueryService activityPackageQueryService;
+
     @InjectMocks
     private ActivityPackagePdfReportService pdfReportService;
 
+    private MockMvc mockMvc;
+
+    @BeforeEach
+    void setUp() {
+        // 실제 PDF 서비스와 컨트롤러를 연결해 MockMvc를 구성한다.
+        ActivityPackageQueryController controller =
+                new ActivityPackageQueryController(activityPackageQueryService, pdfReportService);
+        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+    }
+
     @Test
-    @DisplayName("샘플 PDF 파일 생성 — 프로젝트 루트/sample-report.pdf")
-    void generateSamplePdf() throws Exception {
+    @DisplayName("GET /api/activity-packages/1/report → 200 OK, PDF 바이트가 응답 본문에 포함된다")
+    void downloadPackageReport_returnsPdfInResponse() throws Exception {
         // ── 패키지 mock 설정 ─────────────────────────────────────────
         ActivityPackage pkg = mock(ActivityPackage.class);
         when(pkg.getPackageTitle()).thenReturn("2025년 3월 영업활동 보고서");
@@ -118,33 +137,29 @@ class PdfSampleGeneratorTest {
         when(creator.getName()).thenReturn("박과장");
         when(authFeignClient.getUser(7L)).thenReturn(creator);
 
-        // ── PDF 생성 ─────────────────────────────────────────────────
-        byte[] pdf = pdfReportService.generatePackageReport(pkg, 7L);
+        // ── 패키지 조회 mock — 컨트롤러가 서비스에서 패키지를 가져오도록 연결한다 ──
+        when(activityPackageQueryService.getPackage(1L)).thenReturn(pkg);
 
-        // 패키지 제목 기반 파일명을 가져온 뒤 확장자(.pdf)를 제거해 baseName으로 사용한다.
-        String downloadFileName = pdfReportService.getDownloadFileName(pkg); // "2025년 3월 영업활동 보고서.pdf"
-        String baseName = downloadFileName.substring(0, downloadFileName.lastIndexOf('.'));
-        // 다운로드 폴더에 중복되지 않는 파일 경로를 결정한다.
-        Path outputPath = resolveUniqueFilePath(
-                Path.of(System.getProperty("user.home"), "Downloads"), baseName);
-        try (FileOutputStream fos = new FileOutputStream(outputPath.toFile())) {
-            fos.write(pdf);
-        }
+        // ── HTTP GET 요청 → PDF가 응답 본문에 포함되는지 검증한다 ─────
+        MvcResult result = mockMvc.perform(get("/api/activity-packages/1/report")
+                        .header("X-User-Id", "7"))
+                // 응답 상태가 200 OK인지 확인한다.
+                .andExpect(status().isOk())
+                // 응답 MIME 타입이 application/pdf인지 확인한다.
+                .andExpect(content().contentType("application/pdf"))
+                // Content-Disposition이 inline 형태인지 확인한다.
+                .andExpect(header().string("Content-Disposition",
+                        org.hamcrest.Matchers.containsString("inline")))
+                .andReturn();
 
-        System.out.println("✅ PDF 생성 완료: " + outputPath.toAbsolutePath());
-    }
+        // ── 응답 본문이 유효한 PDF인지 시그니처(%PDF)로 확인한다 ────────
+        byte[] body = result.getResponse().getContentAsByteArray();
+        assertThat(body).isNotEmpty();
+        assertThat(new String(body, 0, 4)).isEqualTo("%PDF");
 
-    // 지정한 폴더에서 중복되지 않는 파일 경로를 반환한다.
-    // 파일이 이미 존재하면 sample-report(1).pdf, sample-report(2).pdf 순으로 번호를 붙인다.
-    private Path resolveUniqueFilePath(Path directory, String baseName) {
-        // 번호 없이 기본 파일명으로 먼저 시도한다.
-        Path candidate = directory.resolve(baseName + ".pdf");
-        int counter = 1;
-        // 파일이 이미 존재하는 동안 번호를 올려가며 후보 경로를 다시 만든다.
-        while (Files.exists(candidate)) {
-            candidate = directory.resolve(baseName + "(" + counter + ").pdf");
-            counter++;
-        }
-        return candidate;
+        // ── Content-Disposition 파일명이 패키지 제목 기반인지 확인한다 ──
+        String contentDisposition = result.getResponse().getHeader("Content-Disposition");
+        String filename = ContentDisposition.parse(contentDisposition).getFilename();
+        assertThat(filename).isEqualTo("2025년 3월 영업활동 보고서.pdf");
     }
 }

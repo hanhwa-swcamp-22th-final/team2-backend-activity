@@ -31,7 +31,7 @@ public class ActivityQueryService {
     private final MasterFeignClient masterFeignClient;
 
     public ActivityResponse getActivity(Long activityId) {
-        Activity activity = activityQueryMapper.findById(activityId);
+        Activity activity = activityQueryMapper.findActivityById(activityId);
         if (activity == null) {
             throw new IllegalArgumentException("활동을 찾을 수 없습니다.");
         }
@@ -45,7 +45,7 @@ public class ActivityQueryService {
                                                             LocalDate activityDateTo, String keyword,
                                                             int page, int size) {
         int offset = page * size;
-        List<Activity> activities = activityQueryMapper.findWithFilters(
+        List<Activity> activities = activityQueryMapper.findActivitiesWithFilters(
                 clientId, poId, activityType, activityAuthorId, activityDateFrom, activityDateTo, keyword, size, offset);
         return enrichActivities(activities);
     }
@@ -53,7 +53,7 @@ public class ActivityQueryService {
     public long countWithFilters(Long clientId, String poId, ActivityType activityType,
                                   Long activityAuthorId, LocalDate activityDateFrom,
                                   LocalDate activityDateTo, String keyword) {
-        return activityQueryMapper.countWithFilters(clientId, poId, activityType, activityAuthorId, activityDateFrom, activityDateTo, keyword);
+        return activityQueryMapper.countActivitiesWithFilters(clientId, poId, activityType, activityAuthorId, activityDateFrom, activityDateTo, keyword);
     }
 
     private List<ActivityResponse> enrichActivities(List<Activity> activities) {
@@ -95,29 +95,29 @@ public class ActivityQueryService {
     }
 
     public List<Activity> getAllActivities() {
-        return activityQueryMapper.findAll();
+        return activityQueryMapper.findAllActivities();
     }
 
     public List<Activity> getActivitiesByClientId(Long clientId) {
-        return activityQueryMapper.findByClientId(clientId);
+        return activityQueryMapper.findActivityByClientId(clientId);
     }
 
     public List<Activity> getActivitiesByActivityType(ActivityType activityType) {
-        return activityQueryMapper.findByActivityType(activityType);
+        return activityQueryMapper.findActivityByActivityType(activityType);
     }
 
     public List<Activity> getActivitiesByDateRange(LocalDate from, LocalDate to) {
         if (from == null || to == null) {
             throw new IllegalArgumentException("날짜 범위(from, to)는 필수입니다.");
         }
-        return activityQueryMapper.findByDateRange(from, to);
+        return activityQueryMapper.findActivityByDateRange(from, to);
     }
 
     public List<Activity> getActivitiesByAuthorId(Long authorId) {
-        return activityQueryMapper.findByAuthorId(authorId);
+        return activityQueryMapper.findActivityByAuthorId(authorId);
     }
 
     public List<Activity> getActivitiesByClientIdAndActivityType(Long clientId, ActivityType activityType) {
-        return activityQueryMapper.findByClientIdAndActivityType(clientId, activityType);
+        return activityQueryMapper.findActivityByClientIdAndActivityType(clientId, activityType);
     }
 }

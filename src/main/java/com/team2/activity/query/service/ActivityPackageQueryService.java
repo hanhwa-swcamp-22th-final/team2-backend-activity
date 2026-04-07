@@ -20,7 +20,7 @@ public class ActivityPackageQueryService {
     private final AuthFeignClient authFeignClient;
 
     public ActivityPackage getPackage(Long packageId) {
-        ActivityPackage activityPackage = activityPackageQueryMapper.findById(packageId);
+        ActivityPackage activityPackage = activityPackageQueryMapper.findActivityPackageById(packageId);
         if (activityPackage == null) {
             throw new IllegalArgumentException("활동 패키지를 찾을 수 없습니다.");
         }
@@ -28,21 +28,31 @@ public class ActivityPackageQueryService {
     }
 
     public List<ActivityPackageResponse> getPackagesByViewerUserId(Long userId, Long creatorId, String poId) {
-        List<ActivityPackage> packages = activityPackageQueryMapper.findAllByViewerUserId(userId, creatorId, poId);
+        List<ActivityPackage> packages = activityPackageQueryMapper.findAllActivityPackagesByViewerUserId(userId, creatorId, poId);
         return packages.stream().map(this::enrichPackage).toList();
     }
 
     public List<ActivityPackageResponse> getPackagesWithFilters(Long creatorId, String poId) {
-        List<ActivityPackage> packages = activityPackageQueryMapper.findAllWithFilters(creatorId, poId);
+        List<ActivityPackage> packages = activityPackageQueryMapper.findAllActivityPackagesWithFilters(creatorId, poId);
         return packages.stream().map(this::enrichPackage).toList();
     }
 
+    public List<ActivityPackageResponse> getPackagesWithFilters(Long creatorId, String poId, int page, int size) {
+        int offset = page * size;
+        List<ActivityPackage> packages = activityPackageQueryMapper.findActivityPackagesWithFilters(creatorId, poId, size, offset);
+        return packages.stream().map(this::enrichPackage).toList();
+    }
+
+    public long countPackagesWithFilters(Long creatorId, String poId) {
+        return activityPackageQueryMapper.countActivityPackagesWithFilters(creatorId, poId);
+    }
+
     public List<ActivityPackage> getAllPackages() {
-        return activityPackageQueryMapper.findAll();
+        return activityPackageQueryMapper.findAllActivityPackages();
     }
 
     public List<ActivityPackage> getPackagesByCreatorId(Long creatorId) {
-        return activityPackageQueryMapper.findAllByCreatorId(creatorId);
+        return activityPackageQueryMapper.findAllActivityPackagesByCreatorId(creatorId);
     }
 
     public ActivityPackageResponse enrichPackage(ActivityPackage pkg) {

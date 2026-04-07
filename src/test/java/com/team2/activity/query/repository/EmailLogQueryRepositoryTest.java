@@ -88,7 +88,7 @@ class EmailLogQueryRepositoryTest {
         );
 
         // mapper 상세 조회 결과를 반환해 이후 검증에 사용한다.
-        return emailLogQueryMapper.findById(emailLogId);
+        return emailLogQueryMapper.findEmailLogById(emailLogId);
     }
 
     @Test
@@ -98,7 +98,7 @@ class EmailLogQueryRepositoryTest {
         EmailLog saved = saveEmailLog(1L, MailStatus.SENT, "견적 메일");
 
         // mapper가 하위 컬렉션까지 읽어 오는지 확인한다.
-        EmailLog found = emailLogQueryMapper.findById(saved.getEmailLogId());
+        EmailLog found = emailLogQueryMapper.findEmailLogById(saved.getEmailLogId());
 
         // 상태, 문서 유형, 첨부파일 필드가 모두 정확히 매핑되는지 검증한다.
         assertThat(found).isNotNull();
@@ -121,7 +121,7 @@ class EmailLogQueryRepositoryTest {
         saveEmailLog(2L, MailStatus.SENT, "고객2 메일");
 
         // 거래처 조건으로 이메일 로그 목록을 조회한다.
-        List<EmailLog> result = emailLogQueryMapper.findByClientId(1L);
+        List<EmailLog> result = emailLogQueryMapper.findEmailLogByClientId(1L);
 
         // 요청한 거래처의 이메일 로그만 반환되는지 확인한다.
         assertThat(result).hasSize(2);
@@ -139,7 +139,7 @@ class EmailLogQueryRepositoryTest {
         saveEmailLog(2L, MailStatus.FAILED, "발송 실패 메일2");
 
         // FAILED 상태만 조건으로 목록을 조회한다.
-        List<EmailLog> result = emailLogQueryMapper.findByEmailStatus(MailStatus.FAILED);
+        List<EmailLog> result = emailLogQueryMapper.findEmailLogByEmailStatus(MailStatus.FAILED);
 
         // 요청한 상태의 이메일 로그만 반환되는지 확인한다.
         assertThat(result).hasSize(2);

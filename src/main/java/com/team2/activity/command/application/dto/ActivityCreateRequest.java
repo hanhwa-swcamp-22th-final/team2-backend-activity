@@ -14,6 +14,9 @@ public record ActivityCreateRequest(
         // 활동이 속한 거래처 ID다.
         @Schema(description = "거래처 ID", example = "1")
         @NotNull Long clientId,
+        // 연결된 PO 번호다.
+        @Schema(description = "PO 번호", example = "po2026001")
+        @NotBlank String poId,
         // 활동이 발생한 날짜다.
         @Schema(description = "활동 날짜", example = "2026-04-06")
         @NotNull LocalDate activityDate,
@@ -22,7 +25,13 @@ public record ActivityCreateRequest(
         @NotNull ActivityType activityType,
         // 활동 제목이다.
         @Schema(description = "활동 제목", example = "고객 미팅")
-        @NotBlank String activityTitle
+        @NotBlank String activityTitle,
+        // 활동 일정 시작일이다.
+        @Schema(description = "일정 시작일", example = "2026-04-06")
+        @NotNull LocalDate activityScheduleFrom,
+        // 활동 일정 종료일이다.
+        @Schema(description = "일정 종료일", example = "2026-04-10")
+        @NotNull LocalDate activityScheduleTo
 ) {
     // 요청 DTO를 저장 가능한 Activity 엔티티로 변환한다.
     public Activity toEntity(Long userId) {
@@ -30,6 +39,8 @@ public record ActivityCreateRequest(
         return Activity.builder()
                 // 요청의 거래처 ID를 엔티티에 복사한다.
                 .clientId(clientId)
+                // 요청의 PO 번호를 엔티티에 복사한다.
+                .poId(poId)
                 // 요청의 활동 날짜를 엔티티에 복사한다.
                 .activityDate(activityDate)
                 // 요청의 활동 타입을 엔티티에 복사한다.
@@ -38,6 +49,10 @@ public record ActivityCreateRequest(
                 .activityTitle(activityTitle)
                 // 헤더에서 받은 사용자 ID를 작성자로 저장한다.
                 .activityAuthorId(userId)
+                // 요청의 일정 시작일을 엔티티에 복사한다.
+                .activityScheduleFrom(activityScheduleFrom)
+                // 요청의 일정 종료일을 엔티티에 복사한다.
+                .activityScheduleTo(activityScheduleTo)
                 // 모든 필드 복사가 끝난 Activity 엔티티 생성을 마무리한다.
                 .build();
     }

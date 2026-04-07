@@ -70,7 +70,7 @@ public class ContactCommandController {
                 request.contactEmail(),
                 request.contactTel());
         return ResponseEntity.ok(EntityModel.of(ContactResponse.from(contact),
-                linkTo(methodOn(ContactQueryController.class).getContacts(null)).withRel("contacts")));
+                linkTo(methodOn(ContactQueryController.class).getContacts(null, null, 0, 20)).withRel("contacts")));
     }
 
     @Operation(summary = "연락처 삭제", description = "연락처를 삭제한다")

@@ -11,15 +11,15 @@ import java.util.List;
 @Mapper
 public interface EmailLogQueryMapper {
 
-    EmailLog findById(Long emailLogId);
+    EmailLog findEmailLogById(Long emailLogId);
 
-    List<EmailLog> findAll();
+    List<EmailLog> findAllEmailLogs();
 
-    List<EmailLog> findByClientId(Long clientId);
+    List<EmailLog> findEmailLogByClientId(Long clientId);
 
-    List<EmailLog> findByEmailStatus(MailStatus emailStatus);
+    List<EmailLog> findEmailLogByEmailStatus(MailStatus emailStatus);
 
-    List<EmailLog> findWithFilters(@Param("clientId") Long clientId,
+    List<EmailLog> findEmailLogsWithFilters(@Param("clientId") Long clientId,
                                     @Param("poId") String poId,
                                     @Param("emailStatus") MailStatus emailStatus,
                                     @Param("emailSenderId") Long emailSenderId,
@@ -29,7 +29,7 @@ public interface EmailLogQueryMapper {
                                     @Param("limit") int limit,
                                     @Param("offset") int offset);
 
-    long countWithFilters(@Param("clientId") Long clientId,
+    long countEmailLogsWithFilters(@Param("clientId") Long clientId,
                            @Param("poId") String poId,
                            @Param("emailStatus") MailStatus emailStatus,
                            @Param("emailSenderId") Long emailSenderId,

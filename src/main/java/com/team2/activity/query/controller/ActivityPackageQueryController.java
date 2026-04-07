@@ -29,22 +29,26 @@ public class ActivityPackageQueryController {
     private final ActivityPackageQueryService activityPackageQueryService;
     private final ActivityPackagePdfReportService activityPackagePdfReportService;
 
-    @Operation(summary = "활동 패키지 목록 조회", description = "필터 조건에 따라 활동 패키지 목록을 조회한다")
+    @Operation(summary = "활동 패키지 목록 조회", description = "필터 조건에 따라 활동 패키지 목록을 페이징 조회한다")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공")
     })
     @GetMapping
-    public ResponseEntity<List<ActivityPackageResponse>> getPackages(
+    public ResponseEntity<PagedResponse<ActivityPackageResponse>> getPackages(
             @Parameter(description = "요청 사용자 ID (뷰어 필터링용)") @RequestHeader(value = "X-User-Id", required = false) Long userId,
             @Parameter(description = "생성자 ID") @RequestParam(required = false) Long creatorId,
-            @Parameter(description = "PO ID") @RequestParam(required = false) String poId) {
+            @Parameter(description = "PO ID") @RequestParam(required = false) String poId,
+            @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "20") int size) {
         List<ActivityPackageResponse> responses;
         if (userId != null) {
             responses = activityPackageQueryService.getPackagesByViewerUserId(userId, creatorId, poId);
+            return ResponseEntity.ok(PagedResponse.of(responses, page, size));
         } else {
-            responses = activityPackageQueryService.getPackagesWithFilters(creatorId, poId);
+            responses = activityPackageQueryService.getPackagesWithFilters(creatorId, poId, page, size);
+            long totalElements = activityPackageQueryService.countPackagesWithFilters(creatorId, poId);
+            return ResponseEntity.ok(PagedResponse.of(responses, totalElements, page, size));
         }
-        return ResponseEntity.ok(responses);
     }
 
     @Operation(summary = "활동 패키지 상세 조회", description = "패키지 ID로 활동 패키지 상세 정보를 조회한다")
@@ -73,7 +77,6 @@ public class ActivityPackageQueryController {
         byte[] pdfBytes = activityPackagePdfReportService.generatePackageReport(activityPackage, userId);
         String fileName = activityPackagePdfReportService.getDownloadFileName(activityPackage);
         HttpHeaders headers = new HttpHeaders();
-        // inline으로 설정해 브라우저에서 바로 열어 인쇄할 수 있도록 한다.
         headers.setContentDisposition(ContentDisposition.inline()
                 .filename(fileName, StandardCharsets.UTF_8)
                 .build());

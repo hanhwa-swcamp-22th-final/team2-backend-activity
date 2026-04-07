@@ -9,16 +9,24 @@ import java.util.List;
 @Mapper
 public interface ActivityPackageQueryMapper {
 
-    ActivityPackage findById(Long packageId);
+    ActivityPackage findActivityPackageById(Long packageId);
 
-    List<ActivityPackage> findAll();
+    List<ActivityPackage> findAllActivityPackages();
 
-    List<ActivityPackage> findAllByCreatorId(Long creatorId);
+    List<ActivityPackage> findAllActivityPackagesByCreatorId(Long creatorId);
 
-    List<ActivityPackage> findAllByViewerUserId(@Param("userId") Long userId,
+    List<ActivityPackage> findAllActivityPackagesByViewerUserId(@Param("userId") Long userId,
                                                  @Param("creatorId") Long creatorId,
                                                  @Param("poId") String poId);
 
-    List<ActivityPackage> findAllWithFilters(@Param("creatorId") Long creatorId,
+    List<ActivityPackage> findAllActivityPackagesWithFilters(@Param("creatorId") Long creatorId,
                                               @Param("poId") String poId);
+
+    List<ActivityPackage> findActivityPackagesWithFilters(@Param("creatorId") Long creatorId,
+                                                          @Param("poId") String poId,
+                                                          @Param("limit") int limit,
+                                                          @Param("offset") int offset);
+
+    long countActivityPackagesWithFilters(@Param("creatorId") Long creatorId,
+                                          @Param("poId") String poId);
 }

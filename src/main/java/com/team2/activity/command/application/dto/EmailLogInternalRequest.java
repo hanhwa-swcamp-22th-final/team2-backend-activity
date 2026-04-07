@@ -24,7 +24,7 @@ public record EmailLogInternalRequest(
         @JsonAlias("emailSenderId") @Schema(description = "발송자 ID") Long emailSenderId,
         @JsonAlias("emailStatus") @Schema(description = "발송 상태 (SENT/FAILED)") String emailStatus,
         @JsonAlias("docTypes") @Schema(description = "문서 유형 목록") List<String> docTypes,
-        @JsonAlias("s3Keys") @Schema(description = "S3 키 목록") List<String> s3Keys,
+        @JsonAlias("filePaths") @Schema(description = "첨부파일 경로 목록") List<String> filePaths,
         @JsonAlias("attachmentFilenames") @Schema(description = "첨부파일명 목록") List<String> attachmentFilenames
 ) {
     // 내부 요청 DTO를 EmailLog 엔티티로 변환한다.
@@ -36,13 +36,13 @@ public record EmailLogInternalRequest(
                     .toList()
                 : List.of();
 
-        // attachmentFilenames와 s3Keys를 순서대로 짝지어 EmailLogAttachment 목록을 구성한다.
+        // attachmentFilenames와 filePaths를 순서대로 짝지어 EmailLogAttachment 목록을 구성한다.
         List<EmailLogAttachment> attachmentList = new ArrayList<>();
         if (attachmentFilenames != null) {
             for (int i = 0; i < attachmentFilenames.size(); i++) {
                 String filename = attachmentFilenames.get(i);
-                String s3Key = (s3Keys != null && i < s3Keys.size()) ? s3Keys.get(i) : null;
-                attachmentList.add(EmailLogAttachment.of(filename, s3Key));
+                String filePath = (filePaths != null && i < filePaths.size()) ? filePaths.get(i) : null;
+                attachmentList.add(EmailLogAttachment.of(filename, filePath));
             }
         }
 

@@ -59,7 +59,7 @@ class EmailLogIntegrationTest extends IntegrationTestSupport {
                 // 생성 응답에 email_sender_id가 헤더 값으로 반영됐는지 확인한다.
                 .andExpect(jsonPath("$.email_sender_id").value(10))
                 // document 서비스가 발송을 담당하므로 생성 직후 상태는 PENDING이다.
-                .andExpect(jsonPath("$.email_status").value("PENDING"))
+                .andExpect(jsonPath("$.email_status").value("pending"))
                 // 생성 응답의 첫 문서 유형이 PI인지 확인한다.
                 .andExpect(jsonPath("$.doc_types[0].email_doc_type").value("PI"))
                 .andReturn();
@@ -86,7 +86,7 @@ class EmailLogIntegrationTest extends IntegrationTestSupport {
                 // 목록 첫 원소의 email_log_id가 생성한 ID와 같은지 확인한다.
                 .andExpect(jsonPath("$.content[0].email_log_id").value(emailLogId))
                 // 목록 첫 원소의 상태가 PENDING인지 확인한다.
-                .andExpect(jsonPath("$.content[0].email_status").value("PENDING"));
+                .andExpect(jsonPath("$.content[0].email_status").value("pending"));
     }
 
     @Test
@@ -124,7 +124,7 @@ class EmailLogIntegrationTest extends IntegrationTestSupport {
                 // 재전송 응답의 email_log_id가 실패 로그 ID와 같은지 확인한다.
                 .andExpect(jsonPath("$.email_log_id").value(failedLog.getEmailLogId()))
                 // 목 발송 성공으로 SENT 상태가 됐는지 확인한다.
-                .andExpect(jsonPath("$.email_status").value("SENT"));
+                .andExpect(jsonPath("$.email_status").value("sent"));
 
         // JPA UPDATE를 DB에 즉시 반영한다.
         emailLogRepository.flush();

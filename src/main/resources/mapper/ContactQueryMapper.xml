@@ -16,26 +16,55 @@
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
 
-    <select id="findById" resultMap="contactResultMap">
+    <sql id="contactFilterConditions">
+        <if test="clientId != null">
+            AND client_id = #{clientId}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (contact_name LIKE CONCAT('%', #{keyword}, '%')
+                 OR contact_email LIKE CONCAT('%', #{keyword}, '%'))
+        </if>
+    </sql>
+
+    <select id="findContactById" resultMap="contactResultMap">
         SELECT contact_id, client_id, writer_id, contact_name, contact_position,
                contact_email, contact_tel, created_at, updated_at
         FROM contacts
         WHERE contact_id = #{contactId}
     </select>
 
-    <select id="findAll" resultMap="contactResultMap">
+    <select id="findAllContacts" resultMap="contactResultMap">
         SELECT contact_id, client_id, writer_id, contact_name, contact_position,
                contact_email, contact_tel, created_at, updated_at
         FROM contacts
         ORDER BY created_at DESC
     </select>
 
-    <select id="findAllByClientId" resultMap="contactResultMap">
+    <select id="findAllContactsByClientId" resultMap="contactResultMap">
         SELECT contact_id, client_id, writer_id, contact_name, contact_position,
                contact_email, contact_tel, created_at, updated_at
         FROM contacts
         WHERE client_id = #{clientId}
         ORDER BY created_at DESC
+    </select>
+
+    <select id="findContactsWithFilters" resultMap="contactResultMap">
+        SELECT contact_id, client_id, writer_id, contact_name, contact_position,
+               contact_email, contact_tel, created_at, updated_at
+        FROM contacts
+        <where>
+            <include refid="contactFilterConditions"/>
+        </where>
+        ORDER BY created_at DESC
+        LIMIT #{limit} OFFSET #{offset}
+    </select>
+
+    <select id="countContactsWithFilters" resultType="long">
+        SELECT COUNT(*)
+        FROM contacts
+        <where>
+            <include refid="contactFilterConditions"/>
+        </where>
     </select>
 
 </mapper>

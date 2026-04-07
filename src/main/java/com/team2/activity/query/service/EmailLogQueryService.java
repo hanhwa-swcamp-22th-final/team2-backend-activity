@@ -30,7 +30,7 @@ public class EmailLogQueryService {
     private final MasterFeignClient masterFeignClient;
 
     public EmailLogResponse getEmailLog(Long emailLogId) {
-        EmailLog emailLog = emailLogQueryMapper.findById(emailLogId);
+        EmailLog emailLog = emailLogQueryMapper.findEmailLogById(emailLogId);
         if (emailLog == null) {
             throw new IllegalArgumentException("이메일 로그를 찾을 수 없습니다.");
         }
@@ -44,7 +44,7 @@ public class EmailLogQueryService {
                                                            LocalDateTime dateFrom, LocalDateTime dateTo,
                                                            int page, int size) {
         int offset = page * size;
-        List<EmailLog> logs = emailLogQueryMapper.findWithFilters(
+        List<EmailLog> logs = emailLogQueryMapper.findEmailLogsWithFilters(
                 clientId, poId, emailStatus, emailSenderId, keyword, dateFrom, dateTo, size, offset);
         return enrichEmailLogs(logs);
     }
@@ -52,7 +52,7 @@ public class EmailLogQueryService {
     public long countWithFilters(Long clientId, String poId, MailStatus emailStatus,
                                   Long emailSenderId, String keyword,
                                   LocalDateTime dateFrom, LocalDateTime dateTo) {
-        return emailLogQueryMapper.countWithFilters(clientId, poId, emailStatus, emailSenderId, keyword, dateFrom, dateTo);
+        return emailLogQueryMapper.countEmailLogsWithFilters(clientId, poId, emailStatus, emailSenderId, keyword, dateFrom, dateTo);
     }
 
     private List<EmailLogResponse> enrichEmailLogs(List<EmailLog> logs) {
@@ -94,14 +94,14 @@ public class EmailLogQueryService {
     }
 
     public List<EmailLog> getAllEmailLogs() {
-        return emailLogQueryMapper.findAll();
+        return emailLogQueryMapper.findAllEmailLogs();
     }
 
     public List<EmailLog> getEmailLogsByClientId(Long clientId) {
-        return emailLogQueryMapper.findByClientId(clientId);
+        return emailLogQueryMapper.findEmailLogByClientId(clientId);
     }
 
     public List<EmailLog> getEmailLogsByStatus(MailStatus emailStatus) {
-        return emailLogQueryMapper.findByEmailStatus(emailStatus);
+        return emailLogQueryMapper.findEmailLogByEmailStatus(emailStatus);
     }
 }

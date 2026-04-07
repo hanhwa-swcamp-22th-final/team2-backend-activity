@@ -77,7 +77,7 @@ class ActivityPackageQueryRepositoryTest {
         }
 
         // 최종적으로 mapper 상세 조회 결과를 반환한다.
-        return activityPackageQueryMapper.findById(packageId);
+        return activityPackageQueryMapper.findActivityPackageById(packageId);
     }
 
     @Test
@@ -87,7 +87,7 @@ class ActivityPackageQueryRepositoryTest {
         ActivityPackage saved = savePackage("주간 패키지", 7L, List.of(2L, 3L), List.of(100L, 101L));
 
         // mapper가 하위 컬렉션까지 함께 읽어 오는지 확인한다.
-        ActivityPackage found = activityPackageQueryMapper.findById(saved.getPackageId());
+        ActivityPackage found = activityPackageQueryMapper.findActivityPackageById(saved.getPackageId());
 
         // 패키지 본문과 컬렉션 필드가 모두 정확히 매핑되는지 검증한다.
         assertThat(found).isNotNull();
@@ -110,7 +110,7 @@ class ActivityPackageQueryRepositoryTest {
         savePackage("생성자8 패키지", 8L, List.of(4L), List.of(102L));
 
         // creator_id 조건으로 패키지 목록을 조회한다.
-        List<ActivityPackage> result = activityPackageQueryMapper.findAllByCreatorId(7L);
+        List<ActivityPackage> result = activityPackageQueryMapper.findAllActivityPackagesByCreatorId(7L);
 
         // 요청한 생성자의 패키지만 반환되는지 확인한다.
         assertThat(result).hasSize(2);

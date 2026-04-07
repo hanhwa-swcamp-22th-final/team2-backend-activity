@@ -213,9 +213,12 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                         .content("""
                                 {
                                   "client_id": 1,
+                                  "po_id": "PO-REPORT-001",
                                   "activity_date": "2025-04-01",
-                                  "activity_type": "MEETING",
-                                  "activity_title": "보고용 미팅"
+                                  "activity_type": "meeting",
+                                  "activity_title": "보고용 미팅",
+                                  "activity_schedule_from": "2025-04-01",
+                                  "activity_schedule_to": "2025-04-05"
                                 }
                                 """))
                 // 활동 생성 요청이 201 Created로 응답하는지 확인한다.
@@ -237,9 +240,12 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                         .content("""
                                 {
                                   "client_id": 1,
+                                  "po_id": "PO-REPORT-001",
                                   "activity_date": "2025-04-02",
-                                  "activity_type": "SCHEDULE",
-                                  "activity_title": "보고용 일정"
+                                  "activity_type": "schedule",
+                                  "activity_title": "보고용 일정",
+                                  "activity_schedule_from": "2025-04-02",
+                                  "activity_schedule_to": "2025-04-06"
                                 }
                                 """))
                 // 활동 생성 요청이 201 Created로 응답하는지 확인한다.
@@ -261,7 +267,7 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                         .content("""
                                 {
                                   "activity_date": "2025-04-02",
-                                  "activity_type": "SCHEDULE",
+                                  "activity_type": "schedule",
                                   "activity_title": "보고용 일정",
                                   "activity_content": "PDF 일정 테스트",
                                   "po_id": "PO-REPORT-001",

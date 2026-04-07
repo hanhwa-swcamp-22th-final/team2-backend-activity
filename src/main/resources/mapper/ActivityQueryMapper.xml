@@ -22,7 +22,7 @@
         <result property="updatedAt" column="updated_at"/>
     </resultMap>
 
-    <select id="findById" resultMap="activityResultMap">
+    <select id="findActivityById" resultMap="activityResultMap">
         SELECT activity_id, client_id, po_id, activity_author_id, activity_date,
                activity_type, activity_title, activity_content, activity_priority,
                activity_schedule_from, activity_schedule_to, created_at, updated_at
@@ -30,7 +30,7 @@
         WHERE activity_id = #{activityId}
     </select>
 
-    <select id="findAll" resultMap="activityResultMap">
+    <select id="findAllActivities" resultMap="activityResultMap">
         SELECT activity_id, client_id, po_id, activity_author_id, activity_date,
                activity_type, activity_title, activity_content, activity_priority,
                activity_schedule_from, activity_schedule_to, created_at, updated_at
@@ -38,7 +38,7 @@
         ORDER BY created_at DESC
     </select>
 
-    <select id="findByClientId" resultMap="activityResultMap">
+    <select id="findActivityByClientId" resultMap="activityResultMap">
         SELECT activity_id, client_id, po_id, activity_author_id, activity_date,
                activity_type, activity_title, activity_content, activity_priority,
                activity_schedule_from, activity_schedule_to, created_at, updated_at
@@ -47,7 +47,7 @@
         ORDER BY created_at DESC
     </select>
 
-    <select id="findByActivityType" resultMap="activityResultMap">
+    <select id="findActivityByActivityType" resultMap="activityResultMap">
         SELECT activity_id, client_id, po_id, activity_author_id, activity_date,
                activity_type, activity_title, activity_content, activity_priority,
                activity_schedule_from, activity_schedule_to, created_at, updated_at
@@ -56,7 +56,7 @@
         ORDER BY created_at DESC
     </select>
 
-    <select id="findByDateRange" resultMap="activityResultMap">
+    <select id="findActivityByDateRange" resultMap="activityResultMap">
         SELECT activity_id, client_id, po_id, activity_author_id, activity_date,
                activity_type, activity_title, activity_content, activity_priority,
                activity_schedule_from, activity_schedule_to, created_at, updated_at
@@ -65,7 +65,7 @@
         ORDER BY activity_date DESC
     </select>
 
-    <select id="findByAuthorId" resultMap="activityResultMap">
+    <select id="findActivityByAuthorId" resultMap="activityResultMap">
         SELECT activity_id, client_id, po_id, activity_author_id, activity_date,
                activity_type, activity_title, activity_content, activity_priority,
                activity_schedule_from, activity_schedule_to, created_at, updated_at
@@ -74,7 +74,7 @@
         ORDER BY created_at DESC
     </select>
 
-    <select id="findByClientIdAndActivityType" resultMap="activityResultMap">
+    <select id="findActivityByClientIdAndActivityType" resultMap="activityResultMap">
         SELECT activity_id, client_id, po_id, activity_author_id, activity_date,
                activity_type, activity_title, activity_content, activity_priority,
                activity_schedule_from, activity_schedule_to, created_at, updated_at
@@ -84,7 +84,7 @@
         ORDER BY created_at DESC
     </select>
 
-    <select id="findWithFilters" resultMap="activityResultMap">
+    <select id="findActivitiesWithFilters" resultMap="activityResultMap">
         SELECT activity_id, client_id, po_id, activity_author_id, activity_date,
                activity_type, activity_title, activity_content, activity_priority,
                activity_schedule_from, activity_schedule_to, created_at, updated_at
@@ -120,7 +120,7 @@
         </if>
     </sql>
 
-    <select id="countWithFilters" resultType="long">
+    <select id="countActivitiesWithFilters" resultType="long">
         SELECT COUNT(*)
         FROM activities
         <where>

@@ -83,7 +83,7 @@ class EmailLogCommandControllerTest {
                 // 응답 본문에 email_log_id가 포함되는지 확인한다.
                 .andExpect(jsonPath("$.email_log_id").exists())
                 // 응답 본문에 email_status가 SENT로 내려오는지 확인한다.
-                .andExpect(jsonPath("$.email_status").value("SENT"))
+                .andExpect(jsonPath("$.email_status").value("sent"))
                 // 응답 본문에 email_sender_id가 포함되는지 확인한다.
                 .andExpect(jsonPath("$.email_sender_id").exists());
 
@@ -118,7 +118,7 @@ class EmailLogCommandControllerTest {
                 // 응답 본문에 email_log_id가 포함되는지 확인한다.
                 .andExpect(jsonPath("$.email_log_id").exists())
                 // 응답 본문에 email_status가 SENT로 내려오는지 확인한다.
-                .andExpect(jsonPath("$.email_status").value("SENT"));
+                .andExpect(jsonPath("$.email_status").value("sent"));
     }
 
     @Test

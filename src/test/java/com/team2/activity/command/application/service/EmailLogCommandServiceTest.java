@@ -76,7 +76,7 @@ class EmailLogCommandServiceTest {
         // document 서비스에서 전달하는 내부 요청을 구성한다.
         EmailLogInternalRequest request = new EmailLogInternalRequest(
                 1L, "PO-001", "견적서", "김고객", "client@example.com",
-                10L, "SENT", List.of(), List.of(), List.of()
+                10L, "sent", List.of(), List.of(), List.of()
         );
         // 내부 요청으로 생성될 엔티티를 준비한다.
         EmailLog emailLog = request.toEntity();

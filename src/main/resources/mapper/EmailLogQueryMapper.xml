@@ -30,13 +30,15 @@
     <resultMap id="attachmentResultMap" type="EmailLogAttachment">
         <id property="emailLogAttachmentId" column="email_log_attachment_id"/>
         <result property="emailAttachmentFilename" column="email_attachment_filename"/>
+        <result property="filePath" column="email_attachment_file_path"/>
     </resultMap>
 
     <sql id="emailLogColumns">
         e.email_log_id, e.client_id, e.po_id, e.email_title, e.email_recipient_name,
         e.email_recipient_email, e.email_sender_id, e.email_status, e.email_sent_at, e.created_at,
         dt.email_log_type_id AS dt_email_log_type_id, dt.email_doc_type AS dt_email_doc_type,
-        at.email_log_attachment_id AS at_email_log_attachment_id, at.email_attachment_filename AS at_email_attachment_filename
+        at.email_log_attachment_id AS at_email_log_attachment_id, at.email_attachment_filename AS at_email_attachment_filename,
+        at.email_attachment_file_path AS at_email_attachment_file_path
     </sql>
 
     <sql id="emailLogJoins">
@@ -45,26 +47,26 @@
         LEFT JOIN email_log_attachments at ON e.email_log_id = at.email_log_id
     </sql>
 
-    <select id="findById" resultMap="emailLogResultMap">
+    <select id="findEmailLogById" resultMap="emailLogResultMap">
         SELECT <include refid="emailLogColumns"/>
         <include refid="emailLogJoins"/>
         WHERE e.email_log_id = #{emailLogId}
     </select>
 
-    <select id="findAll" resultMap="emailLogResultMap">
+    <select id="findAllEmailLogs" resultMap="emailLogResultMap">
         SELECT <include refid="emailLogColumns"/>
         <include refid="emailLogJoins"/>
         ORDER BY e.created_at DESC
     </select>
 
-    <select id="findByClientId" resultMap="emailLogResultMap">
+    <select id="findEmailLogByClientId" resultMap="emailLogResultMap">
         SELECT <include refid="emailLogColumns"/>
         <include refid="emailLogJoins"/>
         WHERE e.client_id = #{clientId}
         ORDER BY e.created_at DESC
     </select>
 
-    <select id="findByEmailStatus" resultMap="emailLogResultMap">
+    <select id="findEmailLogByEmailStatus" resultMap="emailLogResultMap">
         SELECT <include refid="emailLogColumns"/>
         <include refid="emailLogJoins"/>
         WHERE e.email_status = #{emailStatus}
@@ -95,11 +97,12 @@
         </if>
     </sql>
 
-    <select id="findWithFilters" resultMap="emailLogResultMap">
+    <select id="findEmailLogsWithFilters" resultMap="emailLogResultMap">
         SELECT e.email_log_id, e.client_id, e.po_id, e.email_title, e.email_recipient_name,
                e.email_recipient_email, e.email_sender_id, e.email_status, e.email_sent_at, e.created_at,
                dt.email_log_type_id AS dt_email_log_type_id, dt.email_doc_type AS dt_email_doc_type,
-               at.email_log_attachment_id AS at_email_log_attachment_id, at.email_attachment_filename AS at_email_attachment_filename
+               at.email_log_attachment_id AS at_email_log_attachment_id, at.email_attachment_filename AS at_email_attachment_filename,
+               at.email_attachment_file_path AS at_email_attachment_file_path
         FROM (
             SELECT * FROM email_logs
             <where>
@@ -112,7 +115,7 @@
         LEFT JOIN email_log_attachments at ON e.email_log_id = at.email_log_id
     </select>
 
-    <select id="countWithFilters" resultType="long">
+    <select id="countEmailLogsWithFilters" resultType="long">
         SELECT COUNT(*)
         FROM email_logs e
         <where>

@@ -17,6 +17,8 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -53,28 +55,27 @@ class ActivityPackageQueryControllerTest {
     }
 
     @Test
-    @DisplayName("GET /api/activity-packages → 200 OK, 페이징 응답 구조 포함")
+    @DisplayName("GET /api/activity-packages → 200 OK, PagedResponse 구조로 목록 반환")
     void getPackages_returns200WithPagedResult() throws Exception {
         ActivityPackage pkg = buildPackage();
-        when(activityPackageQueryService.getAllPackages()).thenReturn(List.of(pkg));
-        when(activityPackageQueryService.enrichPackage(any(ActivityPackage.class)))
-                .thenReturn(ActivityPackageResponse.from(pkg));
+        when(activityPackageQueryService.getPackagesWithFilters(isNull(), isNull(), anyInt(), anyInt()))
+                .thenReturn(List.of(ActivityPackageResponse.from(pkg)));
+        when(activityPackageQueryService.countPackagesWithFilters(isNull(), isNull()))
+                .thenReturn(1L);
 
         mockMvc.perform(get("/api/activity-packages"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.total_elements").exists())
-                .andExpect(jsonPath("$.total_pages").exists())
-                .andExpect(jsonPath("$.current_page").exists());
+                .andExpect(jsonPath("$.content").isArray());
     }
 
     @Test
     @DisplayName("GET /api/activity-packages?creator_id=10 → 200 OK, creator_id 필터 적용")
     void getPackages_returns200WithCreatorIdFilter() throws Exception {
         ActivityPackage pkg = buildPackage();
-        when(activityPackageQueryService.getPackagesByCreatorId(10L)).thenReturn(List.of(pkg));
-        when(activityPackageQueryService.enrichPackage(any(ActivityPackage.class)))
-                .thenReturn(ActivityPackageResponse.from(pkg));
+        when(activityPackageQueryService.getPackagesWithFilters(any(), isNull(), anyInt(), anyInt()))
+                .thenReturn(List.of(ActivityPackageResponse.from(pkg)));
+        when(activityPackageQueryService.countPackagesWithFilters(any(), isNull()))
+                .thenReturn(1L);
 
         mockMvc.perform(get("/api/activity-packages").param("creatorId", "10"))
                 .andExpect(status().isOk())

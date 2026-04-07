@@ -67,7 +67,7 @@ class ActivityQueryRepositoryTest {
         // 방금 저장된 활동의 PK를 조회한다.
         Long activityId = jdbcTemplate.queryForObject("SELECT MAX(activity_id) FROM activities", Long.class);
         // mapper 단건 조회 결과를 반환해 이후 검증에 재사용한다.
-        return activityQueryMapper.findById(activityId);
+        return activityQueryMapper.findActivityById(activityId);
     }
 
     @Test
@@ -77,7 +77,7 @@ class ActivityQueryRepositoryTest {
         Activity saved = saveActivity(1L, 10L, ActivityType.ISSUE, "긴급 이슈", LocalDate.of(2025, 4, 1));
 
         // mapper가 DB 레코드를 Activity 엔티티로 읽어 오도록 호출한다.
-        Activity found = activityQueryMapper.findById(saved.getActivityId());
+        Activity found = activityQueryMapper.findActivityById(saved.getActivityId());
 
         // 기본 필드와 enum 필드가 모두 정확히 매핑되는지 확인한다.
         assertThat(found).isNotNull();
@@ -98,7 +98,7 @@ class ActivityQueryRepositoryTest {
         saveActivity(2L, 12L, ActivityType.ISSUE, "이슈1", LocalDate.of(2025, 4, 3));
 
         // client_id 조건으로 조회한 결과를 가져온다.
-        List<Activity> result = activityQueryMapper.findByClientId(1L);
+        List<Activity> result = activityQueryMapper.findActivityByClientId(1L);
 
         // 요청한 거래처의 활동만 반환되는지 확인한다.
         assertThat(result).hasSize(2);
@@ -116,7 +116,7 @@ class ActivityQueryRepositoryTest {
         saveActivity(2L, 12L, ActivityType.ISSUE, "이슈2", LocalDate.of(2025, 4, 3));
 
         // activity_type 조건 조회 결과를 가져온다.
-        List<Activity> result = activityQueryMapper.findByActivityType(ActivityType.ISSUE);
+        List<Activity> result = activityQueryMapper.findActivityByActivityType(ActivityType.ISSUE);
 
         // ISSUE 타입 활동만 반환되는지 확인한다.
         assertThat(result).hasSize(2);
@@ -134,7 +134,7 @@ class ActivityQueryRepositoryTest {
         saveActivity(1L, 10L, ActivityType.MEETING, "5월 활동", LocalDate.of(2025, 5, 20));
 
         // 4월 범위로만 활동 목록을 조회한다.
-        List<Activity> result = activityQueryMapper.findByDateRange(
+        List<Activity> result = activityQueryMapper.findActivityByDateRange(
                 LocalDate.of(2025, 4, 1),
                 LocalDate.of(2025, 4, 30)
         );
@@ -153,7 +153,7 @@ class ActivityQueryRepositoryTest {
         saveActivity(1L, 20L, ActivityType.MEETING, "작성자20 활동", LocalDate.of(2025, 4, 3));
 
         // 작성자 ID 조건으로 결과를 조회한다.
-        List<Activity> result = activityQueryMapper.findByAuthorId(10L);
+        List<Activity> result = activityQueryMapper.findActivityByAuthorId(10L);
 
         // 요청한 작성자의 활동만 반환되는지 확인한다.
         assertThat(result).hasSize(2);
@@ -171,7 +171,7 @@ class ActivityQueryRepositoryTest {
         saveActivity(2L, 10L, ActivityType.MEETING, "고객2 미팅", LocalDate.of(2025, 4, 3));
 
         // client_id와 activity_type을 함께 조건으로 조회한다.
-        List<Activity> result = activityQueryMapper.findByClientIdAndActivityType(1L, ActivityType.MEETING);
+        List<Activity> result = activityQueryMapper.findActivityByClientIdAndActivityType(1L, ActivityType.MEETING);
 
         // 두 조건을 모두 만족하는 활동만 반환되는지 확인한다.
         assertThat(result).hasSize(1);

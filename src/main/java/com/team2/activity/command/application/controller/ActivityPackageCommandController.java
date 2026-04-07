@@ -41,7 +41,7 @@ public class ActivityPackageCommandController {
         ActivityPackage saved = activityPackageCommandService.createPackage(request.toEntity(userId));
         EntityModel<ActivityPackageResponse> model = EntityModel.of(ActivityPackageResponse.from(saved),
                 linkTo(methodOn(ActivityPackageQueryController.class).getPackage(saved.getPackageId())).withSelfRel(),
-                linkTo(methodOn(ActivityPackageQueryController.class).getPackages(null, null, null)).withRel("activity-packages"));
+                linkTo(methodOn(ActivityPackageQueryController.class).getPackages(null, null, null, 0, 20)).withRel("activity-packages"));
         URI location = linkTo(methodOn(ActivityPackageQueryController.class).getPackage(saved.getPackageId())).toUri();
         return ResponseEntity.created(location).body(model);
     }
@@ -59,7 +59,7 @@ public class ActivityPackageCommandController {
         ActivityPackage updated = activityPackageCommandService.updateAll(packageId, request);
         return ResponseEntity.ok(EntityModel.of(ActivityPackageResponse.from(updated),
                 linkTo(methodOn(ActivityPackageQueryController.class).getPackage(packageId)).withSelfRel(),
-                linkTo(methodOn(ActivityPackageQueryController.class).getPackages(null, null, null)).withRel("activity-packages")));
+                linkTo(methodOn(ActivityPackageQueryController.class).getPackages(null, null, null, 0, 20)).withRel("activity-packages")));
     }
 
     @Operation(summary = "활동 패키지 삭제", description = "활동 패키지를 삭제한다")

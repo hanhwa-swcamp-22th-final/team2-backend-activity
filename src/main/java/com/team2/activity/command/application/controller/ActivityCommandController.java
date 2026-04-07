@@ -21,7 +21,7 @@ import java.net.URI;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
-@Tag(name = "활동 Command", description = "활동 생성/수정/삭제 API")
+@Tag(name = "활동기록 Command", description = "활동기록 생성/수정/삭제 API")
 @RestController
 @RequestMapping("/api/activities")
 @RequiredArgsConstructor
@@ -29,9 +29,9 @@ public class ActivityCommandController {
 
     private final ActivityCommandService activityCommandService;
 
-    @Operation(summary = "활동 생성", description = "새로운 활동을 생성한다")
+    @Operation(summary = "활동기록 생성", description = "새로운 활동기록을 생성한다")
     @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "활동 생성 성공"),
+            @ApiResponse(responseCode = "201", description = "활동기록 생성 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터")
     })
     @PostMapping
@@ -46,15 +46,15 @@ public class ActivityCommandController {
         return ResponseEntity.created(location).body(model);
     }
 
-    @Operation(summary = "활동 수정", description = "기존 활동 정보를 수정한다")
+    @Operation(summary = "활동기록 수정", description = "기존 활동기록 정보를 수정한다")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "활동 수정 성공"),
+            @ApiResponse(responseCode = "200", description = "활동기록 수정 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터"),
-            @ApiResponse(responseCode = "404", description = "활동을 찾을 수 없음")
+            @ApiResponse(responseCode = "404", description = "활동기록을 찾을 수 없음")
     })
     @PutMapping("/{activityId}")
     public ResponseEntity<EntityModel<ActivityResponse>> updateActivity(
-            @Parameter(description = "활동 ID", required = true) @PathVariable Long activityId,
+            @Parameter(description = "활동기록 ID", required = true) @PathVariable Long activityId,
             @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody ActivityUpdateRequest request) {
         Activity activity = activityCommandService.updateActivity(activityId, request, userId);
@@ -63,14 +63,14 @@ public class ActivityCommandController {
                 linkTo(methodOn(ActivityQueryController.class).getActivities(null, null, null, null, null, null, null, 0, 20)).withRel("activities")));
     }
 
-    @Operation(summary = "활동 삭제", description = "활동을 삭제한다")
+    @Operation(summary = "활동기록 삭제", description = "활동기록을 삭제한다")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "활동 삭제 성공"),
-            @ApiResponse(responseCode = "404", description = "활동을 찾을 수 없음")
+            @ApiResponse(responseCode = "204", description = "활동기록 삭제 성공"),
+            @ApiResponse(responseCode = "404", description = "활동기록을 찾을 수 없음")
     })
     @DeleteMapping("/{activityId}")
     public ResponseEntity<Void> deleteActivity(
-            @Parameter(description = "활동 ID", required = true) @PathVariable Long activityId) {
+            @Parameter(description = "활동기록 ID", required = true) @PathVariable Long activityId) {
         activityCommandService.deleteActivity(activityId);
         return ResponseEntity.noContent().build();
     }

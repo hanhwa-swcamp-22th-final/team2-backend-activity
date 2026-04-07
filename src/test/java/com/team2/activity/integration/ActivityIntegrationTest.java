@@ -36,9 +36,12 @@ class ActivityIntegrationTest extends IntegrationTestSupport {
                         .content("""
                                 {
                                   "client_id": 1,
+                                  "po_id": "PO-2025-001",
                                   "activity_date": "2025-04-01",
-                                  "activity_type": "MEETING",
-                                  "activity_title": "초기 미팅"
+                                  "activity_type": "meeting",
+                                  "activity_title": "초기 미팅",
+                                  "activity_schedule_from": "2025-04-01",
+                                  "activity_schedule_to": "2025-04-05"
                                 }
                                 """))
                 .andExpect(status().isCreated())
@@ -57,7 +60,7 @@ class ActivityIntegrationTest extends IntegrationTestSupport {
                 // 상세 응답의 activity_id가 방금 생성한 ID와 같은지 확인한다.
                 .andExpect(jsonPath("$.activity_id").value(activityId))
                 // 상세 응답의 활동 타입이 생성 값과 같은지 확인한다.
-                .andExpect(jsonPath("$.activity_type").value("MEETING"))
+                .andExpect(jsonPath("$.activity_type").value("meeting"))
                 // 상세 응답의 제목이 생성 값과 같은지 확인한다.
                 .andExpect(jsonPath("$.activity_title").value("초기 미팅"));
 
@@ -69,11 +72,11 @@ class ActivityIntegrationTest extends IntegrationTestSupport {
                         .content("""
                                 {
                                   "activity_date": "2025-04-05",
-                                  "activity_type": "ISSUE",
+                                  "activity_type": "issue",
                                   "activity_title": "긴급 이슈",
                                   "activity_content": "우선 처리 필요",
                                   "po_id": "PO-2025-001",
-                                  "activity_priority": "HIGH",
+                                  "activity_priority": "high",
                                   "activity_schedule_from": "2025-04-06",
                                   "activity_schedule_to": "2025-04-07"
                                 }
@@ -83,12 +86,12 @@ class ActivityIntegrationTest extends IntegrationTestSupport {
                 .andExpect(jsonPath("$.activity_id").value(activityId))
                 // 수정 응답의 작성자 ID가 새 헤더 값으로 바뀌었는지 확인한다.
                 .andExpect(jsonPath("$.activity_author_id").value(99))
-                // 수정 응답의 활동 타입이 ISSUE로 바뀌었는지 확인한다.
-                .andExpect(jsonPath("$.activity_type").value("ISSUE"))
+                // 수정 응답의 활동 타입이 issue로 바뀌었는지 확인한다.
+                .andExpect(jsonPath("$.activity_type").value("issue"))
                 // 수정 응답의 제목이 새 값으로 바뀌었는지 확인한다.
                 .andExpect(jsonPath("$.activity_title").value("긴급 이슈"))
-                // 수정 응답의 우선순위가 HIGH로 바뀌었는지 확인한다.
-                .andExpect(jsonPath("$.activity_priority").value("HIGH"));
+                // 수정 응답의 우선순위가 high로 바뀌었는지 확인한다.
+                .andExpect(jsonPath("$.activity_priority").value("high"));
 
         // 영속성 컨텍스트 변경사항을 DB에 즉시 반영한다.
         activityRepository.flush();
@@ -153,7 +156,7 @@ class ActivityIntegrationTest extends IntegrationTestSupport {
                         .content("""
                                 {
                                   "activity_date": "2025-04-01",
-                                  "activity_type": "MEETING",
+                                  "activity_type": "meeting",
                                   "activity_title": "없는 활동 수정"
                                 }
                                 """))

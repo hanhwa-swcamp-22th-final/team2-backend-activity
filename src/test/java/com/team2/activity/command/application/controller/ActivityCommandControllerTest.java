@@ -72,9 +72,12 @@ class ActivityCommandControllerTest {
                         .content("""
                                 {
                                     "client_id": 1,
+                                    "po_id": "PO-2025-001",
                                     "activity_date": "2025-04-01",
-                                    "activity_type": "MEETING",
-                                    "activity_title": "초기 미팅"
+                                    "activity_type": "meeting",
+                                    "activity_title": "초기 미팅",
+                                    "activity_schedule_from": "2025-04-01",
+                                    "activity_schedule_to": "2025-04-05"
                                 }
                                 """))
                 .andExpect(status().isCreated())
@@ -116,7 +119,7 @@ class ActivityCommandControllerTest {
                         .content("""
                                 {
                                     "activity_date": "2025-04-01",
-                                    "activity_type": "ISSUE",
+                                    "activity_type": "issue",
                                     "activity_title": "긴급 이슈",
                                     "activity_content": null,
                                     "po_id": null,
@@ -145,7 +148,7 @@ class ActivityCommandControllerTest {
                         .content("""
                                 {
                                     "activity_date": "2025-04-01",
-                                    "activity_type": "ISSUE",
+                                    "activity_type": "issue",
                                     "activity_title": "긴급 이슈",
                                     "activity_content": null,
                                     "po_id": null,

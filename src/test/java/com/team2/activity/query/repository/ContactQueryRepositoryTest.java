@@ -59,7 +59,7 @@ class ContactQueryRepositoryTest {
         // 최근 저장된 연락처 PK를 조회한다.
         Long contactId = jdbcTemplate.queryForObject("SELECT MAX(contact_id) FROM contacts", Long.class);
         // mapper 상세 조회 결과를 재사용할 수 있도록 반환한다.
-        return contactQueryMapper.findById(contactId);
+        return contactQueryMapper.findContactById(contactId);
     }
 
     @Test
@@ -69,7 +69,7 @@ class ContactQueryRepositoryTest {
         Contact saved = saveContact(1L, "kim");
 
         // mapper 단건 조회 결과를 가져온다.
-        Contact found = contactQueryMapper.findById(saved.getContactId());
+        Contact found = contactQueryMapper.findContactById(saved.getContactId());
 
         // 기본 연락처 필드가 정확히 매핑되는지 확인한다.
         assertThat(found).isNotNull();
@@ -88,7 +88,7 @@ class ContactQueryRepositoryTest {
         saveContact(2L, "park");
 
         // 특정 거래처의 연락처 목록을 조회한다.
-        List<Contact> result = contactQueryMapper.findAllByClientId(1L);
+        List<Contact> result = contactQueryMapper.findAllContactsByClientId(1L);
 
         // 요청한 거래처의 연락처만 반환되는지 확인한다.
         assertThat(result).hasSize(2);

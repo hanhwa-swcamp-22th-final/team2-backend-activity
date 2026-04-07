@@ -12,6 +12,9 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -50,7 +53,9 @@ class ContactQueryControllerTest {
     @Test
     @DisplayName("GET /api/contacts → 200 OK, PagedResponse 구조로 목록 반환")
     void getContacts_returns200() throws Exception {
-        when(contactQueryService.getAllContacts()).thenReturn(List.of(buildContact()));
+        when(contactQueryService.getContactsWithFilters(isNull(), isNull(), anyInt(), anyInt()))
+                .thenReturn(List.of(buildContact()));
+        when(contactQueryService.countContactsWithFilters(isNull(), isNull())).thenReturn(1L);
 
         mockMvc.perform(get("/api/contacts"))
                 .andExpect(status().isOk())
@@ -61,7 +66,9 @@ class ContactQueryControllerTest {
     @Test
     @DisplayName("GET /api/contacts?clientId=1 → 200 OK, client_id 필터 적용")
     void getContacts_returns200WithClientIdFilter() throws Exception {
-        when(contactQueryService.getContactsByClientId(1L)).thenReturn(List.of(buildContact()));
+        when(contactQueryService.getContactsWithFilters(eq(1L), isNull(), anyInt(), anyInt()))
+                .thenReturn(List.of(buildContact()));
+        when(contactQueryService.countContactsWithFilters(eq(1L), isNull())).thenReturn(1L);
 
         mockMvc.perform(get("/api/contacts").param("clientId", "1"))
                 .andExpect(status().isOk())
