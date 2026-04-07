@@ -23,9 +23,13 @@ public enum MailStatus implements DisplayNameEnum {
 
     @JsonCreator // Jackson이 역직렬화 시 이 메서드로 문자열 → 열거 상수 변환
     public static MailStatus from(String value) {
-        for (MailStatus s : values()) {        // 모든 열거 상수 순회
-            if (s.displayName.equals(value)) { // 전달된 문자열과 영문 표시값 비교
-                return s;                      // 일치하는 상수 반환
+        if (value == null) {                                // null 방어 (NPE 방지)
+            throw new IllegalArgumentException("Unknown MailStatus: null");
+        }
+        for (MailStatus s : values()) {                     // 모든 열거 상수 순회
+            if (s.displayName.equalsIgnoreCase(value)       // 소문자 표시값 ("sent"/"pending"/"failed")
+                    || s.name().equalsIgnoreCase(value)) {  // 대문자 enum 이름 ("SENT"/"PENDING"/"FAILED") 둘 다 허용
+                return s;                                   // 일치하는 상수 반환
             }
         }
         throw new IllegalArgumentException("Unknown MailStatus: " + value); // 일치 없으면 예외 발생
