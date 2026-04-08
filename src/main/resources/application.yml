@@ -23,9 +23,11 @@ spring:
         format_sql: true
         dialect: org.hibernate.dialect.MariaDBDialect
 
-
-jwt:
-  secret: ${JWT_SECRET:myDefaultSecretKeyForDevelopmentMustBe256BitsLong!!}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${JWKS_URI:http://backend-auth:8011/.well-known/jwks.json}
 
 mybatis:
   mapper-locations: classpath:mapper/**/*.xml

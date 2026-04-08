@@ -15,6 +15,9 @@ import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
@@ -24,6 +27,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/activity-packages")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('ADMIN','SALES')")
 public class ActivityPackageQueryController {
 
     private final ActivityPackageQueryService activityPackageQueryService;
@@ -35,20 +39,14 @@ public class ActivityPackageQueryController {
     })
     @GetMapping
     public ResponseEntity<PagedResponse<ActivityPackageResponse>> getPackages(
-            @Parameter(description = "요청 사용자 ID (뷰어 필터링용)") @RequestHeader(value = "X-User-Id", required = false) Long userId,
+            @Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt,
             @Parameter(description = "생성자 ID") @RequestParam(required = false) Long creatorId,
             @Parameter(description = "PO ID") @RequestParam(required = false) String poId,
             @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "20") int size) {
-        List<ActivityPackageResponse> responses;
-        if (userId != null) {
-            responses = activityPackageQueryService.getPackagesByViewerUserId(userId, creatorId, poId);
-            return ResponseEntity.ok(PagedResponse.of(responses, page, size));
-        } else {
-            responses = activityPackageQueryService.getPackagesWithFilters(creatorId, poId, page, size);
-            long totalElements = activityPackageQueryService.countPackagesWithFilters(creatorId, poId);
-            return ResponseEntity.ok(PagedResponse.of(responses, totalElements, page, size));
-        }
+        Long userId = Long.parseLong(jwt.getSubject());
+        List<ActivityPackageResponse> responses = activityPackageQueryService.getPackagesByViewerUserId(userId, creatorId, poId);
+        return ResponseEntity.ok(PagedResponse.of(responses, page, size));
     }
 
     @Operation(summary = "활동 패키지 상세 조회", description = "패키지 ID로 활동 패키지 상세 정보를 조회한다")
@@ -72,7 +70,8 @@ public class ActivityPackageQueryController {
     @GetMapping(value = "/{packageId}/report", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> downloadPackageReport(
             @Parameter(description = "패키지 ID", required = true) @PathVariable Long packageId,
-            @Parameter(description = "요청 사용자 ID") @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+            @Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt) {
+        Long userId = Long.parseLong(jwt.getSubject());
         ActivityPackage activityPackage = activityPackageQueryService.getPackage(packageId);
         byte[] pdfBytes = activityPackagePdfReportService.generatePackageReport(activityPackage, userId);
         String fileName = activityPackagePdfReportService.getDownloadFileName(activityPackage);

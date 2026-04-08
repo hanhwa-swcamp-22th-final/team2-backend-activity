@@ -66,7 +66,7 @@ public class EmailLogCommandService {
 
         try {
             // document 서비스에 메일 발송을 위임한다.
-            EmailSendResponse response = documentsFeignClient.sendEmail(userId, sendRequest);
+            EmailSendResponse response = documentsFeignClient.sendEmail(sendRequest);
             // 발송 결과에 따라 이메일 로그 상태를 갱신한다.
             if ("SENT".equals(response.status())) {
                 emailLog.markAsSent();

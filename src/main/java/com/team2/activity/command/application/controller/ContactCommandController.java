@@ -15,6 +15,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -24,6 +27,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 @Tag(name = "연락처 Command", description = "연락처 생성/수정/삭제 API")
 @RestController
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('ADMIN','SALES')")
 public class ContactCommandController {
 
     private final ContactCommandService contactCommandService;
@@ -36,8 +40,9 @@ public class ContactCommandController {
     @PostMapping("/api/clients/{clientId}/contacts")
     public ResponseEntity<EntityModel<ContactResponse>> createContact(
             @Parameter(description = "거래처 ID", required = true) @PathVariable Long clientId,
-            @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId,
+            @Parameter(description = "요청 사용자 ID", required = true) @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody ContactCreateRequest request) {
+        Long userId = Long.parseLong(jwt.getSubject());
         Contact contact = Contact.builder()
                 .clientId(clientId)
                 .writerId(userId)

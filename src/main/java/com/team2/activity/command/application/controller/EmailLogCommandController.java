@@ -15,6 +15,9 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -25,6 +28,7 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 @RestController
 @RequestMapping("/api/email-logs")
 @RequiredArgsConstructor
+@PreAuthorize("hasAnyRole('ADMIN','SALES')")
 public class EmailLogCommandController {
 
     private final EmailLogCommandService emailLogCommandService;
@@ -36,8 +40,9 @@ public class EmailLogCommandController {
     })
     @PostMapping
     public ResponseEntity<EntityModel<EmailLogResponse>> createEmailLog(
-            @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId,
+            @Parameter(description = "요청 사용자 ID", required = true) @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody EmailLogCreateRequest request) {
+        Long userId = Long.parseLong(jwt.getSubject());
         EmailLog emailLog = emailLogCommandService.createEmailLog(request.toEntity(userId));
         EntityModel<EmailLogResponse> model = EntityModel.of(EmailLogResponse.from(emailLog),
                 linkTo(methodOn(EmailLogQueryController.class).getEmailLog(emailLog.getEmailLogId())).withSelfRel(),
@@ -68,8 +73,9 @@ public class EmailLogCommandController {
     })
     @PostMapping("/{emailLogId}/resend")
     public ResponseEntity<EntityModel<EmailLogResponse>> resend(
-            @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId,
+            @Parameter(description = "요청 사용자 ID", required = true) @AuthenticationPrincipal Jwt jwt,
             @PathVariable Long emailLogId) {
+        Long userId = Long.parseLong(jwt.getSubject());
         EmailLogResponse response = EmailLogResponse.from(emailLogCommandService.resend(emailLogId, userId));
         return ResponseEntity.ok(EntityModel.of(response,
                 linkTo(methodOn(EmailLogQueryController.class).getEmailLog(emailLogId)).withSelfRel(),
