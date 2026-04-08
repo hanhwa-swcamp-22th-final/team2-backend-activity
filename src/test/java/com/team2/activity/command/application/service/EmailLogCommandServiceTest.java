@@ -98,7 +98,7 @@ class EmailLogCommandServiceTest {
         EmailLog emailLog = buildEmailLog(MailStatus.FAILED);
         when(emailLogRepository.findById(1L)).thenReturn(Optional.of(emailLog));
         // document 서비스가 발송 성공 응답을 반환하도록 설정한다.
-        when(documentsFeignClient.sendEmail(eq(7L), any()))
+        when(documentsFeignClient.sendEmail(any()))
                 .thenReturn(new EmailSendResponse("SENT", "Email sent successfully", List.of()));
 
         // 재전송 시 상태가 SENT로 변경되는지 확인한다.
@@ -113,7 +113,7 @@ class EmailLogCommandServiceTest {
         // findById가 호출됐는지 검증한다.
         verify(emailLogRepository).findById(1L);
         // document 서비스가 호출됐는지 검증한다.
-        verify(documentsFeignClient).sendEmail(eq(7L), any());
+        verify(documentsFeignClient).sendEmail(any());
     }
 
     @Test
@@ -123,7 +123,7 @@ class EmailLogCommandServiceTest {
         EmailLog emailLog = buildEmailLog(MailStatus.FAILED);
         when(emailLogRepository.findById(1L)).thenReturn(Optional.of(emailLog));
         // document 서비스가 발송 실패 응답을 반환하도록 설정한다.
-        when(documentsFeignClient.sendEmail(eq(7L), any()))
+        when(documentsFeignClient.sendEmail(any()))
                 .thenReturn(new EmailSendResponse("FAILED", "No documents could be generated", List.of()));
 
         // document 서비스가 FAILED 응답을 반환하면 예외가 발생하는지 확인한다.
@@ -139,7 +139,7 @@ class EmailLogCommandServiceTest {
         EmailLog emailLog = buildEmailLog(MailStatus.FAILED);
         when(emailLogRepository.findById(1L)).thenReturn(Optional.of(emailLog));
         // document 서비스 호출 시 네트워크 장애를 시뮬레이션한다.
-        when(documentsFeignClient.sendEmail(eq(7L), any()))
+        when(documentsFeignClient.sendEmail(any()))
                 .thenThrow(new RuntimeException("document 서비스 연결 실패"));
 
         // document 서비스 예외 발생 시 재전송 실패 예외가 발생하는지 확인한다.

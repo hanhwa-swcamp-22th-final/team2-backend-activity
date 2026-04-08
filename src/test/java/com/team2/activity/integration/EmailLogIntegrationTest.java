@@ -112,7 +112,7 @@ class EmailLogIntegrationTest extends IntegrationTestSupport {
                 .build());
 
         // document 서비스가 재전송 성공 응답을 반환하도록 mock을 설정한다.
-        given(documentsFeignClient.sendEmail(eq(10L), any()))
+        given(documentsFeignClient.sendEmail(any()))
                 .willReturn(new com.team2.activity.command.infrastructure.client.EmailSendResponse(
                         "SENT", "Email sent successfully", List.of()));
 
