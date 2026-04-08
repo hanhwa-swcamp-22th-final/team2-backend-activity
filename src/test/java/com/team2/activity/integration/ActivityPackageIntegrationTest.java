@@ -52,8 +52,8 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                 .andExpect(status().isCreated())
                 // 생성 응답에 package_id가 포함되는지 확인한다.
                 .andExpect(jsonPath("$.package_id").exists())
-                // 생성 응답에 creator_id가 헤더 값으로 반영됐는지 확인한다.
-                .andExpect(jsonPath("$.creator_id").value(7))
+                // 생성 응답의 creator_id가 테스트 JWT subject 값과 같은지 확인한다.
+                .andExpect(jsonPath("$.creator_id").value(10))
                 // 생성 응답의 첫 activity_id가 요청 값과 같은지 확인한다.
                 .andExpect(jsonPath("$.activity_ids[0]").value(100))
                 // 생성 응답의 첫 viewer_id가 요청 값과 같은지 확인한다.
@@ -104,7 +104,7 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
         activityPackageRepository.flush();
 
         // 목록 조회에서 수정된 제목이 노출되는지 확인한다.
-        mockMvc.perform(get("/api/activity-packages").param("creatorId", "7"))
+        mockMvc.perform(get("/api/activity-packages").param("creatorId", "10"))
                 .andExpect(status().isOk())
                 // 목록 응답 첫 원소의 package_id가 수정한 패키지 ID와 같은지 확인한다.
                 .andExpect(jsonPath("$.content[0].package_id").value(packageId))

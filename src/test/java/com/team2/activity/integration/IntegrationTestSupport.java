@@ -5,16 +5,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.team2.activity.command.infrastructure.client.AuthFeignClient;
 import com.team2.activity.command.infrastructure.client.DocumentsFeignClient;
 import com.team2.activity.command.infrastructure.client.MasterFeignClient;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.WebApplicationContext;
+
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup;
 
 // 통합 테스트가 공통으로 사용하는 설정과 유틸리티를 제공하는 추상 기반 클래스다.
 @SpringBootTest
@@ -22,8 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 @AutoConfigureMockMvc
 // 각 테스트 메서드 종료 시 DB 변경사항을 롤백해 테스트 독립성을 보장한다.
 @Transactional
-// 인증이 필요한 엔드포인트 테스트에서 사용할 목 사용자를 적용한다.
-@WithMockUser
+// 인증이 필요한 엔드포인트 테스트에서 사용할 목 사용자를 적용한다. (ADMIN 권한으로 @PreAuthorize 통과)
+@WithMockUser(username = "test-admin", roles = {"ADMIN"})
 // test 프로파일을 활성화해 H2 인메모리 DB 환경을 사용하도록 한다.
 @ActiveProfiles("test")
 public abstract class IntegrationTestSupport {
@@ -40,13 +49,37 @@ public abstract class IntegrationTestSupport {
     @MockBean
     protected MasterFeignClient masterFeignClient;
 
-    // 실제 HTTP 요청처럼 API를 호출하는 MockMvc를 자동 주입한다.
+    // Spring WebApplicationContext 주입 — MockMvc 재구성에 사용.
     @Autowired
+    protected WebApplicationContext context;
+
+    // 실제 HTTP 요청처럼 API를 호출하는 MockMvc. @BeforeEach에서 jwt 기본 post-processor를 적용한 인스턴스로 교체.
     protected MockMvc mockMvc;
 
     // 응답 JSON에서 특정 필드를 추출할 때 사용하는 ObjectMapper를 자동 주입한다.
     @Autowired
     protected ObjectMapper objectMapper;
+
+    // 컨트롤러가 @AuthenticationPrincipal Jwt로 받을 수 있도록 기본 JWT post-processor를 적용해 MockMvc를 재구성한다.
+    @BeforeEach
+    void initMockMvcWithJwt() {
+        mockMvc = webAppContextSetup(context)
+                .apply(springSecurity())
+                .defaultRequest(get("/").with(testJwt()))
+                .build();
+    }
+
+    // 테스트 요청에 부착할 Jwt post-processor. 기본 사용자: sub=10, role=ADMIN, department=1.
+    // authorities를 명시해야 @PreAuthorize hasAnyRole 체크가 통과한다.
+    protected static RequestPostProcessor testJwt() {
+        return jwt().jwt(j -> j
+                .subject("10")
+                .claim("role", "ADMIN")
+                .claim("name", "test-admin")
+                .claim("email", "test-admin@team2.local")
+                .claim("departmentId", 1))
+                .authorities(new SimpleGrantedAuthority("ROLE_ADMIN"));
+    }
 
     // JSON 응답 본문에서 지정한 이름의 숫자 필드를 long으로 추출한다.
     protected long extractLong(MvcResult result, String fieldName) throws Exception {

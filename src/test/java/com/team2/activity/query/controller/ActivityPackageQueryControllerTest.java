@@ -4,6 +4,7 @@ import com.team2.activity.command.domain.entity.ActivityPackage;
 import com.team2.activity.query.dto.ActivityPackageResponse;
 import com.team2.activity.query.service.ActivityPackagePdfReportService;
 import com.team2.activity.query.service.ActivityPackageQueryService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.ContentDisposition;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.util.List;
 
@@ -20,18 +23,34 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 // ActivityPackage 조회 API의 응답 구조와 예외 변환을 검증한다.
 @WebMvcTest(ActivityPackageQueryController.class)
-@WithMockUser
+@WithMockUser(roles = "ADMIN")
 @DisplayName("ActivityPackageQueryController 테스트")
 class ActivityPackageQueryControllerTest {
 
-    // 컨트롤러 HTTP 요청을 수행하는 MockMvc다.
     @Autowired
+    private WebApplicationContext context;
+
     private MockMvc mockMvc;
+
+    @BeforeEach
+    void initMockMvc() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(context)
+                .apply(springSecurity())
+                .defaultRequest(get("/").with(jwt().jwt(j -> j
+                        .subject("10")
+                        .claim("role", "ADMIN")
+                        .claim("name", "test-admin")
+                        .claim("email", "test-admin@team2.local")
+                        .claim("departmentId", 1))))
+                .build();
+    }
 
     // 컨트롤러가 호출할 패키지 조회 서비스 목 객체다.
     @MockitoBean

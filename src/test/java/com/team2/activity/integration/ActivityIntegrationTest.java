@@ -67,7 +67,6 @@ class ActivityIntegrationTest extends IntegrationTestSupport {
         // 활동 수정 요청이 실제 API 계층을 통해 반영되는지 확인한다.
         mockMvc.perform(put("/api/activities/{activityId}", activityId)
                         .with(csrf())
-                        .header("X-User-Id", "99")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
@@ -84,8 +83,8 @@ class ActivityIntegrationTest extends IntegrationTestSupport {
                 .andExpect(status().isOk())
                 // 수정 응답의 activity_id가 기존 ID와 같은지 확인한다.
                 .andExpect(jsonPath("$.activity_id").value(activityId))
-                // 수정 응답의 작성자 ID가 새 헤더 값으로 바뀌었는지 확인한다.
-                .andExpect(jsonPath("$.activity_author_id").value(99))
+                // 수정 응답의 작성자 ID가 테스트 JWT subject 값과 같은지 확인한다.
+                .andExpect(jsonPath("$.activity_author_id").value(10))
                 // 수정 응답의 활동 타입이 issue로 바뀌었는지 확인한다.
                 .andExpect(jsonPath("$.activity_type").value("issue"))
                 // 수정 응답의 제목이 새 값으로 바뀌었는지 확인한다.

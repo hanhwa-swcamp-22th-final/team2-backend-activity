@@ -9,6 +9,7 @@ import com.team2.activity.command.infrastructure.client.DocumentsFeignClient;
 import com.team2.activity.command.infrastructure.client.UserResponse;
 import com.team2.activity.query.controller.ActivityPackageQueryController;
 import com.team2.activity.query.dto.ActivityResponse;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,6 +18,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.ContentDisposition;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -56,7 +61,26 @@ class PdfSampleGeneratorTest {
         // 실제 PDF 서비스와 컨트롤러를 연결해 MockMvc를 구성한다.
         ActivityPackageQueryController controller =
                 new ActivityPackageQueryController(activityPackageQueryService, pdfReportService);
-        mockMvc = MockMvcBuilders.standaloneSetup(controller).build();
+        // @AuthenticationPrincipal Jwt 인자를 standalone setup에서도 해석할 수 있도록 resolver 등록.
+        mockMvc = MockMvcBuilders.standaloneSetup(controller)
+                .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver())
+                .build();
+
+        // SecurityContext에 테스트용 JwtAuthenticationToken 삽입 — @AuthenticationPrincipal이 이를 꺼내 쓴다.
+        Jwt jwt = Jwt.withTokenValue("test-token")
+                .header("alg", "none")
+                .subject("7")
+                .claim("role", "ADMIN")
+                .claim("name", "test-admin")
+                .claim("email", "test-admin@team2.local")
+                .claim("departmentId", 1)
+                .build();
+        SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(jwt));
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test

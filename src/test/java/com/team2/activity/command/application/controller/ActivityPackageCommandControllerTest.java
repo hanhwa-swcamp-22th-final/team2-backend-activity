@@ -2,6 +2,7 @@ package com.team2.activity.command.application.controller;
 
 import com.team2.activity.command.application.service.ActivityPackageCommandService;
 import com.team2.activity.command.domain.entity.ActivityPackage;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,8 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -18,18 +21,34 @@ import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 // ActivityPackage 쓰기 API의 생성, 수정, 삭제 응답을 검증한다.
 @WebMvcTest(ActivityPackageCommandController.class)
-@WithMockUser
+@WithMockUser(roles = "ADMIN")
 @DisplayName("ActivityPackageCommandController 테스트")
 class ActivityPackageCommandControllerTest {
 
-    // 컨트롤러 요청을 실행하는 MockMvc다.
     @Autowired
+    private WebApplicationContext context;
+
     private MockMvc mockMvc;
+
+    @BeforeEach
+    void initMockMvc() {
+        mockMvc = MockMvcBuilders.webAppContextSetup(context)
+                .apply(springSecurity())
+                .defaultRequest(get("/").with(jwt().jwt(j -> j
+                        .subject("10")
+                        .claim("role", "ADMIN")
+                        .claim("name", "test-admin")
+                        .claim("email", "test-admin@team2.local")
+                        .claim("departmentId", 1))))
+                .build();
+    }
 
     // 컨트롤러가 의존하는 패키지 command 서비스 목 객체다.
     @MockBean
