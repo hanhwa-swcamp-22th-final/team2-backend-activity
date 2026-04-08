@@ -63,9 +63,9 @@ public class ActivityPackageQueryController {
         return ResponseEntity.ok(activityPackageQueryService.enrichPackage(activityPackage));
     }
 
-    @Operation(summary = "활동 패키지 PDF 리포트 다운로드", description = "활동 패키지를 PDF 리포트로 다운로드한다")
+    @Operation(summary = "활동 패키지 PDF 리포트 미리보기", description = "활동 패키지를 PDF 리포트로 조회한다")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "PDF 다운로드 성공"),
+            @ApiResponse(responseCode = "200", description = "PDF 조회 성공"),
             @ApiResponse(responseCode = "404", description = "활동 패키지를 찾을 수 없음"),
             @ApiResponse(responseCode = "500", description = "PDF 생성 실패")
     })
