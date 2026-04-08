@@ -2,16 +2,16 @@ server:
   port: 8083
 
 spring:
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:dev}
+
   application:
     name: team2-backend-activity
 
-  jackson:
-    property-naming-strategy: SNAKE_CASE
-
   datasource:
     url: ${DB_URL:jdbc:mariadb://localhost:3306/team2_activity}
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:team2root}
+    username: ${DB_USERNAME:team2}
+    password: ${DB_PASSWORD:team2}
     driver-class-name: org.mariadb.jdbc.Driver
 
   jpa:
