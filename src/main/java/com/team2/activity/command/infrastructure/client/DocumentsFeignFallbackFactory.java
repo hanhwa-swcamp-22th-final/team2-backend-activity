@@ -1,0 +1,35 @@
+package com.team2.activity.command.infrastructure.client;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cloud.openfeign.FallbackFactory;
+import org.springframework.stereotype.Component;
+
+import java.util.Collections;
+
+@Component
+public class DocumentsFeignFallbackFactory implements FallbackFactory<DocumentsFeignClient> {
+
+    private static final Logger log = LoggerFactory.getLogger(DocumentsFeignFallbackFactory.class);
+
+    @Override
+    public DocumentsFeignClient create(Throwable cause) {
+        return new DocumentsFeignClient() {
+            @Override
+            public PurchaseOrderResponse getPurchaseOrder(String poId) {
+                log.warn("[fallback] documents-service getPurchaseOrder({}) unavailable: {}",
+                        poId, cause != null ? cause.getMessage() : "unknown");
+                return new PurchaseOrderResponse(poId, "(unknown)", "UNAVAILABLE");
+            }
+
+            @Override
+            public EmailSendResponse sendEmail(EmailSendRequest request) {
+                log.warn("[fallback] documents-service sendEmail unavailable: {}",
+                        cause != null ? cause.getMessage() : "unknown");
+                // EmailLogCommandService.java:69 의 response.status() NPE 방지를 위해
+                // 반드시 non-null EmailSendResponse 객체 반환
+                return new EmailSendResponse("FAILED", "documents service unavailable", Collections.emptyList());
+            }
+        };
+    }
+}

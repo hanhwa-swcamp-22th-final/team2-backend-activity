@@ -6,7 +6,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
-@FeignClient(name = "documents-service", url = "${documents.service.url:http://localhost:8084}")
+@FeignClient(
+        name = "documents-service",
+        url = "${documents.service.url:http://localhost:8014}",
+        fallbackFactory = DocumentsFeignFallbackFactory.class
+)
 public interface DocumentsFeignClient {
 
     // PO 코드로 발주 정보를 조회한다.

@@ -16,11 +16,11 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
-    show-sql: true
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    show-sql: ${JPA_SHOW_SQL:false}
     properties:
       hibernate:
-        format_sql: true
+        format_sql: ${JPA_FORMAT_SQL:false}
         dialect: org.hibernate.dialect.MariaDBDialect
 
   security:
@@ -38,7 +38,7 @@ mybatis:
 
 documents:
   service:
-    url: ${DOCUMENTS_SERVICE_URL:http://localhost:8084}
+    url: ${DOCUMENTS_SERVICE_URL:http://localhost:8014}
 
 # 인증 서비스 URL (사용자 이름 조회에 사용한다)
 auth:
@@ -60,6 +60,25 @@ feign:
       default:
         connectTimeout: 5000
         readTimeout: 10000
+  circuitbreaker:
+    enabled: true
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        permittedNumberOfCallsInHalfOpenState: 3
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 8s
+        minimumNumberOfCalls: 5
+
+internal:
+  api:
+    token: ${INTERNAL_API_TOKEN:}
 
 management:
   endpoints:

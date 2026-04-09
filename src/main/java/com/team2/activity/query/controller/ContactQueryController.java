@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +18,7 @@ import java.util.List;
 @Tag(name = "연락처 Query", description = "연락처 조회 API")
 @RestController
 @RequiredArgsConstructor
+@PreAuthorize("isAuthenticated()")
 public class ContactQueryController {
 
     private final ContactQueryService contactQueryService;

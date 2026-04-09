@@ -6,7 +6,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import java.util.List;
 
-@FeignClient(name = "master-service", url = "${master.service.url:http://localhost:8012}")
+@FeignClient(
+        name = "master-service",
+        url = "${master.service.url:http://localhost:8012}",
+        fallbackFactory = MasterFeignFallbackFactory.class
+)
 public interface MasterFeignClient {
 
     @GetMapping("/api/clients/{clientId}")
