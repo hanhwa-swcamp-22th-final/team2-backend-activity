@@ -130,4 +130,10 @@ public class EmailLog {
         // 발송 실패 상태로 전환한다.
         this.emailStatus = MailStatus.FAILED;
     }
+
+    // 재전송 시작 시 SENDING 중간 상태로 전환한다 (중복 클릭 방지용 마커).
+    public void markAsSending() {
+        // 재전송 진행 상태로 전환한다. DB-level atomic update 와 함께 써야 race condition 방지.
+        this.emailStatus = MailStatus.SENDING;
+    }
 }

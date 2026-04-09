@@ -197,6 +197,7 @@ class EmailLogTest {
         assertThat(MailStatus.values())
                 .containsExactlyInAnyOrder(
                         MailStatus.PENDING,
+                        MailStatus.SENDING,
                         MailStatus.SENT,
                         MailStatus.FAILED
                 );

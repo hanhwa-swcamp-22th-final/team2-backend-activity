@@ -36,11 +36,27 @@ public class EmailLogCommandService {
         return emailLogRepository.save(request.toEntity());
     }
 
-    // FAILED 상태의 이메일 로그를 document 서비스를 통해 재전송한다.
+    /**
+     * FAILED 상태의 이메일 로그를 Documents 에 재전송 요청한다.
+     *
+     * <p><b>Write Ownership</b>: Activity 가 EmailLog 의 유일한 write owner 다.
+     * Documents 는 {@code /api/emails/internal/send-no-log} 경로로 로그 기록 없이 발송만 수행한다.
+     * 이로써 1회 재전송이 email_logs 테이블에 중복 row 를 만들지 않는다.
+     *
+     * <p><b>Race condition 방어</b>: 상태를 FAILED → SENDING 으로 원자적으로 전이 (DB UPDATE WHERE status='failed').
+     * affected rows = 0 이면 이미 다른 요청이 진행 중이거나 상태가 바뀐 것이므로 409 계열 예외를 던진다.
+     *
+     * <p><b>결과 처리</b>:
+     * <ul>
+     *   <li>Documents 가 SENT 반환 → EmailLog SENT 로 전이 (markAsSent + 발송 시각)</li>
+     *   <li>Documents 가 FAILED 반환 또는 예외 → EmailLog FAILED 로 전이 후 IllegalStateException 전파</li>
+     * </ul>
+     */
     @Transactional
     public EmailLog resend(Long emailLogId, Long userId) {
         // 재전송 대상 이메일 로그를 조회한다.
         EmailLog emailLog = findById(emailLogId);
+
         // 이미 발송 성공한 이메일은 재전송 대상이 아니다.
         if (emailLog.getEmailStatus() == MailStatus.SENT) {
             throw new IllegalStateException("이미 발송된 이메일입니다.");
@@ -49,6 +65,22 @@ public class EmailLogCommandService {
         if (emailLog.getEmailStatus() == MailStatus.PENDING) {
             throw new IllegalStateException("아직 발송 시도 전인 이메일입니다.");
         }
+        // 이미 재전송이 진행 중이면 중복 클릭이므로 거부한다 (빠른 경로 — DB UPDATE 없이 바로 실패).
+        if (emailLog.getEmailStatus() == MailStatus.SENDING) {
+            throw new IllegalStateException("이미 재전송이 진행 중입니다.");
+        }
+
+        // DB 레벨 원자적 전이: FAILED → SENDING.
+        // 동시에 여러 요청이 들어와도 하나만 성공한다.
+        int updated = emailLogRepository.transitionStatus(
+                emailLogId, MailStatus.FAILED, MailStatus.SENDING);
+        if (updated == 0) {
+            // 경쟁에서 패배 → 이미 다른 요청이 SENDING 으로 바꿨거나 상태가 변경됨.
+            throw new IllegalStateException("이미 재전송이 진행 중이거나 상태가 변경되었습니다.");
+        }
+
+        // JPA 1차 캐시의 엔티티 상태를 DB 와 동기화 (transitionStatus 가 벌크 update 이므로 flush + refresh)
+        emailLog.markAsSending();
 
         // 기존 로그 데이터로 document 서비스 발송 요청을 구성한다.
         List<String> docTypeStrings = emailLog.getDocTypes().stream()
@@ -65,22 +97,28 @@ public class EmailLogCommandService {
         );
 
         try {
-            // document 서비스에 메일 발송을 위임한다.
-            EmailSendResponse response = documentsFeignClient.sendEmail(sendRequest);
+            // Documents 에 메일 발송만 위임 — 로그 기록은 이쪽에서만 수행 (이중 write 방지)
+            // 원본 emailLog 의 sender userId 를 X-User-Id 헤더로 전달.
+            EmailSendResponse response =
+                    documentsFeignClient.sendEmailWithoutLogging(emailLog.getEmailSenderId(), sendRequest);
+
             // 발송 결과에 따라 이메일 로그 상태를 갱신한다.
             if ("SENT".equals(response.status())) {
                 emailLog.markAsSent();
             } else {
                 emailLog.markAsFailed();
+                log.error("document 서비스 재전송 실패 응답 [emailLogId={}, status={}, message={}]",
+                        emailLogId, response.status(), response.message());
             }
         } catch (Exception e) {
             // document 서비스 호출 실패 시 FAILED 상태로 전환한다.
             emailLog.markAsFailed();
-            log.error("document 서비스 재전송 실패 [emailLogId={}, to={}]: {}",
+            log.error("document 서비스 재전송 예외 [emailLogId={}, to={}]: {}",
                     emailLogId, emailLog.getEmailRecipientEmail(), e.getMessage(), e);
         }
 
         // 발송 결과가 FAILED면 재전송 실패 예외를 던진다.
+        // (dirty checking 에 의해 transaction commit 시 DB 에 반영됨)
         if (emailLog.getEmailStatus() == MailStatus.FAILED) {
             throw new IllegalStateException("이메일 재전송에 실패했습니다.");
         }

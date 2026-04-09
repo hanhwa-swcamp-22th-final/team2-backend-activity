@@ -15,6 +15,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -112,7 +113,8 @@ class EmailLogIntegrationTest extends IntegrationTestSupport {
                 .build());
 
         // document 서비스가 재전송 성공 응답을 반환하도록 mock을 설정한다.
-        given(documentsFeignClient.sendEmail(any()))
+        // B1 리팩토링 후: 재전송 흐름은 sendEmailWithoutLogging 을 호출한다 (이중 write 방지).
+        given(documentsFeignClient.sendEmailWithoutLogging(anyLong(), any()))
                 .willReturn(new com.team2.activity.command.infrastructure.client.EmailSendResponse(
                         "SENT", "Email sent successfully", List.of()));
 

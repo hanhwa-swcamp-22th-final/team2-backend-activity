@@ -30,6 +30,13 @@ public class DocumentsFeignFallbackFactory implements FallbackFactory<DocumentsF
                 // 반드시 non-null EmailSendResponse 객체 반환
                 return new EmailSendResponse("FAILED", "documents service unavailable", Collections.emptyList());
             }
+
+            @Override
+            public EmailSendResponse sendEmailWithoutLogging(Long userId, EmailSendRequest request) {
+                log.warn("[fallback] documents-service sendEmailWithoutLogging(userId={}) unavailable: {}",
+                        userId, cause != null ? cause.getMessage() : "unknown");
+                return new EmailSendResponse("FAILED", "documents service unavailable", Collections.emptyList());
+            }
         };
     }
 }
