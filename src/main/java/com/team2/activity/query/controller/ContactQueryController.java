@@ -29,10 +29,10 @@ public class ContactQueryController {
     })
     @GetMapping("/api/contacts")
     public ResponseEntity<PagedResponse<ContactResponse>> getContacts(
-            @Parameter(description = "거래처 ID (미입력 시 전체 조회)") @RequestParam(required = false) Long clientId,
-            @Parameter(description = "검색 키워드 (이름/이메일)") @RequestParam(required = false) String keyword,
-            @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "20") int size) {
+            @Parameter(description = "거래처 ID (미입력 시 전체 조회)") @RequestParam(name = "clientId", required = false) Long clientId,
+            @Parameter(description = "검색 키워드 (이름/이메일)") @RequestParam(name = "keyword", required = false) String keyword,
+            @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(name = "page", defaultValue = "0") int page,
+            @Parameter(description = "페이지 크기") @RequestParam(name = "size", defaultValue = "20") int size) {
         List<ContactResponse> contacts = contactQueryService.getContactsWithFilters(clientId, keyword, page, size)
                 .stream().map(ContactResponse::from).toList();
         long totalElements = contactQueryService.countContactsWithFilters(clientId, keyword);
@@ -46,7 +46,7 @@ public class ContactQueryController {
     })
     @GetMapping("/api/clients/{clientId}/contacts")
     public ResponseEntity<List<ContactResponse>> getContactsByClientId(
-            @Parameter(description = "거래처 ID", required = true) @PathVariable Long clientId) {
+            @Parameter(description = "거래처 ID", required = true) @PathVariable("clientId") Long clientId) {
         List<ContactResponse> contacts = contactQueryService.getContactsByClientId(clientId)
                 .stream().map(ContactResponse::from).toList();
         return ResponseEntity.ok(contacts);

@@ -45,37 +45,37 @@ class EmailLogIntegrationTest extends IntegrationTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "client_id": 1,
-                                  "po_id": "PO-001",
-                                  "email_title": "안내 메일",
-                                  "email_recipient_name": "고객",
-                                  "email_recipient_email": "client@example.com",
-                                  "doc_types": ["PI", "CI"]
+                                  "clientId": 1,
+                                  "poId": "PO-001",
+                                  "emailTitle": "안내 메일",
+                                  "emailRecipientName": "고객",
+                                  "emailRecipientEmail": "client@example.com",
+                                  "docTypes": ["PI", "CI"]
                                 }
                                 """))
                 .andExpect(status().isCreated())
                 // 생성 응답에 email_log_id가 포함되는지 확인한다.
-                .andExpect(jsonPath("$.email_log_id").exists())
+                .andExpect(jsonPath("$.emailLogId").exists())
                 // 생성 응답에 email_sender_id가 헤더 값으로 반영됐는지 확인한다.
-                .andExpect(jsonPath("$.email_sender_id").value(10))
+                .andExpect(jsonPath("$.emailSenderId").value(10))
                 // document 서비스가 발송을 담당하므로 생성 직후 상태는 PENDING이다.
-                .andExpect(jsonPath("$.email_status").value("pending"))
+                .andExpect(jsonPath("$.emailStatus").value("pending"))
                 // 생성 응답의 첫 문서 유형이 PI인지 확인한다.
-                .andExpect(jsonPath("$.doc_types[0].email_doc_type").value("PI"))
+                .andExpect(jsonPath("$.docTypes[0].emailDocType").value("PI"))
                 .andReturn();
 
         // 후속 조회에 사용할 email_log_id를 응답 본문에서 읽어 온다.
-        long emailLogId = extractLong(createResult, "email_log_id");
+        long emailLogId = extractLong(createResult, "emailLogId");
 
         // 생성된 이메일 로그가 상세 조회 API에서 조회되는지 확인한다.
         mockMvc.perform(get("/api/email-logs/{emailLogId}", emailLogId))
                 .andExpect(status().isOk())
                 // 상세 응답의 email_log_id가 생성한 ID와 같은지 확인한다.
-                .andExpect(jsonPath("$.email_log_id").value(emailLogId))
+                .andExpect(jsonPath("$.emailLogId").value(emailLogId))
                 // 상세 응답의 제목이 생성 값과 같은지 확인한다.
-                .andExpect(jsonPath("$.email_title").value("안내 메일"))
+                .andExpect(jsonPath("$.emailTitle").value("안내 메일"))
                 // 상세 응답의 두 번째 문서 유형이 CI인지 확인한다.
-                .andExpect(jsonPath("$.doc_types[1].email_doc_type").value("CI"));
+                .andExpect(jsonPath("$.docTypes[1].emailDocType").value("CI"));
 
         // JPA INSERT를 MyBatis SELECT 전에 DB에 반영한다.
         emailLogRepository.flush();
@@ -84,9 +84,9 @@ class EmailLogIntegrationTest extends IntegrationTestSupport {
         mockMvc.perform(get("/api/email-logs").param("emailStatus", "PENDING"))
                 .andExpect(status().isOk())
                 // 목록 첫 원소의 email_log_id가 생성한 ID와 같은지 확인한다.
-                .andExpect(jsonPath("$.content[0].email_log_id").value(emailLogId))
+                .andExpect(jsonPath("$.content[0].emailLogId").value(emailLogId))
                 // 목록 첫 원소의 상태가 PENDING인지 확인한다.
-                .andExpect(jsonPath("$.content[0].email_status").value("pending"));
+                .andExpect(jsonPath("$.content[0].emailStatus").value("pending"));
     }
 
     @Test
@@ -122,9 +122,9 @@ class EmailLogIntegrationTest extends IntegrationTestSupport {
                         .with(csrf()))
                 .andExpect(status().isOk())
                 // 재전송 응답의 email_log_id가 실패 로그 ID와 같은지 확인한다.
-                .andExpect(jsonPath("$.email_log_id").value(failedLog.getEmailLogId()))
+                .andExpect(jsonPath("$.emailLogId").value(failedLog.getEmailLogId()))
                 // 목 발송 성공으로 SENT 상태가 됐는지 확인한다.
-                .andExpect(jsonPath("$.email_status").value("sent"));
+                .andExpect(jsonPath("$.emailStatus").value("sent"));
 
         // JPA UPDATE를 DB에 즉시 반영한다.
         emailLogRepository.flush();
@@ -178,9 +178,9 @@ class EmailLogIntegrationTest extends IntegrationTestSupport {
                         // email_recipient_email을 포함하지 않는 요청을 전송한다.
                         .content("""
                                 {
-                                  "client_id": 1,
-                                  "po_id": "PO-001",
-                                  "email_title": "제목"
+                                  "clientId": 1,
+                                  "poId": "PO-001",
+                                  "emailTitle": "제목"
                                 }
                                 """))
                 // 유효성 검증 실패로 400 Bad Request가 반환되는지 확인한다.

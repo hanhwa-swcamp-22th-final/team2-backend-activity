@@ -37,7 +37,7 @@ class ProxyControllerTest {
         mockMvc.perform(get("/api/clients"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
-                .andExpect(jsonPath("$[0].client_name").value("Global Steel"));
+                .andExpect(jsonPath("$[0].clientName").value("Global Steel"));
     }
 
     @Test
@@ -50,7 +50,7 @@ class ProxyControllerTest {
         mockMvc.perform(get("/api/clients").param("keyword", "Steel"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(1))
-                .andExpect(jsonPath("$[0].client_name").value("Global Steel"));
+                .andExpect(jsonPath("$[0].clientName").value("Global Steel"));
     }
 
     @Test
@@ -109,7 +109,7 @@ class ProxyControllerTest {
     @DisplayName("GET /api/pos?client_id=1&date_from=2026-01-01&date_to=2026-12-31 → 파라미터 수용 후 빈 배열")
     void getPurchaseOrders_withParams_returnsEmpty() throws Exception {
         mockMvc.perform(get("/api/pos")
-                        .param("client_id", "1")
+                        .param("clientId", "1")
                         .param("date_from", "2026-01-01")
                         .param("date_to", "2026-12-31"))
                 .andExpect(status().isOk())

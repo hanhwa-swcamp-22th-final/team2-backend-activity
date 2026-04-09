@@ -42,38 +42,38 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "package_title": "주간 패키지",
-                                  "package_description": "주간 활동 묶음",
-                                  "po_id": "PO-001",
-                                  "activity_ids": [100, 101],
-                                  "viewer_ids": [2, 3]
+                                  "packageTitle": "주간 패키지",
+                                  "packageDescription": "주간 활동 묶음",
+                                  "poId": "PO-001",
+                                  "activityIds": [100, 101],
+                                  "viewerIds": [2, 3]
                                 }
                                 """))
                 .andExpect(status().isCreated())
                 // 생성 응답에 package_id가 포함되는지 확인한다.
-                .andExpect(jsonPath("$.package_id").exists())
+                .andExpect(jsonPath("$.packageId").exists())
                 // 생성 응답의 creator_id가 테스트 JWT subject 값과 같은지 확인한다.
-                .andExpect(jsonPath("$.creator_id").value(10))
+                .andExpect(jsonPath("$.creatorId").value(10))
                 // 생성 응답의 첫 activity_id가 요청 값과 같은지 확인한다.
-                .andExpect(jsonPath("$.activity_ids[0]").value(100))
+                .andExpect(jsonPath("$.activityIds[0]").value(100))
                 // 생성 응답의 첫 viewer_id가 요청 값과 같은지 확인한다.
-                .andExpect(jsonPath("$.viewer_ids[0]").value(2))
+                .andExpect(jsonPath("$.viewerIds[0]").value(2))
                 .andReturn();
 
         // 후속 요청에 사용할 package_id를 응답 본문에서 읽어 온다.
-        long packageId = extractLong(createResult, "package_id");
+        long packageId = extractLong(createResult, "packageId");
 
         // 생성된 패키지가 상세 조회 API에서 조회되는지 확인한다.
         mockMvc.perform(get("/api/activity-packages/{packageId}", packageId))
                 .andExpect(status().isOk())
                 // 상세 응답의 package_id가 생성한 ID와 같은지 확인한다.
-                .andExpect(jsonPath("$.package_id").value(packageId))
+                .andExpect(jsonPath("$.packageId").value(packageId))
                 // 상세 응답의 제목이 생성 값과 같은지 확인한다.
-                .andExpect(jsonPath("$.package_title").value("주간 패키지"))
+                .andExpect(jsonPath("$.packageTitle").value("주간 패키지"))
                 // 상세 응답의 두 번째 activity_id가 생성 값과 같은지 확인한다.
-                .andExpect(jsonPath("$.activity_ids[1]").value(101))
+                .andExpect(jsonPath("$.activityIds[1]").value(101))
                 // 상세 응답의 두 번째 viewer_id가 생성 값과 같은지 확인한다.
-                .andExpect(jsonPath("$.viewer_ids[1]").value(3));
+                .andExpect(jsonPath("$.viewerIds[1]").value(3));
 
         // 수정 요청을 통해 본문과 컬렉션 필드가 모두 갱신되는지 확인한다.
         mockMvc.perform(put("/api/activity-packages/{packageId}", packageId)
@@ -81,24 +81,24 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "package_title": "월간 패키지",
-                                  "package_description": "월간 활동 묶음",
-                                  "po_id": "PO-2025-002",
-                                  "activity_ids": [200, 300],
-                                  "viewer_ids": [30, 40]
+                                  "packageTitle": "월간 패키지",
+                                  "packageDescription": "월간 활동 묶음",
+                                  "poId": "PO-2025-002",
+                                  "activityIds": [200, 300],
+                                  "viewerIds": [30, 40]
                                 }
                                 """))
                 .andExpect(status().isOk())
                 // 수정 응답의 package_id가 기존 ID와 같은지 확인한다.
-                .andExpect(jsonPath("$.package_id").value(packageId))
+                .andExpect(jsonPath("$.packageId").value(packageId))
                 // 수정 응답의 제목이 새 값으로 바뀌었는지 확인한다.
-                .andExpect(jsonPath("$.package_title").value("월간 패키지"))
+                .andExpect(jsonPath("$.packageTitle").value("월간 패키지"))
                 // 수정 응답의 PO ID가 새 값으로 바뀌었는지 확인한다.
-                .andExpect(jsonPath("$.po_id").value("PO-2025-002"))
+                .andExpect(jsonPath("$.poId").value("PO-2025-002"))
                 // 수정 응답의 첫 activity_id가 새 값으로 바뀌었는지 확인한다.
-                .andExpect(jsonPath("$.activity_ids[0]").value(200))
+                .andExpect(jsonPath("$.activityIds[0]").value(200))
                 // 수정 응답의 첫 viewer_id가 새 값으로 바뀌었는지 확인한다.
-                .andExpect(jsonPath("$.viewer_ids[0]").value(30));
+                .andExpect(jsonPath("$.viewerIds[0]").value(30));
 
         // 수정된 패키지 상태를 DB에 즉시 반영한다.
         activityPackageRepository.flush();
@@ -107,9 +107,9 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
         mockMvc.perform(get("/api/activity-packages").param("creatorId", "10"))
                 .andExpect(status().isOk())
                 // 목록 응답 첫 원소의 package_id가 수정한 패키지 ID와 같은지 확인한다.
-                .andExpect(jsonPath("$.content[0].package_id").value(packageId))
+                .andExpect(jsonPath("$.content[0].packageId").value(packageId))
                 // 목록 응답 첫 원소의 제목이 수정 값으로 바뀌었는지 확인한다.
-                .andExpect(jsonPath("$.content[0].package_title").value("월간 패키지"));
+                .andExpect(jsonPath("$.content[0].packageTitle").value("월간 패키지"));
 
         // 삭제 요청이 204 응답으로 처리되는지 확인한다.
         mockMvc.perform(delete("/api/activity-packages/{packageId}", packageId).with(csrf()))
@@ -133,9 +133,9 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                         // package_title을 포함하지 않는 요청을 전송한다.
                         .content("""
                                 {
-                                  "package_description": "설명만 있음",
-                                  "activity_ids": [1],
-                                  "viewer_ids": [2]
+                                  "packageDescription": "설명만 있음",
+                                  "activityIds": [1],
+                                  "viewerIds": [2]
                                 }
                                 """))
                 // 유효성 검증 실패로 400 Bad Request가 반환되는지 확인한다.
@@ -165,7 +165,7 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                         // 유효한 수정 요청 본문을 전송해 존재 여부에서 실패하도록 한다.
                         .content("""
                                 {
-                                  "package_title": "없는 패키지 수정"
+                                  "packageTitle": "없는 패키지 수정"
                                 }
                                 """))
                 // 패키지 없음 예외가 404로 변환되는지 확인한다.
@@ -212,22 +212,22 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "client_id": 1,
-                                  "po_id": "PO-REPORT-001",
-                                  "activity_date": "2025-04-01",
-                                  "activity_type": "meeting",
-                                  "activity_title": "보고용 미팅",
-                                  "activity_schedule_from": "2025-04-01",
-                                  "activity_schedule_to": "2025-04-05"
+                                  "clientId": 1,
+                                  "poId": "PO-REPORT-001",
+                                  "activityDate": "2025-04-01",
+                                  "activityType": "meeting",
+                                  "activityTitle": "보고용 미팅",
+                                  "activityScheduleFrom": "2025-04-01",
+                                  "activityScheduleTo": "2025-04-05"
                                 }
                                 """))
                 // 활동 생성 요청이 201 Created로 응답하는지 확인한다.
                 .andExpect(status().isCreated())
                 // 생성된 활동의 ID가 응답 본문에 포함되는지 확인한다.
-                .andExpect(jsonPath("$.activity_id").exists())
+                .andExpect(jsonPath("$.activityId").exists())
                 .andReturn();
         // 이후 패키지 생성 요청에 사용할 첫 번째 활동 ID를 응답에서 추출한다.
-        long meetingActivityId = extractLong(meetingResult, "activity_id");
+        long meetingActivityId = extractLong(meetingResult, "activityId");
 
         // PDF에 포함될 두 번째 활동(SCHEDULE 유형)을 실제 API를 통해 생성한다.
         // SCHEDULE 유형은 시작일·종료일이 있어 PDF에서 별도 행으로 출력된다.
@@ -239,22 +239,22 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "client_id": 1,
-                                  "po_id": "PO-REPORT-001",
-                                  "activity_date": "2025-04-02",
-                                  "activity_type": "schedule",
-                                  "activity_title": "보고용 일정",
-                                  "activity_schedule_from": "2025-04-02",
-                                  "activity_schedule_to": "2025-04-06"
+                                  "clientId": 1,
+                                  "poId": "PO-REPORT-001",
+                                  "activityDate": "2025-04-02",
+                                  "activityType": "schedule",
+                                  "activityTitle": "보고용 일정",
+                                  "activityScheduleFrom": "2025-04-02",
+                                  "activityScheduleTo": "2025-04-06"
                                 }
                                 """))
                 // 활동 생성 요청이 201 Created로 응답하는지 확인한다.
                 .andExpect(status().isCreated())
                 // 생성된 활동의 ID가 응답 본문에 포함되는지 확인한다.
-                .andExpect(jsonPath("$.activity_id").exists())
+                .andExpect(jsonPath("$.activityId").exists())
                 .andReturn();
         // 이후 패키지 생성 요청에 사용할 두 번째 활동 ID를 응답에서 추출한다.
-        long scheduleActivityId = extractLong(scheduleResult, "activity_id");
+        long scheduleActivityId = extractLong(scheduleResult, "activityId");
 
         // 일정 활동에 시작일·종료일과 PO ID를 추가해 PDF 출력 데이터를 완성한다.
         // 생성 시점에 이 정보를 넣지 않았으므로 수정 API로 보완한다.
@@ -266,14 +266,14 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "activity_date": "2025-04-02",
-                                  "activity_type": "schedule",
-                                  "activity_title": "보고용 일정",
-                                  "activity_content": "PDF 일정 테스트",
-                                  "po_id": "PO-REPORT-001",
-                                  "activity_priority": null,
-                                  "activity_schedule_from": "2025-04-10",
-                                  "activity_schedule_to": "2025-04-11"
+                                  "activityDate": "2025-04-02",
+                                  "activityType": "schedule",
+                                  "activityTitle": "보고용 일정",
+                                  "activityContent": "PDF 일정 테스트",
+                                  "poId": "PO-REPORT-001",
+                                  "activityPriority": null,
+                                  "activityScheduleFrom": "2025-04-10",
+                                  "activityScheduleTo": "2025-04-11"
                                 }
                                 """))
                 // 활동 수정 요청이 200 OK로 응답하는지 확인한다.
@@ -290,20 +290,20 @@ class ActivityPackageIntegrationTest extends IntegrationTestSupport {
                         // activity_ids에 앞서 생성한 두 활동 ID를 동적으로 채운다.
                         .content("""
                                 {
-                                  "package_title": "PDF 보고서 패키지",
-                                  "package_description": "보고서 다운로드 테스트",
-                                  "po_id": "PO-REPORT-001",
-                                  "activity_ids": [%d, %d],
-                                  "viewer_ids": [2, 3]
+                                  "packageTitle": "PDF 보고서 패키지",
+                                  "packageDescription": "보고서 다운로드 테스트",
+                                  "poId": "PO-REPORT-001",
+                                  "activityIds": [%d, %d],
+                                  "viewerIds": [2, 3]
                                 }
                                 """.formatted(meetingActivityId, scheduleActivityId)))
                 // 패키지 생성 요청이 201 Created로 응답하는지 확인한다.
                 .andExpect(status().isCreated())
                 // 생성된 패키지의 ID가 응답 본문에 포함되는지 확인한다.
-                .andExpect(jsonPath("$.package_id").exists())
+                .andExpect(jsonPath("$.packageId").exists())
                 .andReturn();
         // PDF 다운로드 요청 URL에 사용할 package_id를 응답에서 추출한다.
-        long packageId = extractLong(packageResult, "package_id");
+        long packageId = extractLong(packageResult, "packageId");
 
         // ── 핵심 검증: PDF 다운로드 요청 ────────────────────────────────────
         // 생성한 패키지 ID로 PDF 보고서 다운로드 API를 호출한다.

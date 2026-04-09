@@ -39,7 +39,7 @@ public class ContactCommandController {
     })
     @PostMapping("/api/clients/{clientId}/contacts")
     public ResponseEntity<EntityModel<ContactResponse>> createContact(
-            @Parameter(description = "거래처 ID", required = true) @PathVariable Long clientId,
+            @Parameter(description = "거래처 ID", required = true) @PathVariable("clientId") Long clientId,
             @Parameter(description = "요청 사용자 ID", required = true) @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody ContactCreateRequest request) {
         Long userId = Long.parseLong(jwt.getSubject());
@@ -66,7 +66,7 @@ public class ContactCommandController {
     })
     @PutMapping("/api/contacts/{contactId}")
     public ResponseEntity<EntityModel<ContactResponse>> updateContact(
-            @Parameter(description = "연락처 ID", required = true) @PathVariable Long contactId,
+            @Parameter(description = "연락처 ID", required = true) @PathVariable("contactId") Long contactId,
             @Valid @RequestBody ContactUpdateRequest request) {
         Contact contact = contactCommandService.updateContact(
                 contactId,
@@ -85,7 +85,7 @@ public class ContactCommandController {
     })
     @DeleteMapping("/api/contacts/{contactId}")
     public ResponseEntity<Void> deleteContact(
-            @Parameter(description = "연락처 ID", required = true) @PathVariable Long contactId) {
+            @Parameter(description = "연락처 ID", required = true) @PathVariable("contactId") Long contactId) {
         contactCommandService.deleteContact(contactId);
         return ResponseEntity.noContent().build();
     }

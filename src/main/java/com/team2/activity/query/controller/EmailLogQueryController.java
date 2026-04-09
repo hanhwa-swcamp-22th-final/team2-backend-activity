@@ -34,15 +34,15 @@ public class EmailLogQueryController {
     })
     @GetMapping
     public ResponseEntity<PagedResponse<EmailLogResponse>> getEmailLogs(
-            @Parameter(description = "거래처 ID") @RequestParam(required = false) Long clientId,
-            @Parameter(description = "PO ID") @RequestParam(required = false) String poId,
-            @Parameter(description = "메일 발송 상태") @RequestParam(required = false) MailStatus emailStatus,
-            @Parameter(description = "발송자 ID") @RequestParam(required = false) Long emailSenderId,
-            @Parameter(description = "검색 키워드") @RequestParam(required = false) String keyword,
+            @Parameter(description = "거래처 ID") @RequestParam(name = "clientId", required = false) Long clientId,
+            @Parameter(description = "PO ID") @RequestParam(name = "poId", required = false) String poId,
+            @Parameter(description = "메일 발송 상태") @RequestParam(name = "emailStatus", required = false) MailStatus emailStatus,
+            @Parameter(description = "발송자 ID") @RequestParam(name = "emailSenderId", required = false) Long emailSenderId,
+            @Parameter(description = "검색 키워드") @RequestParam(name = "keyword", required = false) String keyword,
             @Parameter(description = "조회 시작일 (yyyy-MM-dd)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
             @Parameter(description = "조회 종료일 (yyyy-MM-dd)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateTo,
-            @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "20") int size) {
+            @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(name = "page", defaultValue = "0") int page,
+            @Parameter(description = "페이지 크기") @RequestParam(name = "size", defaultValue = "20") int size) {
         LocalDateTime dateTimeFrom = dateFrom != null ? dateFrom.atStartOfDay() : null;
         LocalDateTime dateTimeTo = dateTo != null ? dateTo.atTime(23, 59, 59) : null;
         List<EmailLogResponse> responses = emailLogQueryService.getEmailLogsWithFilters(
@@ -59,7 +59,7 @@ public class EmailLogQueryController {
     })
     @GetMapping("/{emailLogId}")
     public ResponseEntity<EmailLogResponse> getEmailLog(
-            @Parameter(description = "이메일 로그 ID", required = true) @PathVariable Long emailLogId) {
+            @Parameter(description = "이메일 로그 ID", required = true) @PathVariable("emailLogId") Long emailLogId) {
         return ResponseEntity.ok(emailLogQueryService.getEmailLog(emailLogId));
     }
 }

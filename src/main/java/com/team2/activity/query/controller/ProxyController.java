@@ -32,7 +32,7 @@ public class ProxyController {
     })
     @GetMapping("/clients")
     public ResponseEntity<List<ClientResponse>> getClients(
-            @Parameter(description = "거래처명 검색 키워드") @RequestParam(required = false) String keyword) {
+            @Parameter(description = "거래처명 검색 키워드") @RequestParam(name = "keyword", required = false) String keyword) {
         try {
             List<ClientResponse> clients = masterFeignClient.getClients();
             if (keyword != null && !keyword.isBlank()) {

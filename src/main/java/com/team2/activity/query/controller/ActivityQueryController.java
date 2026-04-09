@@ -33,15 +33,15 @@ public class ActivityQueryController {
     })
     @GetMapping
     public ResponseEntity<PagedResponse<ActivityResponse>> getActivities(
-            @Parameter(description = "거래처 ID") @RequestParam(required = false) Long clientId,
-            @Parameter(description = "PO ID") @RequestParam(required = false) String poId,
-            @Parameter(description = "활동 유형") @RequestParam(required = false) ActivityType activityType,
-            @Parameter(description = "작성자 ID") @RequestParam(required = false) Long activityAuthorId,
+            @Parameter(description = "거래처 ID") @RequestParam(name = "clientId", required = false) Long clientId,
+            @Parameter(description = "PO ID") @RequestParam(name = "poId", required = false) String poId,
+            @Parameter(description = "활동 유형") @RequestParam(name = "activityType", required = false) ActivityType activityType,
+            @Parameter(description = "작성자 ID") @RequestParam(name = "activityAuthorId", required = false) Long activityAuthorId,
             @Parameter(description = "활동 시작일 (yyyy-MM-dd)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate activityDateFrom,
             @Parameter(description = "활동 종료일 (yyyy-MM-dd)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate activityDateTo,
-            @Parameter(description = "검색 키워드") @RequestParam(required = false) String keyword,
-            @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "20") int size) {
+            @Parameter(description = "검색 키워드") @RequestParam(name = "keyword", required = false) String keyword,
+            @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(name = "page", defaultValue = "0") int page,
+            @Parameter(description = "페이지 크기") @RequestParam(name = "size", defaultValue = "20") int size) {
         List<ActivityResponse> activities = activityQueryService.getActivitiesWithFilters(
                 clientId, poId, activityType, activityAuthorId, activityDateFrom, activityDateTo, keyword, page, size);
         long totalElements = activityQueryService.countWithFilters(
@@ -56,7 +56,7 @@ public class ActivityQueryController {
     })
     @GetMapping("/{activityId}")
     public ResponseEntity<ActivityResponse> getActivity(
-            @Parameter(description = "활동 ID", required = true) @PathVariable Long activityId) {
+            @Parameter(description = "활동 ID", required = true) @PathVariable("activityId") Long activityId) {
         return ResponseEntity.ok(activityQueryService.getActivity(activityId));
     }
 }

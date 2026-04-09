@@ -91,21 +91,21 @@ class EmailLogCommandControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "client_id": 1,
-                                    "po_id": "PO-001",
-                                    "email_title": "견적서 발송",
-                                    "email_recipient_name": "김고객",
-                                    "email_recipient_email": "client@example.com",
-                                    "doc_types": ["PI", "CI"]
+                                    "clientId": 1,
+                                    "poId": "PO-001",
+                                    "emailTitle": "견적서 발송",
+                                    "emailRecipientName": "김고객",
+                                    "emailRecipientEmail": "client@example.com",
+                                    "docTypes": ["PI", "CI"]
                                 }
                                 """))
                 .andExpect(status().isCreated())
                 // 응답 본문에 email_log_id가 포함되는지 확인한다.
-                .andExpect(jsonPath("$.email_log_id").exists())
+                .andExpect(jsonPath("$.emailLogId").exists())
                 // 응답 본문에 email_status가 SENT로 내려오는지 확인한다.
-                .andExpect(jsonPath("$.email_status").value("sent"))
+                .andExpect(jsonPath("$.emailStatus").value("sent"))
                 // 응답 본문에 email_sender_id가 포함되는지 확인한다.
-                .andExpect(jsonPath("$.email_sender_id").exists());
+                .andExpect(jsonPath("$.emailSenderId").exists());
 
         // 헤더의 사용자 ID가 senderId로 매핑됐는지 검증한다.
         verify(emailLogCommandService).createEmailLog(argThat(e -> Long.valueOf(10L).equals(e.getEmailSenderId())));
@@ -136,9 +136,9 @@ class EmailLogCommandControllerTest {
                         .with(csrf()))
                 .andExpect(status().isOk())
                 // 응답 본문에 email_log_id가 포함되는지 확인한다.
-                .andExpect(jsonPath("$.email_log_id").exists())
+                .andExpect(jsonPath("$.emailLogId").exists())
                 // 응답 본문에 email_status가 SENT로 내려오는지 확인한다.
-                .andExpect(jsonPath("$.email_status").value("sent"));
+                .andExpect(jsonPath("$.emailStatus").value("sent"));
     }
 
     @Test

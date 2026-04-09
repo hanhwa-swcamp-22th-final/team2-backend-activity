@@ -77,7 +77,7 @@ public class EmailLogCommandController {
     @PostMapping("/{emailLogId}/resend")
     public ResponseEntity<EntityModel<EmailLogResponse>> resend(
             @Parameter(description = "요청 사용자 ID", required = true) @AuthenticationPrincipal Jwt jwt,
-            @PathVariable Long emailLogId) {
+            @PathVariable("emailLogId") Long emailLogId) {
         Long userId = Long.parseLong(jwt.getSubject());
         EmailLogResponse response = EmailLogResponse.from(emailLogCommandService.resend(emailLogId, userId));
         return ResponseEntity.ok(EntityModel.of(response,

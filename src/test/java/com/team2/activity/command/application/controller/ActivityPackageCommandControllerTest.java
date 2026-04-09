@@ -81,15 +81,15 @@ class ActivityPackageCommandControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "package_title": "주간 패키지",
-                                    "po_id": "PO-001",
-                                    "activity_ids": [1, 2, 3],
-                                    "viewer_ids": [5, 6]
+                                    "packageTitle": "주간 패키지",
+                                    "poId": "PO-001",
+                                    "activityIds": [1, 2, 3],
+                                    "viewerIds": [5, 6]
                                 }
                                 """))
                 .andExpect(status().isCreated())
                 // 응답 본문에 package_id가 포함되는지 확인한다.
-                .andExpect(jsonPath("$.package_id").exists());
+                .andExpect(jsonPath("$.packageId").exists());
 
         // 헤더의 사용자 ID가 creatorId로 매핑됐는지 검증한다.
         verify(activityPackageCommandService).createPackage(argThat(p -> Long.valueOf(10L).equals(p.getCreatorId())));
@@ -120,14 +120,14 @@ class ActivityPackageCommandControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "package_title": "월간 패키지",
-                                    "activity_ids": [1, 2],
-                                    "viewer_ids": [5]
+                                    "packageTitle": "월간 패키지",
+                                    "activityIds": [1, 2],
+                                    "viewerIds": [5]
                                 }
                                 """))
                 .andExpect(status().isOk())
                 // 응답 본문에 package_id가 포함되는지 확인한다.
-                .andExpect(jsonPath("$.package_id").exists());
+                .andExpect(jsonPath("$.packageId").exists());
     }
 
     @Test
@@ -143,9 +143,9 @@ class ActivityPackageCommandControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "package_title": "월간 패키지",
-                                    "activity_ids": [1],
-                                    "viewer_ids": [5]
+                                    "packageTitle": "월간 패키지",
+                                    "activityIds": [1],
+                                    "viewerIds": [5]
                                 }
                                 """))
                 .andExpect(status().isNotFound());

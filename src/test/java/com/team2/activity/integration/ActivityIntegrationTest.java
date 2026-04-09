@@ -35,34 +35,34 @@ class ActivityIntegrationTest extends IntegrationTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "client_id": 1,
-                                  "po_id": "PO-2025-001",
-                                  "activity_date": "2025-04-01",
-                                  "activity_type": "meeting",
-                                  "activity_title": "초기 미팅",
-                                  "activity_schedule_from": "2025-04-01",
-                                  "activity_schedule_to": "2025-04-05"
+                                  "clientId": 1,
+                                  "poId": "PO-2025-001",
+                                  "activityDate": "2025-04-01",
+                                  "activityType": "meeting",
+                                  "activityTitle": "초기 미팅",
+                                  "activityScheduleFrom": "2025-04-01",
+                                  "activityScheduleTo": "2025-04-05"
                                 }
                                 """))
                 .andExpect(status().isCreated())
                 // 생성 응답에 activity_id가 포함되는지 확인한다.
-                .andExpect(jsonPath("$.activity_id").exists())
+                .andExpect(jsonPath("$.activityId").exists())
                 // 생성 응답에 작성자 ID가 헤더 값으로 반영됐는지 확인한다.
-                .andExpect(jsonPath("$.activity_author_id").value(10))
+                .andExpect(jsonPath("$.activityAuthorId").value(10))
                 .andReturn();
 
         // 이후 요청에 사용할 activity_id를 응답에서 읽어 온다.
-        long activityId = extractLong(createResult, "activity_id");
+        long activityId = extractLong(createResult, "activityId");
 
         // 생성된 활동이 상세 조회 API에서 그대로 조회되는지 확인한다.
         mockMvc.perform(get("/api/activities/{activityId}", activityId))
                 .andExpect(status().isOk())
                 // 상세 응답의 activity_id가 방금 생성한 ID와 같은지 확인한다.
-                .andExpect(jsonPath("$.activity_id").value(activityId))
+                .andExpect(jsonPath("$.activityId").value(activityId))
                 // 상세 응답의 활동 타입이 생성 값과 같은지 확인한다.
-                .andExpect(jsonPath("$.activity_type").value("meeting"))
+                .andExpect(jsonPath("$.activityType").value("meeting"))
                 // 상세 응답의 제목이 생성 값과 같은지 확인한다.
-                .andExpect(jsonPath("$.activity_title").value("초기 미팅"));
+                .andExpect(jsonPath("$.activityTitle").value("초기 미팅"));
 
         // 활동 수정 요청이 실제 API 계층을 통해 반영되는지 확인한다.
         mockMvc.perform(put("/api/activities/{activityId}", activityId)
@@ -70,27 +70,27 @@ class ActivityIntegrationTest extends IntegrationTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "activity_date": "2025-04-05",
-                                  "activity_type": "issue",
-                                  "activity_title": "긴급 이슈",
-                                  "activity_content": "우선 처리 필요",
-                                  "po_id": "PO-2025-001",
-                                  "activity_priority": "high",
-                                  "activity_schedule_from": "2025-04-06",
-                                  "activity_schedule_to": "2025-04-07"
+                                  "activityDate": "2025-04-05",
+                                  "activityType": "issue",
+                                  "activityTitle": "긴급 이슈",
+                                  "activityContent": "우선 처리 필요",
+                                  "poId": "PO-2025-001",
+                                  "activityPriority": "high",
+                                  "activityScheduleFrom": "2025-04-06",
+                                  "activityScheduleTo": "2025-04-07"
                                 }
                                 """))
                 .andExpect(status().isOk())
                 // 수정 응답의 activity_id가 기존 ID와 같은지 확인한다.
-                .andExpect(jsonPath("$.activity_id").value(activityId))
+                .andExpect(jsonPath("$.activityId").value(activityId))
                 // 수정 응답의 작성자 ID가 테스트 JWT subject 값과 같은지 확인한다.
-                .andExpect(jsonPath("$.activity_author_id").value(10))
+                .andExpect(jsonPath("$.activityAuthorId").value(10))
                 // 수정 응답의 활동 타입이 issue로 바뀌었는지 확인한다.
-                .andExpect(jsonPath("$.activity_type").value("issue"))
+                .andExpect(jsonPath("$.activityType").value("issue"))
                 // 수정 응답의 제목이 새 값으로 바뀌었는지 확인한다.
-                .andExpect(jsonPath("$.activity_title").value("긴급 이슈"))
+                .andExpect(jsonPath("$.activityTitle").value("긴급 이슈"))
                 // 수정 응답의 우선순위가 high로 바뀌었는지 확인한다.
-                .andExpect(jsonPath("$.activity_priority").value("high"));
+                .andExpect(jsonPath("$.activityPriority").value("high"));
 
         // 영속성 컨텍스트 변경사항을 DB에 즉시 반영한다.
         activityRepository.flush();
@@ -101,9 +101,9 @@ class ActivityIntegrationTest extends IntegrationTestSupport {
                 // @Transactional 테스트 내 유일한 삽입임을 검증해 [0] 인덱스 가정을 보장한다.
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 // 목록 응답 첫 원소의 activity_id가 수정한 활동 ID와 같은지 확인한다.
-                .andExpect(jsonPath("$.content[0].activity_id").value(activityId))
+                .andExpect(jsonPath("$.content[0].activityId").value(activityId))
                 // 목록 응답 첫 원소의 제목이 수정 값으로 바뀌었는지 확인한다.
-                .andExpect(jsonPath("$.content[0].activity_title").value("긴급 이슈"));
+                .andExpect(jsonPath("$.content[0].activityTitle").value("긴급 이슈"));
 
         // 삭제 요청이 정상적으로 처리되는지 확인한다.
         mockMvc.perform(delete("/api/activities/{activityId}", activityId).with(csrf()))
@@ -154,9 +154,9 @@ class ActivityIntegrationTest extends IntegrationTestSupport {
                         // 유효한 수정 요청 본문을 전송해 유효성 검증이 아닌 존재 여부에서 실패하도록 한다.
                         .content("""
                                 {
-                                  "activity_date": "2025-04-01",
-                                  "activity_type": "meeting",
-                                  "activity_title": "없는 활동 수정"
+                                  "activityDate": "2025-04-01",
+                                  "activityType": "meeting",
+                                  "activityTitle": "없는 활동 수정"
                                 }
                                 """))
                 // 활동 없음 예외가 404로 변환되는지 확인한다.

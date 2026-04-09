@@ -39,23 +39,23 @@ class ContactIntegrationTest extends IntegrationTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "contact_name": "김철수",
-                                  "contact_position": "과장",
-                                  "contact_email": "kim@example.com",
+                                  "contactName": "김철수",
+                                  "contactPosition": "과장",
+                                  "contactEmail": "kim@example.com",
                                   "contact_tel": "010-1234-5678"
                                 }
                                 """))
                 .andExpect(status().isCreated())
                 // 생성 응답에 contact_id가 포함되는지 확인한다.
-                .andExpect(jsonPath("$.contact_id").exists())
+                .andExpect(jsonPath("$.contactId").exists())
                 // 생성 응답에 client_id가 경로 값으로 반영됐는지 확인한다.
-                .andExpect(jsonPath("$.client_id").value(1))
+                .andExpect(jsonPath("$.clientId").value(1))
                 // 생성 응답에 writer_id가 헤더 값으로 반영됐는지 확인한다.
-                .andExpect(jsonPath("$.writer_id").value(10))
+                .andExpect(jsonPath("$.writerId").value(10))
                 .andReturn();
 
         // 후속 요청에서 사용할 contact_id를 응답에서 읽어 온다.
-        long contactId = extractLong(createResult, "contact_id");
+        long contactId = extractLong(createResult, "contactId");
 
         // JPA INSERT를 MyBatis SELECT 전에 DB에 반영한다.
         contactRepository.flush();
@@ -63,8 +63,8 @@ class ContactIntegrationTest extends IntegrationTestSupport {
         // 생성된 연락처가 거래처별 목록 조회에 노출되는지 확인한다.
         mockMvc.perform(get("/api/clients/{clientId}/contacts", 1L))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].contact_id").value(contactId))
-                .andExpect(jsonPath("$[0].contact_name").value("김철수"));
+                .andExpect(jsonPath("$[0].contactId").value(contactId))
+                .andExpect(jsonPath("$[0].contactName").value("김철수"));
 
         // 수정 요청을 통해 연락처 정보가 갱신되는지 확인한다.
         mockMvc.perform(put("/api/contacts/{contactId}", contactId)
@@ -72,19 +72,19 @@ class ContactIntegrationTest extends IntegrationTestSupport {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                  "contact_name": "박영희",
-                                  "contact_position": "부장",
-                                  "contact_email": "park@example.com",
+                                  "contactName": "박영희",
+                                  "contactPosition": "부장",
+                                  "contactEmail": "park@example.com",
                                   "contact_tel": "010-9999-8888"
                                 }
                                 """))
                 .andExpect(status().isOk())
                 // 수정 응답의 contact_id가 기존 ID와 같은지 확인한다.
-                .andExpect(jsonPath("$.contact_id").value(contactId))
+                .andExpect(jsonPath("$.contactId").value(contactId))
                 // 수정 응답의 이름이 새 값으로 바뀌었는지 확인한다.
-                .andExpect(jsonPath("$.contact_name").value("박영희"))
+                .andExpect(jsonPath("$.contactName").value("박영희"))
                 // 수정 응답의 직책이 새 값으로 바뀌었는지 확인한다.
-                .andExpect(jsonPath("$.contact_position").value("부장"));
+                .andExpect(jsonPath("$.contactPosition").value("부장"));
 
         // 변경된 연락처 상태를 DB에 즉시 반영한다.
         contactRepository.flush();
@@ -94,8 +94,8 @@ class ContactIntegrationTest extends IntegrationTestSupport {
         // 공통 목록 API에서도 수정된 이메일이 보이는지 확인한다.
         mockMvc.perform(get("/api/contacts").param("clientId", "1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[0].contact_id").value(contactId))
-                .andExpect(jsonPath("$.content[0].contact_email").value("park@example.com"));
+                .andExpect(jsonPath("$.content[0].contactId").value(contactId))
+                .andExpect(jsonPath("$.content[0].contactEmail").value("park@example.com"));
 
         // 삭제 요청이 정상 처리되는지 확인한다.
         mockMvc.perform(delete("/api/contacts/{contactId}", contactId).with(csrf()))
@@ -119,8 +119,8 @@ class ContactIntegrationTest extends IntegrationTestSupport {
                         // contact_name을 포함하지 않는 요청을 전송한다.
                         .content("""
                                 {
-                                  "contact_position": "과장",
-                                  "contact_email": "kim@example.com"
+                                  "contactPosition": "과장",
+                                  "contactEmail": "kim@example.com"
                                 }
                                 """))
                 // 유효성 검증 실패로 400 Bad Request가 반환되는지 확인한다.
@@ -139,7 +139,7 @@ class ContactIntegrationTest extends IntegrationTestSupport {
                         // 유효한 수정 요청 본문을 전송해 존재 여부에서 실패하도록 한다.
                         .content("""
                                 {
-                                  "contact_name": "없는 담당자"
+                                  "contactName": "없는 담당자"
                                 }
                                 """))
                 // 연락처 없음 예외가 404로 변환되는지 확인한다.

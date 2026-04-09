@@ -111,10 +111,10 @@ class ActivityPackageQueryControllerTest {
 
         mockMvc.perform(get("/api/activity-packages/1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.package_id").exists())
-                .andExpect(jsonPath("$.package_title").exists())
-                .andExpect(jsonPath("$.activity_ids").isArray())
-                .andExpect(jsonPath("$.viewer_ids").isArray());
+                .andExpect(jsonPath("$.packageId").exists())
+                .andExpect(jsonPath("$.packageTitle").exists())
+                .andExpect(jsonPath("$.activityIds").isArray())
+                .andExpect(jsonPath("$.viewerIds").isArray());
     }
 
     @Test

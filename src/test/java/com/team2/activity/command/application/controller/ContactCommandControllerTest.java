@@ -85,15 +85,15 @@ class ContactCommandControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "contact_name": "김담당",
-                                    "contact_position": "과장",
-                                    "contact_email": "kim@example.com",
+                                    "contactName": "김담당",
+                                    "contactPosition": "과장",
+                                    "contactEmail": "kim@example.com",
                                     "contact_tel": "010-1234-5678"
                                 }
                                 """))
                 .andExpect(status().isCreated())
                 // 응답 본문에 contact_id가 포함되는지 확인한다.
-                .andExpect(jsonPath("$.contact_id").exists());
+                .andExpect(jsonPath("$.contactId").exists());
 
         // 헤더의 사용자 ID가 writerId로 매핑됐는지 검증한다.
         verify(contactCommandService).createContact(argThat(c -> Long.valueOf(10L).equals(c.getWriterId())));
@@ -125,15 +125,15 @@ class ContactCommandControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "contact_name": "이담당",
-                                    "contact_position": "부장",
-                                    "contact_email": "lee@example.com",
+                                    "contactName": "이담당",
+                                    "contactPosition": "부장",
+                                    "contactEmail": "lee@example.com",
                                     "contact_tel": "010-9999-0000"
                                 }
                                 """))
                 .andExpect(status().isOk())
                 // 응답 본문에 contact_id가 포함되는지 확인한다.
-                .andExpect(jsonPath("$.contact_id").exists());
+                .andExpect(jsonPath("$.contactId").exists());
     }
 
     @Test
@@ -149,9 +149,9 @@ class ContactCommandControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "contact_name": "이담당",
-                                    "contact_position": "부장",
-                                    "contact_email": "lee@example.com",
+                                    "contactName": "이담당",
+                                    "contactPosition": "부장",
+                                    "contactEmail": "lee@example.com",
                                     "contact_tel": "010-9999-0000"
                                 }
                                 """))

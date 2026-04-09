@@ -59,7 +59,7 @@ public class ActivityPackageCommandController {
     })
     @PutMapping("/{packageId}")
     public ResponseEntity<EntityModel<ActivityPackageResponse>> updatePackage(
-            @Parameter(description = "패키지 ID", required = true) @PathVariable Long packageId,
+            @Parameter(description = "패키지 ID", required = true) @PathVariable("packageId") Long packageId,
             @Valid @RequestBody ActivityPackageUpdateRequest request) {
         ActivityPackage updated = activityPackageCommandService.updateAll(packageId, request);
         return ResponseEntity.ok(EntityModel.of(ActivityPackageResponse.from(updated),
@@ -74,7 +74,7 @@ public class ActivityPackageCommandController {
     })
     @DeleteMapping("/{packageId}")
     public ResponseEntity<Void> deletePackage(
-            @Parameter(description = "패키지 ID", required = true) @PathVariable Long packageId) {
+            @Parameter(description = "패키지 ID", required = true) @PathVariable("packageId") Long packageId) {
         activityPackageCommandService.deletePackage(packageId);
         return ResponseEntity.noContent().build();
     }

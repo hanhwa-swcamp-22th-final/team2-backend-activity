@@ -40,10 +40,10 @@ public class ActivityPackageQueryController {
     @GetMapping
     public ResponseEntity<PagedResponse<ActivityPackageResponse>> getPackages(
             @Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt,
-            @Parameter(description = "생성자 ID") @RequestParam(required = false) Long creatorId,
-            @Parameter(description = "PO ID") @RequestParam(required = false) String poId,
-            @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(defaultValue = "0") int page,
-            @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "20") int size) {
+            @Parameter(description = "생성자 ID") @RequestParam(name = "creatorId", required = false) Long creatorId,
+            @Parameter(description = "PO ID") @RequestParam(name = "poId", required = false) String poId,
+            @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(name = "page", defaultValue = "0") int page,
+            @Parameter(description = "페이지 크기") @RequestParam(name = "size", defaultValue = "20") int size) {
         Long userId = Long.parseLong(jwt.getSubject());
         List<ActivityPackageResponse> responses = activityPackageQueryService.getPackagesByViewerUserId(userId, creatorId, poId);
         return ResponseEntity.ok(PagedResponse.of(responses, page, size));
@@ -56,7 +56,7 @@ public class ActivityPackageQueryController {
     })
     @GetMapping("/{packageId}")
     public ResponseEntity<ActivityPackageResponse> getPackage(
-            @Parameter(description = "패키지 ID", required = true) @PathVariable Long packageId) {
+            @Parameter(description = "패키지 ID", required = true) @PathVariable("packageId") Long packageId) {
         ActivityPackage activityPackage = activityPackageQueryService.getPackage(packageId);
         return ResponseEntity.ok(activityPackageQueryService.enrichPackage(activityPackage));
     }
@@ -69,7 +69,7 @@ public class ActivityPackageQueryController {
     })
     @GetMapping(value = "/{packageId}/report", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> downloadPackageReport(
-            @Parameter(description = "패키지 ID", required = true) @PathVariable Long packageId,
+            @Parameter(description = "패키지 ID", required = true) @PathVariable("packageId") Long packageId,
             @Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt) {
         Long userId = Long.parseLong(jwt.getSubject());
         ActivityPackage activityPackage = activityPackageQueryService.getPackage(packageId);

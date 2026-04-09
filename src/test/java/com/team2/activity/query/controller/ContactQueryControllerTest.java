@@ -60,7 +60,7 @@ class ContactQueryControllerTest {
         mockMvc.perform(get("/api/contacts"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content[0].contact_id").exists());
+                .andExpect(jsonPath("$.content[0].contactId").exists());
     }
 
     @Test
@@ -82,6 +82,6 @@ class ContactQueryControllerTest {
 
         mockMvc.perform(get("/api/clients/1/contacts"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].contact_id").exists());
+                .andExpect(jsonPath("$[0].contactId").exists());
     }
 }

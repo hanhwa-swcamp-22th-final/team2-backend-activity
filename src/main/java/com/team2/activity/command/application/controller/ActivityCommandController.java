@@ -59,7 +59,7 @@ public class ActivityCommandController {
     })
     @PutMapping("/{activityId}")
     public ResponseEntity<EntityModel<ActivityResponse>> updateActivity(
-            @Parameter(description = "활동기록 ID", required = true) @PathVariable Long activityId,
+            @Parameter(description = "활동기록 ID", required = true) @PathVariable("activityId") Long activityId,
             @Parameter(description = "요청 사용자 ID", required = true) @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody ActivityUpdateRequest request) {
         Long userId = Long.parseLong(jwt.getSubject());
@@ -76,7 +76,7 @@ public class ActivityCommandController {
     })
     @DeleteMapping("/{activityId}")
     public ResponseEntity<Void> deleteActivity(
-            @Parameter(description = "활동기록 ID", required = true) @PathVariable Long activityId) {
+            @Parameter(description = "활동기록 ID", required = true) @PathVariable("activityId") Long activityId) {
         activityCommandService.deleteActivity(activityId);
         return ResponseEntity.noContent().build();
     }

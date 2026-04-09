@@ -77,7 +77,7 @@ class ActivityQueryControllerTest {
         mockMvc.perform(get("/api/activities"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.total_elements").value(1));
+                .andExpect(jsonPath("$.totalElements").value(1));
     }
 
     @Test
@@ -106,13 +106,13 @@ class ActivityQueryControllerTest {
         mockMvc.perform(get("/api/activities/1"))
                 .andExpect(status().isOk())
                 // 상세 응답에 activity_id가 포함되는지 확인한다.
-                .andExpect(jsonPath("$.activity_id").exists())
+                .andExpect(jsonPath("$.activityId").exists())
                 // 상세 응답에 activity_type이 포함되는지 확인한다.
-                .andExpect(jsonPath("$.activity_type").exists())
+                .andExpect(jsonPath("$.activityType").exists())
                 // 상세 응답에 activity_title이 포함되는지 확인한다.
-                .andExpect(jsonPath("$.activity_title").exists())
+                .andExpect(jsonPath("$.activityTitle").exists())
                 // 상세 응답에 activity_content가 포함되는지 확인한다.
-                .andExpect(jsonPath("$.activity_content").exists());
+                .andExpect(jsonPath("$.activityContent").exists());
     }
 
     @Test

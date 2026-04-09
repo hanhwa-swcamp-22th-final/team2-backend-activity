@@ -91,18 +91,18 @@ class ActivityCommandControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "client_id": 1,
-                                    "po_id": "PO-2025-001",
-                                    "activity_date": "2025-04-01",
-                                    "activity_type": "meeting",
-                                    "activity_title": "초기 미팅",
-                                    "activity_schedule_from": "2025-04-01",
-                                    "activity_schedule_to": "2025-04-05"
+                                    "clientId": 1,
+                                    "poId": "PO-2025-001",
+                                    "activityDate": "2025-04-01",
+                                    "activityType": "meeting",
+                                    "activityTitle": "초기 미팅",
+                                    "activityScheduleFrom": "2025-04-01",
+                                    "activityScheduleTo": "2025-04-05"
                                 }
                                 """))
                 .andExpect(status().isCreated())
                 // 응답 본문에 activity_id가 포함되는지 확인한다.
-                .andExpect(jsonPath("$.activity_id").exists());
+                .andExpect(jsonPath("$.activityId").exists());
 
         // 헤더의 사용자 ID가 작성자 ID로 매핑됐는지 검증한다.
         verify(activityCommandService).createActivity(argThat(a -> Long.valueOf(10L).equals(a.getActivityAuthorId())));
@@ -118,7 +118,7 @@ class ActivityCommandControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "activity_title": "제목만 있음"
+                                    "activityTitle": "제목만 있음"
                                 }
                                 """))
                 .andExpect(status().isBadRequest());
@@ -138,19 +138,19 @@ class ActivityCommandControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "activity_date": "2025-04-01",
-                                    "activity_type": "issue",
-                                    "activity_title": "긴급 이슈",
-                                    "activity_content": null,
-                                    "po_id": null,
-                                    "activity_priority": null,
-                                    "activity_schedule_from": null,
-                                    "activity_schedule_to": null
+                                    "activityDate": "2025-04-01",
+                                    "activityType": "issue",
+                                    "activityTitle": "긴급 이슈",
+                                    "activityContent": null,
+                                    "poId": null,
+                                    "activityPriority": null,
+                                    "activityScheduleFrom": null,
+                                    "activityScheduleTo": null
                                 }
                                 """))
                 .andExpect(status().isOk())
                 // 응답 본문에 activity_id가 포함되는지 확인한다.
-                .andExpect(jsonPath("$.activity_id").exists());
+                .andExpect(jsonPath("$.activityId").exists());
     }
 
     @Test
@@ -167,14 +167,14 @@ class ActivityCommandControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("""
                                 {
-                                    "activity_date": "2025-04-01",
-                                    "activity_type": "issue",
-                                    "activity_title": "긴급 이슈",
-                                    "activity_content": null,
-                                    "po_id": null,
-                                    "activity_priority": null,
-                                    "activity_schedule_from": null,
-                                    "activity_schedule_to": null
+                                    "activityDate": "2025-04-01",
+                                    "activityType": "issue",
+                                    "activityTitle": "긴급 이슈",
+                                    "activityContent": null,
+                                    "poId": null,
+                                    "activityPriority": null,
+                                    "activityScheduleFrom": null,
+                                    "activityScheduleTo": null
                                 }
                                 """))
                 .andExpect(status().isNotFound());

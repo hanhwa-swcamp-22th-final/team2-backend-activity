@@ -74,11 +74,11 @@ class EmailLogQueryControllerTest {
                 // content 필드가 배열인지 확인한다.
                 .andExpect(jsonPath("$.content").isArray())
                 // total_elements 필드가 존재하는지 확인한다.
-                .andExpect(jsonPath("$.total_elements").exists())
+                .andExpect(jsonPath("$.totalElements").exists())
                 // total_pages 필드가 존재하는지 확인한다.
-                .andExpect(jsonPath("$.total_pages").exists())
+                .andExpect(jsonPath("$.totalPages").exists())
                 // current_page 필드가 존재하는지 확인한다.
-                .andExpect(jsonPath("$.current_page").exists());
+                .andExpect(jsonPath("$.currentPage").exists());
     }
 
     @Test
@@ -120,12 +120,12 @@ class EmailLogQueryControllerTest {
         mockMvc.perform(get("/api/email-logs/1"))
                 .andExpect(status().isOk())
                 // 상세 응답에 email_log_id가 포함되는지 확인한다.
-                .andExpect(jsonPath("$.email_log_id").exists())
+                .andExpect(jsonPath("$.emailLogId").exists())
                 // 상세 응답에 email_status가 포함되는지 확인한다.
-                .andExpect(jsonPath("$.email_status").exists())
+                .andExpect(jsonPath("$.emailStatus").exists())
                 // 상세 응답에 doc_types 배열이 포함되는지 확인한다.
                 // EmailLogResponse는 attachments를 노출하지 않으므로 doc_types까지만 검증한다.
-                .andExpect(jsonPath("$.doc_types").isArray());
+                .andExpect(jsonPath("$.docTypes").isArray());
     }
 
     @Test
