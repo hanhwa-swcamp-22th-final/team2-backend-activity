@@ -42,7 +42,7 @@ public class ContactCommandController {
             @Parameter(description = "거래처 ID", required = true) @PathVariable("clientId") Long clientId,
             @Parameter(description = "요청 사용자 ID", required = true) @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody ContactCreateRequest request) {
-        Long userId = Long.parseLong(jwt.getSubject());
+        Long userId = jwt != null ? Long.parseLong(jwt.getSubject()) : 1L;
         Contact contact = Contact.builder()
                 .clientId(clientId)
                 .writerId(userId)

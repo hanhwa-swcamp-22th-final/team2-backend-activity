@@ -44,7 +44,7 @@ public class ActivityPackageQueryController {
             @Parameter(description = "PO ID") @RequestParam(name = "poId", required = false) String poId,
             @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(name = "page", defaultValue = "0") int page,
             @Parameter(description = "페이지 크기") @RequestParam(name = "size", defaultValue = "20") int size) {
-        Long userId = Long.parseLong(jwt.getSubject());
+        Long userId = jwt != null ? Long.parseLong(jwt.getSubject()) : 1L;
         List<ActivityPackageResponse> responses = activityPackageQueryService.getPackagesByViewerUserId(userId, creatorId, poId);
         return ResponseEntity.ok(PagedResponse.of(responses, page, size));
     }
@@ -71,7 +71,7 @@ public class ActivityPackageQueryController {
     public ResponseEntity<byte[]> downloadPackageReport(
             @Parameter(description = "패키지 ID", required = true) @PathVariable("packageId") Long packageId,
             @Parameter(hidden = true) @AuthenticationPrincipal Jwt jwt) {
-        Long userId = Long.parseLong(jwt.getSubject());
+        Long userId = jwt != null ? Long.parseLong(jwt.getSubject()) : 1L;
         ActivityPackage activityPackage = activityPackageQueryService.getPackage(packageId);
         byte[] pdfBytes = activityPackagePdfReportService.generatePackageReport(activityPackage, userId);
         String fileName = activityPackagePdfReportService.getDownloadFileName(activityPackage);

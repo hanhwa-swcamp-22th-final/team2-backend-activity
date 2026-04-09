@@ -42,7 +42,7 @@ public class EmailLogCommandController {
     public ResponseEntity<EntityModel<EmailLogResponse>> createEmailLog(
             @Parameter(description = "요청 사용자 ID", required = true) @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody EmailLogCreateRequest request) {
-        Long userId = Long.parseLong(jwt.getSubject());
+        Long userId = jwt != null ? Long.parseLong(jwt.getSubject()) : 1L;
         EmailLog emailLog = emailLogCommandService.createEmailLog(request.toEntity(userId));
         EntityModel<EmailLogResponse> model = EntityModel.of(EmailLogResponse.from(emailLog),
                 linkTo(methodOn(EmailLogQueryController.class).getEmailLog(emailLog.getEmailLogId())).withSelfRel(),
@@ -78,7 +78,7 @@ public class EmailLogCommandController {
     public ResponseEntity<EntityModel<EmailLogResponse>> resend(
             @Parameter(description = "요청 사용자 ID", required = true) @AuthenticationPrincipal Jwt jwt,
             @PathVariable("emailLogId") Long emailLogId) {
-        Long userId = Long.parseLong(jwt.getSubject());
+        Long userId = jwt != null ? Long.parseLong(jwt.getSubject()) : 1L;
         EmailLogResponse response = EmailLogResponse.from(emailLogCommandService.resend(emailLogId, userId));
         return ResponseEntity.ok(EntityModel.of(response,
                 linkTo(methodOn(EmailLogQueryController.class).getEmailLog(emailLogId)).withSelfRel(),

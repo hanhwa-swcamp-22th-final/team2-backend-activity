@@ -42,7 +42,7 @@ public class ActivityPackageCommandController {
     public ResponseEntity<EntityModel<ActivityPackageResponse>> createPackage(
             @Parameter(description = "요청 사용자 ID", required = true) @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody ActivityPackageCreateRequest request) {
-        Long userId = Long.parseLong(jwt.getSubject());
+        Long userId = jwt != null ? Long.parseLong(jwt.getSubject()) : 1L;
         ActivityPackage saved = activityPackageCommandService.createPackage(request.toEntity(userId));
         EntityModel<ActivityPackageResponse> model = EntityModel.of(ActivityPackageResponse.from(saved),
                 linkTo(methodOn(ActivityPackageQueryController.class).getPackage(saved.getPackageId())).withSelfRel(),
