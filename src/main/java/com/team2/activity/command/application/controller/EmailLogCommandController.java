@@ -52,11 +52,14 @@ public class EmailLogCommandController {
     }
 
     // document 서비스가 메일 발송 후 결과를 activity 서비스에 기록하는 내부 전용 엔드포인트다.
+    // X-Internal-Token 헤더로 InternalApiTokenFilter 가 별도 검증한다 (JWT 인증 주체 없음).
+    // 따라서 클래스 레벨의 @PreAuthorize("hasAnyRole('ADMIN','SALES')") 를 우회해야 한다.
     @Operation(summary = "내부 이메일 로그 생성", description = "Documents 서비스에서 이메일 발송 후 이력을 저장한다")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "이메일 로그 저장 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터")
     })
+    @PreAuthorize("permitAll()")
     @PostMapping("/internal")
     public ResponseEntity<Void> createEmailLogInternal(
             @RequestBody EmailLogInternalRequest request) {
