@@ -52,6 +52,8 @@ public class ActivityPackagePdfReportService {
     // Linux 환경에서 자주 사용하는 Noto CJK 폰트 후보 경로다.
     private static final String LINUX_NOTO_FONT_PATH = "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc";
 
+    // 패키지 조회를 위해 QueryService를 재사용한다.
+    private final ActivityPackageQueryService activityPackageQueryService;
     // PKG에 포함된 Activity 상세 조회 로직을 재사용한다.
     private final ActivityQueryService activityQueryService;
     // 작성자 이름 조회를 위해 인증 서비스 클라이언트를 재사용한다.
@@ -63,8 +65,19 @@ public class ActivityPackagePdfReportService {
     @Value("${report.pdf.font-path:}")
     private String configuredFontPath;
 
-    // 패키지 엔티티와 현재 요청자 ID를 기준으로 PDF 보고서 바이트 배열을 생성한다.
-    public byte[] generatePackageReport(ActivityPackage activityPackage, Long userId) {
+    // 패키지 ID와 현재 요청자 ID를 기준으로 PDF 보고서 바이트 배열을 생성한다.
+    public byte[] generatePackageReport(Long packageId, Long userId) {
+        ActivityPackage activityPackage = activityPackageQueryService.getPackage(packageId);
+        return generatePackageReportInternal(activityPackage, userId);
+    }
+
+    // 패키지 ID를 기준으로 다운로드용 PDF 파일명을 생성한다.
+    public String getDownloadFileName(Long packageId) {
+        ActivityPackage activityPackage = activityPackageQueryService.getPackage(packageId);
+        return getDownloadFileNameInternal(activityPackage);
+    }
+
+    private byte[] generatePackageReportInternal(ActivityPackage activityPackage, Long userId) {
         // 제목에 사용할 PO 표시값을 만든다.
         String title = buildReportTitle(activityPackage);
         // 제목 아래에 표시할 작성자 이름을 만든다 (헤더 ID 우선, 없으면 패키지 생성자 ID).
@@ -75,8 +88,7 @@ public class ActivityPackagePdfReportService {
         return buildPdf(title, creatorName, activities);
     }
 
-    // 패키지 제목을 기준으로 다운로드용 PDF 파일명을 생성한다.
-    public String getDownloadFileName(ActivityPackage activityPackage) {
+    private String getDownloadFileNameInternal(ActivityPackage activityPackage) {
         // 보고서 제목 규칙과 동일한 기준으로 파일명 기본값을 만든다.
         String reportTitle = buildReportTitle(activityPackage);
         // 파일명에 사용할 수 없는 문자를 안전한 문자로 치환한다.

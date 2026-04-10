@@ -1,13 +1,13 @@
 package com.team2.activity.command.application.service;
 
+import com.team2.activity.command.application.dto.ActivityCreateRequest;
+import com.team2.activity.command.application.dto.ActivityUpdateRequest;
 import com.team2.activity.command.domain.entity.Activity;
-import com.team2.activity.command.domain.entity.enums.ActivityType;
-import com.team2.activity.command.domain.entity.enums.Priority;
 import com.team2.activity.command.domain.repository.ActivityRepository;
+import com.team2.activity.query.dto.ActivityResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.team2.activity.command.application.dto.ActivityUpdateRequest;
 
 // 활동 쓰기 유스케이스를 담당하는 command service다.
 @Service
@@ -20,14 +20,14 @@ public class ActivityCommandService {
     // 활동 저장소 접근을 담당한다.
     private final ActivityRepository activityRepository;
 
-    // 새 활동 엔티티를 저장한다.
-    public Activity createActivity(Activity activity) {
-        // 전달받은 활동 엔티티를 저장소에 저장한다.
-        return activityRepository.save(activity);
+    // 새 활동을 생성하고 응답 DTO를 반환한다.
+    public ActivityResponse createActivity(ActivityCreateRequest request, Long userId) {
+        Activity activity = activityRepository.save(request.toEntity(userId));
+        return ActivityResponse.from(activity);
     }
 
     // 수정 대상 활동을 찾아 요청 값으로 갱신한다.
-    public Activity updateActivity(Long activityId, ActivityUpdateRequest request, Long authorId) {
+    public ActivityResponse updateActivity(Long activityId, ActivityUpdateRequest request, Long authorId) {
         // 먼저 수정 대상 활동이 존재하는지 확인한다.
         Activity activity = findById(activityId);
         // 요청 값과 수정자 정보를 사용해 엔티티 상태를 바꾼다.
@@ -51,8 +51,7 @@ public class ActivityCommandService {
                 // 요청의 일정 종료일을 반영한다.
                 request.activityScheduleTo()
         );
-        // 변경 감지 대상이 된 엔티티를 그대로 반환한다.
-        return activity;
+        return ActivityResponse.from(activity);
     }
 
     // 활동을 조회한 뒤 삭제한다.

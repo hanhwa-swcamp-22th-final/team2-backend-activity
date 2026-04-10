@@ -3,7 +3,6 @@ package com.team2.activity.command.application.controller;
 import com.team2.activity.command.application.service.ContactCommandService;
 import com.team2.activity.command.application.dto.ContactCreateRequest;
 import com.team2.activity.command.application.dto.ContactUpdateRequest;
-import com.team2.activity.command.domain.entity.Contact;
 import com.team2.activity.query.controller.ContactQueryController;
 import com.team2.activity.query.dto.ContactResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -41,16 +39,8 @@ public class ContactCommandController {
             @Parameter(description = "거래처 ID", required = true) @PathVariable("clientId") Long clientId,
             @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody ContactCreateRequest request) {
-        Contact contact = Contact.builder()
-                .clientId(clientId)
-                .writerId(userId)
-                .contactName(request.contactName())
-                .contactPosition(request.contactPosition())
-                .contactEmail(request.contactEmail())
-                .contactTel(request.contactTel())
-                .build();
-        Contact saved = contactCommandService.createContact(contact);
-        EntityModel<ContactResponse> model = EntityModel.of(ContactResponse.from(saved),
+        ContactResponse response = contactCommandService.createContact(clientId, userId, request);
+        EntityModel<ContactResponse> model = EntityModel.of(response,
                 linkTo(methodOn(ContactQueryController.class).getContactsByClientId(clientId)).withRel("contacts"));
         URI location = linkTo(methodOn(ContactQueryController.class).getContactsByClientId(clientId)).toUri();
         return ResponseEntity.created(location).body(model);
@@ -66,13 +56,8 @@ public class ContactCommandController {
     public ResponseEntity<EntityModel<ContactResponse>> updateContact(
             @Parameter(description = "연락처 ID", required = true) @PathVariable("contactId") Long contactId,
             @Valid @RequestBody ContactUpdateRequest request) {
-        Contact contact = contactCommandService.updateContact(
-                contactId,
-                request.contactName(),
-                request.contactPosition(),
-                request.contactEmail(),
-                request.contactTel());
-        return ResponseEntity.ok(EntityModel.of(ContactResponse.from(contact),
+        ContactResponse response = contactCommandService.updateContact(contactId, request);
+        return ResponseEntity.ok(EntityModel.of(response,
                 linkTo(methodOn(ContactQueryController.class).getContacts(null, null, 0, 20)).withRel("contacts")));
     }
 

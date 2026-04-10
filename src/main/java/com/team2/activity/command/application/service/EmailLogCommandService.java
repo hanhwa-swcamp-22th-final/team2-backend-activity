@@ -1,5 +1,6 @@
 package com.team2.activity.command.application.service;
 
+import com.team2.activity.command.application.dto.EmailLogCreateRequest;
 import com.team2.activity.command.application.dto.EmailLogInternalRequest;
 import com.team2.activity.command.domain.entity.EmailLog;
 import com.team2.activity.command.domain.entity.enums.MailStatus;
@@ -7,6 +8,7 @@ import com.team2.activity.command.domain.repository.EmailLogRepository;
 import com.team2.activity.command.infrastructure.client.DocumentsFeignClient;
 import com.team2.activity.command.infrastructure.client.EmailSendRequest;
 import com.team2.activity.command.infrastructure.client.EmailSendResponse;
+import com.team2.activity.query.dto.EmailLogResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -24,10 +26,11 @@ public class EmailLogCommandService {
     // 재전송 시 실제 메일 발송을 document 서비스에 위임한다.
     private final DocumentsFeignClient documentsFeignClient;
 
-    // 이메일 로그를 저장하고 반환한다.
+    // 이메일 로그를 생성하고 응답 DTO를 반환한다.
     @Transactional
-    public EmailLog createEmailLog(EmailLog emailLog) {
-        return emailLogRepository.save(emailLog);
+    public EmailLogResponse createEmailLog(EmailLogCreateRequest request, Long userId) {
+        EmailLog emailLog = emailLogRepository.save(request.toEntity(userId));
+        return EmailLogResponse.from(emailLog);
     }
 
     // document 서비스가 발송 후 activity 서비스로 로그를 전달할 때 저장한다.
@@ -53,7 +56,7 @@ public class EmailLogCommandService {
      * </ul>
      */
     @Transactional
-    public EmailLog resend(Long emailLogId, Long userId) {
+    public EmailLogResponse resend(Long emailLogId, Long userId) {
         // 재전송 대상 이메일 로그를 조회한다.
         EmailLog emailLog = findById(emailLogId);
 
@@ -123,7 +126,7 @@ public class EmailLogCommandService {
             throw new IllegalStateException("이메일 재전송에 실패했습니다.");
         }
 
-        return emailLog;
+        return EmailLogResponse.from(emailLog);
     }
 
     // 이메일 로그를 삭제한다.

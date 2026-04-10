@@ -1,7 +1,10 @@
 package com.team2.activity.command.application.service;
 
+import com.team2.activity.command.application.dto.ContactCreateRequest;
+import com.team2.activity.command.application.dto.ContactUpdateRequest;
 import com.team2.activity.command.domain.entity.Contact;
 import com.team2.activity.command.domain.repository.ContactRepository;
+import com.team2.activity.query.dto.ContactResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,21 +20,18 @@ public class ContactCommandService {
     // 연락처 저장소 접근을 담당한다.
     private final ContactRepository contactRepository;
 
-    // 새 연락처 엔티티를 저장한다.
-    public Contact createContact(Contact contact) {
-        // 전달받은 연락처 엔티티를 저장소에 저장한다.
-        return contactRepository.save(contact);
+    // 새 연락처를 생성하고 응답 DTO를 반환한다.
+    public ContactResponse createContact(Long clientId, Long userId, ContactCreateRequest request) {
+        Contact contact = contactRepository.save(request.toEntity(clientId, userId));
+        return ContactResponse.from(contact);
     }
 
     // 기존 연락처를 찾아 수정 가능한 필드를 갱신한다.
-    public Contact updateContact(Long contactId, String contactName, String contactPosition,
-                                 String contactEmail, String contactTel) {
-        // 수정 대상 연락처를 먼저 조회한다.
+    public ContactResponse updateContact(Long contactId, ContactUpdateRequest request) {
         Contact contact = findById(contactId);
-        // 요청의 이름, 직책, 이메일, 전화번호를 엔티티에 반영한다.
-        contact.update(contactName, contactPosition, contactEmail, contactTel);
-        // 변경 감지 대상 엔티티를 그대로 반환한다.
-        return contact;
+        contact.update(request.contactName(), request.contactPosition(),
+                request.contactEmail(), request.contactTel());
+        return ContactResponse.from(contact);
     }
 
     // 연락처를 조회한 뒤 삭제한다.

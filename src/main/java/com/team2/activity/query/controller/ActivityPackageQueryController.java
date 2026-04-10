@@ -2,7 +2,6 @@ package com.team2.activity.query.controller;
 
 import com.team2.activity.common.PagedResponse;
 import com.team2.activity.query.dto.ActivityPackageResponse;
-import com.team2.activity.command.domain.entity.ActivityPackage;
 import com.team2.activity.query.service.ActivityPackagePdfReportService;
 import com.team2.activity.query.service.ActivityPackageQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,7 +15,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
@@ -40,7 +38,7 @@ public class ActivityPackageQueryController {
     public ResponseEntity<PagedResponse<ActivityPackageResponse>> getPackages(
             @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId,
             @Parameter(description = "생성자 ID") @RequestParam(name = "creatorId", required = false) Long creatorId,
-            @Parameter(description = "PO ID") @RequestParam(name = "poId", required = false) String poId,
+            @Parameter(description = "PO ID") @RequestParam(name = "poId", required = false) String poId, //po 필수값으로 수정
             @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(name = "page", defaultValue = "0") int page,
             @Parameter(description = "페이지 크기") @RequestParam(name = "size", defaultValue = "20") int size) {
         List<ActivityPackageResponse> responses = activityPackageQueryService.getPackagesByViewerUserId(userId, creatorId, poId);
@@ -55,8 +53,7 @@ public class ActivityPackageQueryController {
     @GetMapping("/{packageId}")
     public ResponseEntity<ActivityPackageResponse> getPackage(
             @Parameter(description = "패키지 ID", required = true) @PathVariable("packageId") Long packageId) {
-        ActivityPackage activityPackage = activityPackageQueryService.getPackage(packageId);
-        return ResponseEntity.ok(activityPackageQueryService.enrichPackage(activityPackage));
+        return ResponseEntity.ok(activityPackageQueryService.getEnrichedPackage(packageId));
     }
 
     @Operation(summary = "활동 패키지 PDF 리포트 미리보기", description = "활동 패키지를 PDF 리포트로 조회한다")
@@ -69,9 +66,8 @@ public class ActivityPackageQueryController {
     public ResponseEntity<byte[]> downloadPackageReport(
             @Parameter(description = "패키지 ID", required = true) @PathVariable("packageId") Long packageId,
             @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId) {
-        ActivityPackage activityPackage = activityPackageQueryService.getPackage(packageId);
-        byte[] pdfBytes = activityPackagePdfReportService.generatePackageReport(activityPackage, userId);
-        String fileName = activityPackagePdfReportService.getDownloadFileName(activityPackage);
+        byte[] pdfBytes = activityPackagePdfReportService.generatePackageReport(packageId, userId);
+        String fileName = activityPackagePdfReportService.getDownloadFileName(packageId);
         HttpHeaders headers = new HttpHeaders();
         headers.setContentDisposition(ContentDisposition.inline()
                 .filename(fileName, StandardCharsets.UTF_8)

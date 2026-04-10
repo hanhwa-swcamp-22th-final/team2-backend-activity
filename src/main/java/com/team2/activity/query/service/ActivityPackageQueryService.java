@@ -27,6 +27,10 @@ public class ActivityPackageQueryService {
         return activityPackage;
     }
 
+    public ActivityPackageResponse getEnrichedPackage(Long packageId) {
+        return enrichPackage(getPackage(packageId));
+    }
+
     public List<ActivityPackageResponse> getPackagesByViewerUserId(Long userId, Long creatorId, String poId) {
         List<ActivityPackage> packages = activityPackageQueryMapper.findAllActivityPackagesByViewerUserId(userId, creatorId, poId);
         return packages.stream().map(this::enrichPackage).toList();

@@ -1,5 +1,6 @@
 package com.team2.activity.command.application.dto;
 
+import com.team2.activity.command.domain.entity.Contact;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 
@@ -14,4 +15,15 @@ public record ContactCreateRequest(
         String contactEmail,
         @Schema(description = "전화번호", example = "010-1234-5678")
         String contactTel
-) {}
+) {
+    public Contact toEntity(Long clientId, Long writerId) {
+        return Contact.builder()
+                .clientId(clientId)
+                .writerId(writerId)
+                .contactName(contactName)
+                .contactPosition(contactPosition)
+                .contactEmail(contactEmail)
+                .contactTel(contactTel)
+                .build();
+    }
+}

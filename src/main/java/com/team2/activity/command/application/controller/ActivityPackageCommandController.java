@@ -2,9 +2,8 @@ package com.team2.activity.command.application.controller;
 
 import com.team2.activity.command.application.service.ActivityPackageCommandService;
 import com.team2.activity.command.application.dto.ActivityPackageCreateRequest;
-import com.team2.activity.query.dto.ActivityPackageResponse;
 import com.team2.activity.command.application.dto.ActivityPackageUpdateRequest;
-import com.team2.activity.command.domain.entity.ActivityPackage;
+import com.team2.activity.query.dto.ActivityPackageResponse;
 import com.team2.activity.query.controller.ActivityPackageQueryController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -16,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -41,11 +39,11 @@ public class ActivityPackageCommandController {
     public ResponseEntity<EntityModel<ActivityPackageResponse>> createPackage(
             @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody ActivityPackageCreateRequest request) {
-        ActivityPackage saved = activityPackageCommandService.createPackage(request.toEntity(userId));
-        EntityModel<ActivityPackageResponse> model = EntityModel.of(ActivityPackageResponse.from(saved),
-                linkTo(methodOn(ActivityPackageQueryController.class).getPackage(saved.getPackageId())).withSelfRel(),
+        ActivityPackageResponse response = activityPackageCommandService.createPackage(request, userId);
+        EntityModel<ActivityPackageResponse> model = EntityModel.of(response,
+                linkTo(methodOn(ActivityPackageQueryController.class).getPackage(response.packageId())).withSelfRel(),
                 linkTo(methodOn(ActivityPackageQueryController.class).getPackages(null, null, null, 0, 20)).withRel("activity-packages"));
-        URI location = linkTo(methodOn(ActivityPackageQueryController.class).getPackage(saved.getPackageId())).toUri();
+        URI location = linkTo(methodOn(ActivityPackageQueryController.class).getPackage(response.packageId())).toUri();
         return ResponseEntity.created(location).body(model);
     }
 
@@ -59,8 +57,8 @@ public class ActivityPackageCommandController {
     public ResponseEntity<EntityModel<ActivityPackageResponse>> updatePackage(
             @Parameter(description = "패키지 ID", required = true) @PathVariable("packageId") Long packageId,
             @Valid @RequestBody ActivityPackageUpdateRequest request) {
-        ActivityPackage updated = activityPackageCommandService.updateAll(packageId, request);
-        return ResponseEntity.ok(EntityModel.of(ActivityPackageResponse.from(updated),
+        ActivityPackageResponse response = activityPackageCommandService.updateAll(packageId, request);
+        return ResponseEntity.ok(EntityModel.of(response,
                 linkTo(methodOn(ActivityPackageQueryController.class).getPackage(packageId)).withSelfRel(),
                 linkTo(methodOn(ActivityPackageQueryController.class).getPackages(null, null, null, 0, 20)).withRel("activity-packages")));
     }

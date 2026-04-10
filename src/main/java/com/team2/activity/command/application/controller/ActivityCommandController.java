@@ -3,7 +3,6 @@ package com.team2.activity.command.application.controller;
 import com.team2.activity.command.application.service.ActivityCommandService;
 import com.team2.activity.command.application.dto.ActivityCreateRequest;
 import com.team2.activity.command.application.dto.ActivityUpdateRequest;
-import com.team2.activity.command.domain.entity.Activity;
 import com.team2.activity.query.controller.ActivityQueryController;
 import com.team2.activity.query.dto.ActivityResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,7 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -41,11 +39,11 @@ public class ActivityCommandController {
     public ResponseEntity<EntityModel<ActivityResponse>> createActivity(
             @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody ActivityCreateRequest request) {
-        Activity activity = activityCommandService.createActivity(request.toEntity(userId));
-        EntityModel<ActivityResponse> model = EntityModel.of(ActivityResponse.from(activity),
-                linkTo(methodOn(ActivityQueryController.class).getActivity(activity.getActivityId())).withSelfRel(),
+        ActivityResponse response = activityCommandService.createActivity(request, userId);
+        EntityModel<ActivityResponse> model = EntityModel.of(response,
+                linkTo(methodOn(ActivityQueryController.class).getActivity(response.activityId())).withSelfRel(),
                 linkTo(methodOn(ActivityQueryController.class).getActivities(null, null, null, null, null, null, null, 0, 20)).withRel("activities"));
-        URI location = linkTo(methodOn(ActivityQueryController.class).getActivity(activity.getActivityId())).toUri();
+        URI location = linkTo(methodOn(ActivityQueryController.class).getActivity(response.activityId())).toUri();
         return ResponseEntity.created(location).body(model);
     }
 
@@ -60,8 +58,8 @@ public class ActivityCommandController {
             @Parameter(description = "활동기록 ID", required = true) @PathVariable("activityId") Long activityId,
             @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody ActivityUpdateRequest request) {
-        Activity activity = activityCommandService.updateActivity(activityId, request, userId);
-        return ResponseEntity.ok(EntityModel.of(ActivityResponse.from(activity),
+        ActivityResponse response = activityCommandService.updateActivity(activityId, request, userId);
+        return ResponseEntity.ok(EntityModel.of(response,
                 linkTo(methodOn(ActivityQueryController.class).getActivity(activityId)).withSelfRel(),
                 linkTo(methodOn(ActivityQueryController.class).getActivities(null, null, null, null, null, null, null, 0, 20)).withRel("activities")));
     }
