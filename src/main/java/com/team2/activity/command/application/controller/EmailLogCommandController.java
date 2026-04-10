@@ -16,8 +16,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -40,9 +39,8 @@ public class EmailLogCommandController {
     })
     @PostMapping
     public ResponseEntity<EntityModel<EmailLogResponse>> createEmailLog(
-            @Parameter(description = "요청 사용자 ID", required = true) @AuthenticationPrincipal Jwt jwt,
+            @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId,
             @Valid @RequestBody EmailLogCreateRequest request) {
-        Long userId = jwt != null ? Long.parseLong(jwt.getSubject()) : 1L;
         EmailLog emailLog = emailLogCommandService.createEmailLog(request.toEntity(userId));
         EntityModel<EmailLogResponse> model = EntityModel.of(EmailLogResponse.from(emailLog),
                 linkTo(methodOn(EmailLogQueryController.class).getEmailLog(emailLog.getEmailLogId())).withSelfRel(),
@@ -76,9 +74,8 @@ public class EmailLogCommandController {
     })
     @PostMapping("/{emailLogId}/resend")
     public ResponseEntity<EntityModel<EmailLogResponse>> resend(
-            @Parameter(description = "요청 사용자 ID", required = true) @AuthenticationPrincipal Jwt jwt,
+            @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId,
             @PathVariable("emailLogId") Long emailLogId) {
-        Long userId = jwt != null ? Long.parseLong(jwt.getSubject()) : 1L;
         EmailLogResponse response = EmailLogResponse.from(emailLogCommandService.resend(emailLogId, userId));
         return ResponseEntity.ok(EntityModel.of(response,
                 linkTo(methodOn(EmailLogQueryController.class).getEmailLog(emailLogId)).withSelfRel(),
