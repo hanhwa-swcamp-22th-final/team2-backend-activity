@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -37,8 +39,9 @@ public class ActivityCommandController {
     })
     @PostMapping
     public ResponseEntity<EntityModel<ActivityResponse>> createActivity(
-            @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId,
+            @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody ActivityCreateRequest request) {
+        Long userId = Long.parseLong(jwt.getSubject());
         ActivityResponse response = activityCommandService.createActivity(request, userId);
         EntityModel<ActivityResponse> model = EntityModel.of(response,
                 linkTo(methodOn(ActivityQueryController.class).getActivity(response.activityId())).withSelfRel(),
@@ -56,8 +59,9 @@ public class ActivityCommandController {
     @PutMapping("/{activityId}")
     public ResponseEntity<EntityModel<ActivityResponse>> updateActivity(
             @Parameter(description = "활동기록 ID", required = true) @PathVariable("activityId") Long activityId,
-            @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId,
+            @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody ActivityUpdateRequest request) {
+        Long userId = Long.parseLong(jwt.getSubject());
         ActivityResponse response = activityCommandService.updateActivity(activityId, request, userId);
         return ResponseEntity.ok(EntityModel.of(response,
                 linkTo(methodOn(ActivityQueryController.class).getActivity(activityId)).withSelfRel(),

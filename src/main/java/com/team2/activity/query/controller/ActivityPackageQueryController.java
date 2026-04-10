@@ -15,6 +15,8 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
@@ -36,11 +38,12 @@ public class ActivityPackageQueryController {
     })
     @GetMapping
     public ResponseEntity<PagedResponse<ActivityPackageResponse>> getPackages(
-            @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId,
+            @AuthenticationPrincipal Jwt jwt,
             @Parameter(description = "생성자 ID") @RequestParam(name = "creatorId", required = false) Long creatorId,
             @Parameter(description = "PO ID") @RequestParam(name = "poId", required = false) String poId, //po 필수값으로 수정
             @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(name = "page", defaultValue = "0") int page,
             @Parameter(description = "페이지 크기") @RequestParam(name = "size", defaultValue = "20") int size) {
+        Long userId = Long.parseLong(jwt.getSubject());
         List<ActivityPackageResponse> responses = activityPackageQueryService.getPackagesByViewerUserId(userId, creatorId, poId);
         return ResponseEntity.ok(PagedResponse.of(responses, page, size));
     }
@@ -65,7 +68,8 @@ public class ActivityPackageQueryController {
     @GetMapping(value = "/{packageId}/report", produces = MediaType.APPLICATION_PDF_VALUE)
     public ResponseEntity<byte[]> downloadPackageReport(
             @Parameter(description = "패키지 ID", required = true) @PathVariable("packageId") Long packageId,
-            @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId) {
+            @AuthenticationPrincipal Jwt jwt) {
+        Long userId = Long.parseLong(jwt.getSubject());
         byte[] pdfBytes = activityPackagePdfReportService.generatePackageReport(packageId, userId);
         String fileName = activityPackagePdfReportService.getDownloadFileName(packageId);
         HttpHeaders headers = new HttpHeaders();

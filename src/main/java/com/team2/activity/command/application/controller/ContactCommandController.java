@@ -15,6 +15,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
@@ -37,8 +39,9 @@ public class ContactCommandController {
     @PostMapping("/api/clients/{clientId}/contacts")
     public ResponseEntity<EntityModel<ContactResponse>> createContact(
             @Parameter(description = "거래처 ID", required = true) @PathVariable("clientId") Long clientId,
-            @Parameter(description = "요청 사용자 ID", required = true) @RequestHeader("X-User-Id") Long userId,
+            @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody ContactCreateRequest request) {
+        Long userId = Long.parseLong(jwt.getSubject());
         ContactResponse response = contactCommandService.createContact(clientId, userId, request);
         EntityModel<ContactResponse> model = EntityModel.of(response,
                 linkTo(methodOn(ContactQueryController.class).getContactsByClientId(clientId)).withRel("contacts"));
