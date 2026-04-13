@@ -1,6 +1,5 @@
 package com.team2.activity.query.controller;
 
-import com.team2.activity.common.PagedResponse;
 import com.team2.activity.command.domain.entity.enums.MailStatus;
 import com.team2.activity.query.dto.EmailLogResponse;
 import com.team2.activity.query.service.EmailLogQueryService;
@@ -11,6 +10,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -33,7 +34,7 @@ public class EmailLogQueryController {
             @ApiResponse(responseCode = "200", description = "조회 성공")
     })
     @GetMapping
-    public ResponseEntity<PagedResponse<EmailLogResponse>> getEmailLogs(
+    public ResponseEntity<PagedModel<EntityModel<EmailLogResponse>>> getEmailLogs(
             @Parameter(description = "거래처 ID") @RequestParam(name = "clientId", required = false) Long clientId,
             @Parameter(description = "PO ID") @RequestParam(name = "poId", required = false) String poId,
             @Parameter(description = "메일 발송 상태") @RequestParam(name = "emailStatus", required = false) MailStatus emailStatus,
@@ -49,7 +50,9 @@ public class EmailLogQueryController {
                 clientId, poId, emailStatus, emailSenderId, keyword, dateTimeFrom, dateTimeTo, page, size);
         long totalElements = emailLogQueryService.countWithFilters(
                 clientId, poId, emailStatus, emailSenderId, keyword, dateTimeFrom, dateTimeTo);
-        return ResponseEntity.ok(PagedResponse.of(responses, totalElements, page, size));
+        List<EntityModel<EmailLogResponse>> models = responses.stream().map(EntityModel::of).toList();
+        PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(size, page, totalElements);
+        return ResponseEntity.ok(PagedModel.of(models, metadata));
     }
 
     @Operation(summary = "이메일 로그 상세 조회", description = "이메일 로그 ID로 상세 정보를 조회한다")

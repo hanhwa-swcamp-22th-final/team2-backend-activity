@@ -1,6 +1,5 @@
 package com.team2.activity.query.controller;
 
-import com.team2.activity.common.PagedResponse;
 import com.team2.activity.query.dto.ContactResponse;
 import com.team2.activity.query.service.ContactQueryService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,6 +8,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -28,7 +29,7 @@ public class ContactQueryController {
             @ApiResponse(responseCode = "200", description = "조회 성공")
     })
     @GetMapping("/api/contacts")
-    public ResponseEntity<PagedResponse<ContactResponse>> getContacts(
+    public ResponseEntity<PagedModel<EntityModel<ContactResponse>>> getContacts(
             @Parameter(description = "거래처 ID (미입력 시 전체 조회)") @RequestParam(name = "clientId", required = false) Long clientId,
             @Parameter(description = "검색 키워드 (이름/이메일)") @RequestParam(name = "keyword", required = false) String keyword,
             @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(name = "page", defaultValue = "0") int page,
@@ -36,7 +37,9 @@ public class ContactQueryController {
         List<ContactResponse> contacts = contactQueryService.getContactsWithFilters(clientId, keyword, page, size)
                 .stream().map(ContactResponse::from).toList();
         long totalElements = contactQueryService.countContactsWithFilters(clientId, keyword);
-        return ResponseEntity.ok(PagedResponse.of(contacts, totalElements, page, size));
+        List<EntityModel<ContactResponse>> models = contacts.stream().map(EntityModel::of).toList();
+        PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(size, page, totalElements);
+        return ResponseEntity.ok(PagedModel.of(models, metadata));
     }
 
     @Operation(summary = "거래처별 연락처 조회", description = "특정 거래처에 속한 연락처 목록을 조회한다")

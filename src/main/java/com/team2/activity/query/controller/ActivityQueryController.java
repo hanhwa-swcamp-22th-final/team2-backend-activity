@@ -1,6 +1,5 @@
 package com.team2.activity.query.controller;
 
-import com.team2.activity.common.PagedResponse;
 import com.team2.activity.command.domain.entity.enums.ActivityType;
 import com.team2.activity.query.dto.ActivityResponse;
 import com.team2.activity.query.service.ActivityQueryService;
@@ -11,6 +10,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -32,7 +33,7 @@ public class ActivityQueryController {
             @ApiResponse(responseCode = "200", description = "조회 성공")
     })
     @GetMapping
-    public ResponseEntity<PagedResponse<ActivityResponse>> getActivities(
+    public ResponseEntity<PagedModel<EntityModel<ActivityResponse>>> getActivities(
             @Parameter(description = "거래처 ID") @RequestParam(name = "clientId", required = false) Long clientId,
             @Parameter(description = "PO ID") @RequestParam(name = "poId", required = false) String poId,
             @Parameter(description = "활동 유형") @RequestParam(name = "activityType", required = false) ActivityType activityType,
@@ -46,7 +47,9 @@ public class ActivityQueryController {
                 clientId, poId, activityType, activityAuthorId, activityDateFrom, activityDateTo, keyword, page, size);
         long totalElements = activityQueryService.countWithFilters(
                 clientId, poId, activityType, activityAuthorId, activityDateFrom, activityDateTo, keyword);
-        return ResponseEntity.ok(PagedResponse.of(activities, totalElements, page, size));
+        List<EntityModel<ActivityResponse>> models = activities.stream().map(EntityModel::of).toList();
+        PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(size, page, totalElements);
+        return ResponseEntity.ok(PagedModel.of(models, metadata));
     }
 
     @Operation(summary = "활동 상세 조회", description = "활동 ID로 활동 상세 정보를 조회한다")

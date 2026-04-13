@@ -1,6 +1,5 @@
 package com.team2.activity.query.controller;
 
-import com.team2.activity.common.PagedResponse;
 import com.team2.activity.query.dto.ActivityPackageResponse;
 import com.team2.activity.query.service.ActivityPackagePdfReportService;
 import com.team2.activity.query.service.ActivityPackageQueryService;
@@ -10,6 +9,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.PagedModel;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -37,15 +38,21 @@ public class ActivityPackageQueryController {
             @ApiResponse(responseCode = "200", description = "조회 성공")
     })
     @GetMapping
-    public ResponseEntity<PagedResponse<ActivityPackageResponse>> getPackages(
+    public ResponseEntity<PagedModel<EntityModel<ActivityPackageResponse>>> getPackages(
             @AuthenticationPrincipal Jwt jwt,
             @Parameter(description = "생성자 ID") @RequestParam(name = "creatorId", required = false) Long creatorId,
-            @Parameter(description = "PO ID") @RequestParam(name = "poId", required = false) String poId, //po 필수값으로 수정
+            @Parameter(description = "PO ID") @RequestParam(name = "poId", required = false) String poId,
             @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(name = "page", defaultValue = "0") int page,
             @Parameter(description = "페이지 크기") @RequestParam(name = "size", defaultValue = "20") int size) {
         Long userId = Long.parseLong(jwt.getSubject());
-        List<ActivityPackageResponse> responses = activityPackageQueryService.getPackagesByViewerUserId(userId, creatorId, poId);
-        return ResponseEntity.ok(PagedResponse.of(responses, page, size));
+        List<ActivityPackageResponse> all = activityPackageQueryService.getPackagesByViewerUserId(userId, creatorId, poId);
+        int total = all.size();
+        int fromIndex = Math.min(page * size, total);
+        int toIndex = Math.min(fromIndex + size, total);
+        List<EntityModel<ActivityPackageResponse>> models = all.subList(fromIndex, toIndex).stream()
+                .map(EntityModel::of).toList();
+        PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(size, page, total);
+        return ResponseEntity.ok(PagedModel.of(models, metadata));
     }
 
     @Operation(summary = "활동 패키지 상세 조회", description = "패키지 ID로 활동 패키지 상세 정보를 조회한다")
