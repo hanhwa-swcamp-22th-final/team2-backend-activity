@@ -1,6 +1,7 @@
 package com.team2.activity.command.application.service;
 
 import com.team2.activity.command.application.dto.ContactCreateRequest;
+import com.team2.activity.command.application.dto.ContactInternalRequest;
 import com.team2.activity.command.application.dto.ContactUpdateRequest;
 import com.team2.activity.command.domain.entity.Contact;
 import com.team2.activity.command.domain.repository.ContactRepository;
@@ -24,6 +25,19 @@ public class ContactCommandService {
     public ContactResponse createContact(Long clientId, Long userId, ContactCreateRequest request) {
         Contact contact = contactRepository.save(request.toEntity(clientId, userId));
         return ContactResponse.from(contact);
+    }
+
+    // Master 서비스의 Buyer 생성 이벤트에서 호출되는 내부 동기화 메서드.
+    public void createContactInternal(ContactInternalRequest request) {
+        Contact contact = Contact.builder()
+                .clientId(request.clientId())
+                .writerId(request.writerId())
+                .contactName(request.contactName())
+                .contactPosition(request.contactPosition())
+                .contactEmail(request.contactEmail())
+                .contactTel(request.contactTel())
+                .build();
+        contactRepository.save(contact);
     }
 
     // 기존 연락처를 찾아 수정 가능한 필드를 갱신한다.

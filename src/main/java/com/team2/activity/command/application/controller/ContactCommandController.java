@@ -2,6 +2,7 @@ package com.team2.activity.command.application.controller;
 
 import com.team2.activity.command.application.service.ContactCommandService;
 import com.team2.activity.command.application.dto.ContactCreateRequest;
+import com.team2.activity.command.application.dto.ContactInternalRequest;
 import com.team2.activity.command.application.dto.ContactUpdateRequest;
 import com.team2.activity.query.controller.ContactQueryController;
 import com.team2.activity.query.dto.ContactResponse;
@@ -74,5 +75,22 @@ public class ContactCommandController {
             @Parameter(description = "연락처 ID", required = true) @PathVariable("contactId") Long contactId) {
         contactCommandService.deleteContact(contactId);
         return ResponseEntity.noContent().build();
+    }
+
+    // Master 서비스가 Buyer 생성 후 Feign 으로 호출하는 내부 sync endpoint.
+    // X-Internal-Token 으로 InternalApiTokenFilter 가 별도 검증 → @PreAuthorize permitAll.
+    // Gateway 에서는 /api/contacts/internal/** denyAll 로 외부 차단.
+    @Operation(summary = "내부 연락처 생성 (Master → Activity)",
+            description = "Master 서비스의 Buyer 생성 이벤트에서 호출되는 내부 동기화 endpoint")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "연락처 저장 성공"),
+            @ApiResponse(responseCode = "403", description = "X-Internal-Token 불일치")
+    })
+    @PreAuthorize("permitAll()")
+    @PostMapping("/api/contacts/internal")
+    public ResponseEntity<Void> createContactInternal(
+            @Valid @RequestBody ContactInternalRequest request) {
+        contactCommandService.createContactInternal(request);
+        return ResponseEntity.ok().build();
     }
 }
