@@ -6,6 +6,7 @@ import org.springframework.cloud.openfeign.FallbackFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
+import java.util.List;
 
 @Component
 public class DocumentsFeignFallbackFactory implements FallbackFactory<DocumentsFeignClient> {
@@ -16,10 +17,17 @@ public class DocumentsFeignFallbackFactory implements FallbackFactory<DocumentsF
     public DocumentsFeignClient create(Throwable cause) {
         return new DocumentsFeignClient() {
             @Override
+            public List<PurchaseOrderResponse> getPurchaseOrders() {
+                log.warn("[fallback] documents-service getPurchaseOrders unavailable: {}",
+                        cause != null ? cause.getMessage() : "unknown");
+                return Collections.emptyList();
+            }
+
+            @Override
             public PurchaseOrderResponse getPurchaseOrder(String poId) {
                 log.warn("[fallback] documents-service getPurchaseOrder({}) unavailable: {}",
                         poId, cause != null ? cause.getMessage() : "unknown");
-                return new PurchaseOrderResponse(poId, "(unknown)", "UNAVAILABLE");
+                return new PurchaseOrderResponse(poId, "(unknown)", "UNAVAILABLE", null);
             }
 
             @Override

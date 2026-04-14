@@ -29,4 +29,8 @@ public class PurchaseOrderResponse {
 
     @Schema(description = "발주 진행 상태")
     private String status;
+
+    @Schema(description = "거래처 ID")
+    @JsonAlias("clientId")
+    private Long clientId;
 }
