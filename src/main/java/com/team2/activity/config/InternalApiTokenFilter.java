@@ -14,20 +14,24 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 
 /**
- * /api/email-logs/internal/** 경로 진입 시 X-Internal-Token 헤더를 검증한다.
+ * {@code /api/**\/internal/**} 경로 진입 시 X-Internal-Token 헤더를 검증한다.
  * - 토큰이 비어 있으면(개발 환경) 통과시키되 WARN 로그
  * - 토큰이 설정되어 있으면 헤더 일치 여부를 검사하고 불일치 시 403
  *
  * Gateway 에서는 같은 경로를 denyAll() 하므로 외부에서는 닿을 수 없고,
- * 같은 docker network 내부 서비스(documents)만 X-Internal-Token 헤더와 함께 호출 가능.
+ * 같은 네트워크 내부 서비스(documents/master)만 X-Internal-Token 헤더와 함께 호출 가능.
  */
 @Component
 public class InternalApiTokenFilter extends OncePerRequestFilter {
 
     private static final Logger log = LoggerFactory.getLogger(InternalApiTokenFilter.class);
-    private static final String INTERNAL_PATH_PREFIX = "/api/email-logs/internal";
+    private static final List<String> INTERNAL_PATH_PREFIXES = List.of(
+            "/api/email-logs/internal",
+            "/api/contacts/internal"
+    );
     private static final String HEADER_NAME = "X-Internal-Token";
     private static final int MIN_TOKEN_LENGTH = 32;
 
@@ -65,7 +69,7 @@ public class InternalApiTokenFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
-        if (path != null && path.startsWith(INTERNAL_PATH_PREFIX)) {
+        if (path != null && INTERNAL_PATH_PREFIXES.stream().anyMatch(path::startsWith)) {
             if (configuredToken == null || configuredToken.isBlank()) {
                 log.warn("internal.api.token 미설정 — {} 경로 검증 skip (개발 환경에서만 허용)", path);
             } else {

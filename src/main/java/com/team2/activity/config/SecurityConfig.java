@@ -48,8 +48,9 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                 .requestMatchers("/swagger-ui/**", "/v3/api-docs/**", "/swagger-ui.html").permitAll()
-                // /api/email-logs/internal/** 는 InternalApiTokenFilter 가 이미 검증함
+                // /api/**/internal/** 는 InternalApiTokenFilter 가 이미 검증함
                 .requestMatchers("/api/email-logs/internal/**").permitAll()
+                .requestMatchers("/api/contacts/internal/**").permitAll()
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth -> oauth
