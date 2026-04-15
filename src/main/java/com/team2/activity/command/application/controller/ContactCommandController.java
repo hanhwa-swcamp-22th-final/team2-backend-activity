@@ -62,7 +62,7 @@ public class ContactCommandController {
             @Valid @RequestBody ContactUpdateRequest request) {
         ContactResponse response = contactCommandService.updateContact(contactId, request);
         return ResponseEntity.ok(EntityModel.of(response,
-                linkTo(methodOn(ContactQueryController.class).getContacts(null, null, 0, 20)).withRel("contacts")));
+                linkTo(methodOn(ContactQueryController.class).getContacts(null, null, 0, 20, null)).withRel("contacts")));
     }
 
     @Operation(summary = "연락처 삭제", description = "연락처를 삭제한다")

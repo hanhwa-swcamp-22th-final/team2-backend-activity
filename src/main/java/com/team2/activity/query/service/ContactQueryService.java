@@ -32,12 +32,12 @@ public class ContactQueryService {
         return contactQueryMapper.findAllContactsByClientId(clientId);
     }
 
-    public List<Contact> getContactsWithFilters(Long clientId, String keyword, int page, int size) {
+    public List<Contact> getContactsWithFilters(Long clientId, Long writerId, String keyword, int page, int size) {
         int offset = page * size;
-        return contactQueryMapper.findContactsWithFilters(clientId, keyword, size, offset);
+        return contactQueryMapper.findContactsWithFilters(clientId, writerId, keyword, size, offset);
     }
 
-    public long countContactsWithFilters(Long clientId, String keyword) {
-        return contactQueryMapper.countContactsWithFilters(clientId, keyword);
+    public long countContactsWithFilters(Long clientId, Long writerId, String keyword) {
+        return contactQueryMapper.countContactsWithFilters(clientId, writerId, keyword);
     }
 }

@@ -8,6 +8,9 @@
         <if test="clientId != null">
             AND client_id = #{clientId}
         </if>
+        <if test="writerId != null">
+            AND writer_id = #{writerId}
+        </if>
         <if test="keyword != null and keyword != ''">
             AND (contact_name LIKE CONCAT('%', #{keyword}, '%')
                  OR contact_email LIKE CONCAT('%', #{keyword}, '%'))

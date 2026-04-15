@@ -28,7 +28,9 @@ public class Contact {
     @Column(name = "client_id", nullable = false)
     private Long clientId;
 
-    // 연락처 작성자 ID다.
+    // 연락처 작성자 ID. 컨택리스트는 작성자 개인의 인맥 자산이므로 조회 시 이 값으로 필터.
+    // Buyer sync 시 같은 팀 영업담당자 각각에 대해 별도 Contact row 가 생성되어 (writerId 가
+    // 각 사용자) 결과적으로 팀이 동일 buyer 정보를 자동으로 받게 된다.
     @Column(name = "writer_id")
     private Long writerId;
 
@@ -58,21 +60,14 @@ public class Contact {
 
     // 빌더 기반 생성 로직을 제공한다.
     @Builder
-    private Contact(Long contactId, Long clientId, Long writerId, String contactName, String contactPosition,
-                    String contactEmail, String contactTel) {
-        // 빌더에서 받은 연락처 ID를 엔티티 기본키 필드에 저장한다.
+    private Contact(Long contactId, Long clientId, Long writerId,
+                    String contactName, String contactPosition, String contactEmail, String contactTel) {
         this.contactId = contactId;
-        // 빌더에서 받은 거래처 ID를 저장한다.
         this.clientId = clientId;
-        // 빌더에서 받은 작성자 ID를 저장한다.
         this.writerId = writerId;
-        // 빌더에서 받은 연락처 이름을 저장한다.
         this.contactName = contactName;
-        // 빌더에서 받은 직책을 저장한다.
         this.contactPosition = contactPosition;
-        // 빌더에서 받은 이메일을 저장한다.
         this.contactEmail = contactEmail;
-        // 빌더에서 받은 전화번호를 저장한다.
         this.contactTel = contactTel;
     }
 
