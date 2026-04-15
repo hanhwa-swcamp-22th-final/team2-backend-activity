@@ -24,8 +24,9 @@ public class Contact {
     @Column(name = "contact_id")
     private Long contactId;
 
-    // 거래처 ID다.
-    @Column(name = "client_id", nullable = false)
+    // 거래처 ID. nullable — 영업담당자가 거래처 무관 인맥(자유 컨택)도 추가 가능하므로
+    // 선택 사항. 거래처 연결 컨택은 client_id set, 자유 컨택은 null.
+    @Column(name = "client_id")
     private Long clientId;
 
     // 연락처 작성자 ID. 컨택리스트는 작성자 개인의 인맥 자산이므로 조회 시 이 값으로 필터.
