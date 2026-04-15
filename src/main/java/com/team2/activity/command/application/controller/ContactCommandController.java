@@ -32,40 +32,21 @@ public class ContactCommandController {
 
     private final ContactCommandService contactCommandService;
 
-    @Operation(summary = "연락처 생성", description = "특정 거래처에 새로운 연락처를 생성한다")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "연락처 생성 성공"),
-            @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터")
-    })
-    @PostMapping("/api/clients/{clientId}/contacts")
-    public ResponseEntity<EntityModel<ContactResponse>> createContact(
-            @Parameter(description = "거래처 ID", required = true) @PathVariable("clientId") Long clientId,
-            @AuthenticationPrincipal Jwt jwt,
-            @Valid @RequestBody ContactCreateRequest request) {
-        Long userId = Long.parseLong(jwt.getSubject());
-        ContactResponse response = contactCommandService.createContact(clientId, userId, request);
-        EntityModel<ContactResponse> model = EntityModel.of(response,
-                linkTo(methodOn(ContactQueryController.class).getContactsByClientId(clientId)).withRel("contacts"));
-        URI location = linkTo(methodOn(ContactQueryController.class).getContactsByClientId(clientId)).toUri();
-        return ResponseEntity.created(location).body(model);
-    }
-
-    @Operation(summary = "자유 연락처 생성", description = "거래처 무관 개인 인맥 추가. body 의 clientId 가 있으면 거래처 연결, 없으면 자유 컨택.")
+    @Operation(summary = "연락처 생성", description = "영업담당자 개인 주소록에 인맥 추가 (거래처 무관).")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "연락처 생성 성공"),
             @ApiResponse(responseCode = "400", description = "잘못된 요청 데이터")
     })
     @PostMapping("/api/contacts")
-    public ResponseEntity<EntityModel<ContactResponse>> createContactStandalone(
+    public ResponseEntity<EntityModel<ContactResponse>> createContact(
             @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody ContactCreateRequest request) {
         Long userId = Long.parseLong(jwt.getSubject());
-        // path clientId 없음 → body 의 clientId (nullable) 그대로 사용
-        ContactResponse response = contactCommandService.createContact(null, userId, request);
+        ContactResponse response = contactCommandService.createContact(userId, request);
         return ResponseEntity
                 .status(org.springframework.http.HttpStatus.CREATED)
                 .body(EntityModel.of(response,
-                        linkTo(methodOn(ContactQueryController.class).getContacts(null, null, 0, 20, null)).withRel("contacts")));
+                        linkTo(methodOn(ContactQueryController.class).getContacts(null, 0, 20, null)).withRel("contacts")));
     }
 
     @Operation(summary = "연락처 수정", description = "기존 연락처 정보를 수정한다")
@@ -80,7 +61,7 @@ public class ContactCommandController {
             @Valid @RequestBody ContactUpdateRequest request) {
         ContactResponse response = contactCommandService.updateContact(contactId, request);
         return ResponseEntity.ok(EntityModel.of(response,
-                linkTo(methodOn(ContactQueryController.class).getContacts(null, null, 0, 20, null)).withRel("contacts")));
+                linkTo(methodOn(ContactQueryController.class).getContacts(null, 0, 20, null)).withRel("contacts")));
     }
 
     @Operation(summary = "연락처 삭제", description = "연락처를 삭제한다")

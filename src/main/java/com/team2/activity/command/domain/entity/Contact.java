@@ -24,14 +24,10 @@ public class Contact {
     @Column(name = "contact_id")
     private Long contactId;
 
-    // 거래처 ID. nullable — 영업담당자가 거래처 무관 인맥(자유 컨택)도 추가 가능하므로
-    // 선택 사항. 거래처 연결 컨택은 client_id set, 자유 컨택은 null.
-    @Column(name = "client_id")
-    private Long clientId;
-
     // 연락처 작성자 ID. 컨택리스트는 작성자 개인의 인맥 자산이므로 조회 시 이 값으로 필터.
     // Buyer sync 시 같은 팀 영업담당자 각각에 대해 별도 Contact row 가 생성되어 (writerId 가
     // 각 사용자) 결과적으로 팀이 동일 buyer 정보를 자동으로 받게 된다.
+    // (client_id 필드 제거 — 컨택리스트는 거래처 무관 개인 주소록이므로 거래처 연결 불필요)
     @Column(name = "writer_id")
     private Long writerId;
 
@@ -61,10 +57,9 @@ public class Contact {
 
     // 빌더 기반 생성 로직을 제공한다.
     @Builder
-    private Contact(Long contactId, Long clientId, Long writerId,
+    private Contact(Long contactId, Long writerId,
                     String contactName, String contactPosition, String contactEmail, String contactTel) {
         this.contactId = contactId;
-        this.clientId = clientId;
         this.writerId = writerId;
         this.contactName = contactName;
         this.contactPosition = contactPosition;

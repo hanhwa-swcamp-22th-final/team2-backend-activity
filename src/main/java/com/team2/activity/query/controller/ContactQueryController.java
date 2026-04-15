@@ -32,7 +32,6 @@ public class ContactQueryController {
     })
     @GetMapping("/api/contacts")
     public ResponseEntity<PagedModel<EntityModel<ContactResponse>>> getContacts(
-            @Parameter(description = "거래처 ID (미입력 시 전체 조회)") @RequestParam(name = "clientId", required = false) Long clientId,
             @Parameter(description = "검색 키워드 (이름/이메일)") @RequestParam(name = "keyword", required = false) String keyword,
             @Parameter(description = "페이지 번호 (0부터 시작)") @RequestParam(name = "page", defaultValue = "0") int page,
             @Parameter(description = "페이지 크기") @RequestParam(name = "size", defaultValue = "20") int size,
@@ -40,9 +39,9 @@ public class ContactQueryController {
         // 컨택리스트는 작성자 개인의 인맥 자산. ADMIN 은 전체 조회, 나머지는 본인 writerId 만.
         // Buyer sync 는 같은 팀 sales 각각에 대해 별도 row 를 만들어주므로 팀 공유는 sync 단계에서 보장.
         Long writerId = isAdmin(jwt) ? null : Long.parseLong(jwt.getSubject());
-        List<ContactResponse> contacts = contactQueryService.getContactsWithFilters(clientId, writerId, keyword, page, size)
+        List<ContactResponse> contacts = contactQueryService.getContactsWithFilters(writerId, keyword, page, size)
                 .stream().map(ContactResponse::from).toList();
-        long totalElements = contactQueryService.countContactsWithFilters(clientId, writerId, keyword);
+        long totalElements = contactQueryService.countContactsWithFilters(writerId, keyword);
         List<EntityModel<ContactResponse>> models = contacts.stream().map(EntityModel::of).toList();
         PagedModel.PageMetadata metadata = new PagedModel.PageMetadata(size, page, totalElements);
         return ResponseEntity.ok(PagedModel.of(models, metadata));
@@ -51,18 +50,5 @@ public class ContactQueryController {
     private boolean isAdmin(Jwt jwt) {
         Object role = jwt.getClaim("role");
         return role != null && "ADMIN".equalsIgnoreCase(role.toString());
-    }
-
-    @Operation(summary = "거래처별 연락처 조회", description = "특정 거래처에 속한 연락처 목록을 조회한다")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "조회 성공"),
-            @ApiResponse(responseCode = "404", description = "거래처를 찾을 수 없음")
-    })
-    @GetMapping("/api/clients/{clientId}/contacts")
-    public ResponseEntity<List<ContactResponse>> getContactsByClientId(
-            @Parameter(description = "거래처 ID", required = true) @PathVariable("clientId") Long clientId) {
-        List<ContactResponse> contacts = contactQueryService.getContactsByClientId(clientId)
-                .stream().map(ContactResponse::from).toList();
-        return ResponseEntity.ok(contacts);
     }
 }

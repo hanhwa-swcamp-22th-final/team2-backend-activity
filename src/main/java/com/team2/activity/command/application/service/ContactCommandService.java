@@ -21,16 +21,16 @@ public class ContactCommandService {
     // 연락처 저장소 접근을 담당한다.
     private final ContactRepository contactRepository;
 
-    // 새 연락처를 생성하고 응답 DTO를 반환한다.
-    public ContactResponse createContact(Long clientId, Long userId, ContactCreateRequest request) {
-        Contact contact = contactRepository.save(request.toEntity(clientId, userId));
+    // 새 연락처를 생성하고 응답 DTO를 반환한다. 컨택리스트는 거래처 무관 개인 주소록.
+    public ContactResponse createContact(Long userId, ContactCreateRequest request) {
+        Contact contact = contactRepository.save(request.toEntity(userId));
         return ContactResponse.from(contact);
     }
 
     // Master 서비스의 Buyer 생성 이벤트에서 호출되는 내부 동기화 메서드.
+    // 같은 팀 sales 각각에 대해 buyer 정보를 개인 컨택으로 자동 추가.
     public void createContactInternal(ContactInternalRequest request) {
         Contact contact = Contact.builder()
-                .clientId(request.clientId())
                 .writerId(request.writerId())
                 .contactName(request.contactName())
                 .contactPosition(request.contactPosition())

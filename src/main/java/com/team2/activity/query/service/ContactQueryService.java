@@ -28,16 +28,12 @@ public class ContactQueryService {
         return contactQueryMapper.findAllContacts();
     }
 
-    public List<Contact> getContactsByClientId(Long clientId) {
-        return contactQueryMapper.findAllContactsByClientId(clientId);
-    }
-
-    public List<Contact> getContactsWithFilters(Long clientId, Long writerId, String keyword, int page, int size) {
+    public List<Contact> getContactsWithFilters(Long writerId, String keyword, int page, int size) {
         int offset = page * size;
-        return contactQueryMapper.findContactsWithFilters(clientId, writerId, keyword, size, offset);
+        return contactQueryMapper.findContactsWithFilters(writerId, keyword, size, offset);
     }
 
-    public long countContactsWithFilters(Long clientId, Long writerId, String keyword) {
-        return contactQueryMapper.countContactsWithFilters(clientId, writerId, keyword);
+    public long countContactsWithFilters(Long writerId, String keyword) {
+        return contactQueryMapper.countContactsWithFilters(writerId, keyword);
     }
 }

@@ -16,18 +16,13 @@ public interface ContactQueryMapper {
     // 전체 연락처 목록을 조회한다.
     List<Contact> findAllContacts();
 
-    // 거래처 ID로 연락처 목록을 조회한다.
-    List<Contact> findAllContactsByClientId(Long clientId);
-
     // 필터 조건으로 연락처를 페이징 조회한다. writerId 가 주어지면 작성자 본인 컨택만.
-    List<Contact> findContactsWithFilters(@Param("clientId") Long clientId,
-                                          @Param("writerId") Long writerId,
+    List<Contact> findContactsWithFilters(@Param("writerId") Long writerId,
                                           @Param("keyword") String keyword,
                                           @Param("limit") int limit,
                                           @Param("offset") int offset);
 
     // 필터 조건에 해당하는 연락처 수를 반환한다.
-    long countContactsWithFilters(@Param("clientId") Long clientId,
-                                  @Param("writerId") Long writerId,
+    long countContactsWithFilters(@Param("writerId") Long writerId,
                                   @Param("keyword") String keyword);
 }
