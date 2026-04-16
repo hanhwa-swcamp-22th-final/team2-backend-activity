@@ -24,11 +24,15 @@ public enum ActivityType implements DisplayNameEnum {
 
     @JsonCreator // Jackson이 역직렬화 시 이 메서드로 문자열 → 열거 상수 변환
     public static ActivityType from(String value) {
-        for (ActivityType type : values()) {        // 모든 열거 상수 순회
-            if (type.displayName.equals(value)) {   // 전달된 문자열과 영문 표시값 비교
-                return type;                        // 일치하는 상수 반환
+        if (value == null) {
+            throw new IllegalArgumentException("Unknown ActivityType: null");
+        }
+        // displayName(소문자) / enum name(대문자) 모두 허용, 대소문자 무시
+        for (ActivityType type : values()) {
+            if (type.displayName.equalsIgnoreCase(value) || type.name().equalsIgnoreCase(value)) {
+                return type;
             }
         }
-        throw new IllegalArgumentException("Unknown ActivityType: " + value); // 일치 없으면 예외 발생
+        throw new IllegalArgumentException("Unknown ActivityType: " + value);
     }
 }
