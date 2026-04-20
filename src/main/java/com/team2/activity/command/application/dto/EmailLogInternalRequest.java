@@ -8,6 +8,7 @@ import com.team2.activity.command.domain.entity.enums.DocumentType;
 import com.team2.activity.command.domain.entity.enums.MailStatus;
 import io.swagger.v3.oas.annotations.media.Schema;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +50,11 @@ public record EmailLogInternalRequest(
         // 문자열 상태값을 MailStatus enum으로 변환한다.
         MailStatus status = MailStatus.from(emailStatus);
 
+        // F5 — Documents 서비스가 발송 직후 내부 POST 로 로그를 넘기므로 수신 시각
+        // ≈ 실 발송 시각. 이전엔 emailSentAt 을 채우지 않아 메일 이력 페이지 발송일
+        // 칸이 빈 셀로 노출됐다. SENT 만 시각 기록, FAILED 는 null 유지.
+        LocalDateTime sentAt = MailStatus.SENT.equals(status) ? LocalDateTime.now() : null;
+
         return EmailLog.builder()
                 .clientId(clientId)
                 .poId(poId)
@@ -57,6 +63,7 @@ public record EmailLogInternalRequest(
                 .emailRecipientEmail(emailRecipientEmail)
                 .emailSenderId(emailSenderId)
                 .emailStatus(status)
+                .emailSentAt(sentAt)
                 .docTypes(docTypeList)
                 .attachments(attachmentList)
                 .build();
